@@ -87,19 +87,16 @@
 
 
 
-<meta name="description" content="Android中子线程真的不能更新UI吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。
-一个栗子：1234567891011121314151617public class MainActivity extends AppCompatActivity &amp;#123;    @BindView(R.id.btn1)    Button mBtn1;    @Override">
+<meta name="description" content="Android中子线程真的不能更新UI吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 中子线程真的不能更新UI吗？">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/16/Android 中子线程真的不能更新UI吗/index.html">
 <meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="Android中子线程真的不能更新UI吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。
-一个栗子：1234567891011121314151617public class MainActivity extends AppCompatActivity &amp;#123;    @BindView(R.id.btn1)    Button mBtn1;    @Override">
-<meta property="og:updated_time" content="2017-08-16T09:19:25.051Z">
+<meta property="og:description" content="Android中子线程真的不能更新UI吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。">
+<meta property="og:updated_time" content="2017-08-16T09:31:05.596Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 中子线程真的不能更新UI吗？">
-<meta name="twitter:description" content="Android中子线程真的不能更新UI吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。
-一个栗子：1234567891011121314151617public class MainActivity extends AppCompatActivity &amp;#123;    @BindView(R.id.btn1)    Button mBtn1;    @Override">
+<meta name="twitter:description" content="Android中子线程真的不能更新UI吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。">
 
 
 
@@ -388,6 +385,7 @@
 
       
         <h1 id="Android中子线程真的不能更新UI吗？"><a href="#Android中子线程真的不能更新UI吗？" class="headerlink" title="Android中子线程真的不能更新UI吗？"></a>Android中子线程真的不能更新UI吗？</h1><p>先说结论：Android 中子线程在满足一定的条件下可以更新 UI。</p>
+<a id="more"></a>
 <h2 id="一个栗子："><a href="#一个栗子：" class="headerlink" title="一个栗子："></a>一个栗子：</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@BindView</span>(R.id.btn1)</div><div class="line">    Button mBtn1;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(@Nullable Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                mBtn1.setText(<span class="string">"worker thread"</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;).start();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>如上在 onCreate 方法中新建一个线程对 mBtn1 进行了操作，成功从子线程更新了 ui。</p>
 <p>但是如果让线程 sleep 一段时间（比如 300ms），<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            Thread.sleep(<span class="number">300</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">        mBtn1.setText(<span class="string">"worker thread"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;).start();</div></pre></td></tr></table></figure></p>
