@@ -4,6 +4,51 @@
   
     
     <entry>
+      <title><![CDATA[Android 中子线程真的不能更新UI吗？]]></title>
+      <url>https://ivanljt.github.io/blog/blog/2017/08/16/Android%20%E4%B8%AD%E5%AD%90%E7%BA%BF%E7%A8%8B%E7%9C%9F%E7%9A%84%E4%B8%8D%E8%83%BD%E6%9B%B4%E6%96%B0UI%E5%90%97/</url>
+      <content type="html"><![CDATA[<h1 id="Android中子线程真的不能更新UI吗？"><a href="#Android中子线程真的不能更新UI吗？" class="headerlink" title="Android中子线程真的不能更新UI吗？"></a>Android中子线程真的不能更新UI吗？</h1><p>先说结论：Android 中子线程在满足一定的条件下可以更新 UI。</p>
+<h2 id="一个栗子："><a href="#一个栗子：" class="headerlink" title="一个栗子："></a>一个栗子：</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@BindView</span>(R.id.btn1)</div><div class="line">    Button mBtn1;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(@Nullable Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                mBtn1.setText(<span class="string">"worker thread"</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;).start();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如上在 onCreate 方法中新建一个线程对 mBtn1 进行了操作，成功从子线程更新了 ui。</p>
+<p>但是如果让线程 sleep 一段时间（比如 300ms），<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            Thread.sleep(<span class="number">300</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">        mBtn1.setText(<span class="string">"worker thread"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;).start();</div></pre></td></tr></table></figure></p>
+<p>那么就很可能会报如下错误：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view hierarchy can touch its views.</div><div class="line">    at android.view.ViewRootImpl.checkThread(ViewRootImpl.java:4788)</div><div class="line">    at android.view.ViewRootImpl.invalidateChildInParent(ViewRootImpl.java:865)</div><div class="line">    at android.view.ViewGroup.invalidateChild(ViewGroup.java:4106)</div><div class="line">    at android.view.View.invalidate(View.java:10386)</div><div class="line">    at android.view.View.invalidate(View.java:10341)</div><div class="line">    at android.widget.TextView.checkForRelayout(TextView.java:6657)</div><div class="line">    at android.widget.TextView.setText(TextView.java:3696)</div><div class="line">    at android.widget.TextView.setText(TextView.java:3554)</div><div class="line">    at android.widget.TextView.setText(TextView.java:3529)</div><div class="line">    at com.android.rdc.androidsamples.MainActivity$1.run(MainActivity.java:63)</div></pre></td></tr></table></figure></p>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>为什么会报这个错误呢？<br>从出错的堆栈信息中可以异常看到是 <code>ViewRootImpl.checkThread()</code> 方法中抛出的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">void checkThread() &#123;</div><div class="line">    if (mThread != Thread.currentThread()) &#123;</div><div class="line">        throw new CalledFromWrongThreadException(</div><div class="line">                &quot;Only the original thread that created a view hierarchy can touch its views.&quot;);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在访问UI的时候，ViewRootImpl会去检查当前是哪个线程访问的UI，如果不是主线程，那就会抛出异常：</p>
+<p>分析到了这里，其实异常信息对我们帮助也不大了，它只告诉了我们子线程中访问UI在哪里抛出异常。 </p>
+<p>而我们会思考：当访问UI时，ViewRootImpl 会调用 checkThread 方法去检查当前访问UI的线程是哪个，如果不是UI线程则会抛出异常，这是没问题的。但是为什么一开始在 MainActivity 的 onCreate 方法中创建一个子线程访问UI，程序还是正常能跑起来呢？<br>答案就是执行 onCreate 方法的那个时候 ViewRootImpl 还没创建，无法去检查当前线程。那么，ViewRootImpl 创建之前的，程序对 UI 的更新操作是如何进行的呢？这个问题我暂时还没有找出答案，希望有了解的同学能指导一下。</p>
+<p>回过头看，抛异常的方法既然是 ViewRootImpl 中的方法，那首先应该去看看 ViewRootImpl 是在哪里、在什么时候被创建的。<br>在 AS 中对 ViewRootImpl 进行查找，发现唯一一个初始化了它的地方是 <code>WindowManagerGlobal.addView()</code> 方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">public void addView(View view, ViewGroup.LayoutParams params,</div><div class="line">        Display display, Window parentWindow) &#123;</div><div class="line">    //代码省略</div><div class="line">    root = new ViewRootImpl(view.getContext(), display);</div><div class="line"></div><div class="line">    view.setLayoutParams(wparams);</div><div class="line"></div><div class="line">    mViews.add(view);</div><div class="line">    mRoots.add(root);</div><div class="line">    mParams.add(wparams);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>可以看到，该方法创建了一个 ViewRootImpl 并将它添加到一个列表中。</p>
+<p>该方法又是什么被调用的呢？对 Window 和 WindowManager 有所了解的同学应该知道，Window 的添加过程。</p>
+<p>先来看看 ActivityThread 中的 handleResumeActivity 方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">final void handleResumeActivity(IBinder token,</div><div class="line">            boolean clearHide, boolean isForward, boolean reallyResume, int seq, String reason) &#123;</div><div class="line">    //代码省略</div><div class="line">    r = performResumeActivity(token, clearHide, reason);</div><div class="line">    //代码省略</div><div class="line">    </div><div class="line">    r.activity.mVisibleFromServer = true;</div><div class="line">    mNumVisibleActivities++;</div><div class="line">    if (r.activity.mVisibleFromClient) &#123;</div><div class="line">        r.activity.makeVisible();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>该方法内部调用了 <code>performResumeActivity</code> 方法，看这个方法名可以揣测该方法最终会调用 Activity 的 onResume 方法，大致流程如下。</p>
+<ul>
+<li><code>ActivityThread.performResumeActivity</code>  ==》  <code>ActivityClientRecord.Activity.performResume();</code>  ==》 <code>Instrumentation.callActivityOnResume(this);</code> ==》 <code>Activity.onResume();</code></li>
+</ul>
+<p>回归正题。执行完 performResumeActivity 方法后，会执行 <code>r.activity.makeVisible()</code>，即调用 Activity 的 makeVisible() 。该方法实现如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">void makeVisible() &#123;</div><div class="line">    if (!mWindowAdded) &#123;</div><div class="line">        ViewManager wm = getWindowManager();</div><div class="line">        wm.addView(mDecor, getWindow().getAttributes());</div><div class="line">        mWindowAdded = true;</div><div class="line">    &#125;</div><div class="line">    mDecor.setVisibility(View.VISIBLE);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>此处调用了 <code>WindowManager.addView()</code> 方法。而 WindowManger 是一个接口，它的具体实现为 WindowManagerImpl<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public void addView(@NonNull View view, @NonNull ViewGroup.LayoutParams params) &#123;</div><div class="line">    applyDefaultToken(params);</div><div class="line">    mGlobal.addView(view, params, mContext.getDisplay(), mParentWindow);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里的 mGlobal 为 WindowManagerGlobal，也就是说调用了 <code>WindowManagerGlobal.addView()</code> 创建 ViewRootImpl</p>
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>ViewRootImpl 的创建在 onResume 方法回调之后，而我们一开篇是在 onCreate 方法中创建了子线程并访问 UI，在那个时刻，ViewRootImpl 还没有创建，无法检测当前线程是否是 UI 线程，所以程序没有崩溃一样能跑起来，而之后修改了程序，让线程休眠了 300 毫秒后，程序就崩了。很明显 300 毫秒后 ViewRootImpl 已经创建了，可以执行 checkThread 方法检查当前线程。</p>
+<p>开篇的例子中我们在 onCreate 方法中创建的子线程访问 UI 是一种极端的情况。实际开发中不会这么做。</p>
+<p>下次如果有人问你 Android 中子线程真的不能更新 UI 吗？ 你可以这么回答：</p>
+<blockquote>
+<p>子线程可以更新UI，但是需要创建子线程的根视图（RootView），并添加到 WindowManager，还要创建子线程的 Looper。以上条件都满足时，它可以修改它自己创建的根视图中的 UI。</p>
+</blockquote>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="http://blog.csdn.net/xyh269/article/details/52728861" target="_blank" rel="external">Android中子线程真的不能更新UI吗？</a></li>
+<li><a href="http://blog.csdn.net/u010198148/article/details/51779567" target="_blank" rel="external">多线程学习之–真的不能在子线程里更新UI吗？</a></li>
+<li><a href="https://www.zybuluo.com/natsumi/note/736165" target="_blank" rel="external">互联网笔记 Android中子线程真的不能更新UI吗？</a></li>
+</ul>
+]]></content>
+      
+        
+        <tags>
+            
+            <tag> 原理分析 </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[Android源码中的观察者模式]]></title>
       <url>https://ivanljt.github.io/blog/blog/2017/08/09/Android%E6%BA%90%E7%A0%81%E4%B8%AD%E7%9A%84%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/</url>
       <content type="html"><![CDATA[<h1 id="解决、解耦的钥匙——观察者模式"><a href="#解决、解耦的钥匙——观察者模式" class="headerlink" title="解决、解耦的钥匙——观察者模式"></a>解决、解耦的钥匙——观察者模式</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>观察者模式定义了对象间一种<strong>一对多</strong>的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并被自动更新。</p>
@@ -74,6 +119,18 @@
 </ul>
 ]]></content>
       
+        <categories>
+            
+            <category> 设计模式 </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 设计模式 </tag>
+            
+        </tags>
         
     </entry>
     
