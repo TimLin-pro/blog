@@ -71,7 +71,7 @@
 <link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Android," />
+  <meta name="keywords" content="Android,原理分析," />
 
 
 
@@ -101,7 +101,7 @@
 笔者水平有限，部分">
 <meta property="og:image" content="http://img.blog.csdn.net/20150801014511416">
 <meta property="og:image" content="http://img.blog.csdn.net/20150801014511416">
-<meta property="og:updated_time" content="2017-04-28T04:02:42.198Z">
+<meta property="og:updated_time" content="2017-08-16T09:22:38.172Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 消息机制解析">
 <meta name="twitter:description" content="提起 Handler，相信大家都不会陌生，日常开发中不可避免地要使用到它。今天要讲的是消息机制。消息机制？咋听起来有点抽象。其实我们在使用 Handler 的时候，就使用了 Android 的消息机制。
@@ -308,6 +308,28 @@
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/原理分析/" itemprop="url" rel="index">
+                    <span itemprop="name">原理分析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -379,6 +401,7 @@
 <ul>
 <li>笔者水平有限，部分内容可能基于学习资源，当然也会有个人的一些见解加入其中。如有疏漏之处，恳请指教。</li>
 </ul>
+<a id="more"></a>
 <h1 id="消息机制概述"><a href="#消息机制概述" class="headerlink" title="消息机制概述"></a>消息机制概述</h1><p>很多人认为 Handler 的作用就是更新 UI, 这种想法也没什么大问题，不过，更新 UI <strong>仅仅是 Handler 的一个特殊的使用场景</strong>。</p>
 <p>我们都知道，Android 为了保持与用户交互的流畅性，不允许在主线程执行耗时操作（例如：网络请求），那我们就必须要新开一个线程去执行这些操作。任务执行完了怎么样才能更新 UI 呢？子线程是不允许更新 UI 的，这时就需要将更新的操作切换到主线程中执行。Android 中 Handler 就是这样的一个类。</p>
 <p>看看官网的定义：</p>
@@ -547,6 +570,8 @@
           
             <a href="/blog/tags/android/" rel="tag"># Android</a>
           
+            <a href="/blog/tags/原理分析/" rel="tag"># 原理分析</a>
+          
         </div>
       
 
@@ -649,7 +674,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">2</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>

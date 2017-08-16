@@ -39,6 +39,12 @@
 </ul>
 ]]></content>
       
+        <categories>
+            
+            <category> 原理分析 </category>
+            
+        </categories>
+        
         
         <tags>
             
@@ -215,6 +221,18 @@
 <p>可以看到隐藏 Toast 的实现也是在 TN 中的。与 handleShow 对应，有一个 handleHide 方法。<br>该方法会将 Toast 的视图从 Window 中移除。如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">public void handleHide() &#123;</div><div class="line">    if (mView != null) &#123;</div><div class="line">        if (mView.getParent() != null) &#123;</div><div class="line">            mWM.removeViewImmediate(mView);</div><div class="line">        &#125;</div><div class="line">        mView = null;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 ]]></content>
       
+        <categories>
+            
+            <category> 原理分析 </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 原理分析 </tag>
+            
+        </tags>
         
     </entry>
     
@@ -314,6 +332,7 @@
 <ul>
 <li>笔者水平有限，部分内容可能基于学习资源，当然也会有个人的一些见解加入其中。如有疏漏之处，恳请指教。</li>
 </ul>
+<a id="more"></a>
 <h1 id="消息机制概述"><a href="#消息机制概述" class="headerlink" title="消息机制概述"></a>消息机制概述</h1><p>很多人认为 Handler 的作用就是更新 UI, 这种想法也没什么大问题，不过，更新 UI <strong>仅仅是 Handler 的一个特殊的使用场景</strong>。</p>
 <p>我们都知道，Android 为了保持与用户交互的流畅性，不允许在主线程执行耗时操作（例如：网络请求），那我们就必须要新开一个线程去执行这些操作。任务执行完了怎么样才能更新 UI 呢？子线程是不允许更新 UI 的，这时就需要将更新的操作切换到主线程中执行。Android 中 Handler 就是这样的一个类。</p>
 <p>看看官网的定义：</p>
@@ -453,10 +472,18 @@
 </ul>
 ]]></content>
       
+        <categories>
+            
+            <category> 原理分析 </category>
+            
+        </categories>
+        
         
         <tags>
             
             <tag> Android </tag>
+            
+            <tag> 原理分析 </tag>
             
         </tags>
         
