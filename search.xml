@@ -4,7 +4,7 @@
   
     
     <entry>
-      <title><![CDATA[创建型模式之单例模式]]></title>
+      <title><![CDATA[深入理解 LayoutInflater]]></title>
       <url>https://ivanljt.github.io/blog/blog/2017/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%20LayoutInflater/</url>
       <content type="html"><![CDATA[<h1 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h1><h2 id="系统服务的注册"><a href="#系统服务的注册" class="headerlink" title="系统服务的注册"></a>系统服务的注册</h2><p>什么时候初始化 ContextImpl？</p>
 <p>ContextImpl 中有这样一个成员变量，缓存系统服务。<br><code>final Object[] mServiceCache = SystemServiceRegistry.createServiceCache();</code></p>
@@ -577,9 +577,9 @@
         
         <tags>
             
-            <tag> Android </tag>
-            
             <tag> 原理分析 </tag>
+            
+            <tag> Android </tag>
             
         </tags>
         
