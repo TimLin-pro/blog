@@ -16,9 +16,6 @@
 <meta http-equiv="Cache-Control" content="no-transform" />
 <meta http-equiv="Cache-Control" content="no-siteapp" />
 
-<!-- ����gitment��css��js�ļ� -->
-<link rel="stylesheet" href="/css/gitment.css"> 
-<script src="/js/gitment.js"></script>
 
 
 
@@ -545,7 +542,43 @@ ContextImpl 中有这样一个成员变量，缓存系统服务。final Object[]
           
   <div class="comments" id="comments">
     
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">��ʾ Gitment ����</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
   </div>
+
+
 
 
         </div>
