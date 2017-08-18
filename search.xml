@@ -4,6 +4,123 @@
   
     
     <entry>
+      <title><![CDATA[Android源码中的代理模式]]></title>
+      <url>https://ivanljt.github.io/blog/blog/2017/08/18/Android%E6%BA%90%E7%A0%81%E4%B8%AD%E7%9A%84%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/</url>
+      <content type="html"><![CDATA[<h2 id="代理模式的定义"><a href="#代理模式的定义" class="headerlink" title="代理模式的定义"></a>代理模式的定义</h2><p>代理模式也称为委托模式，为其他对象提供一种代理以控制对这个对象的访问。</p>
+<h2 id="代理模式的使用场景"><a href="#代理模式的使用场景" class="headerlink" title="代理模式的使用场景"></a>代理模式的使用场景</h2><p>当无法或不想访问某个对象或者访问某个对象存在困难时可以<strong>通过一个代理对象来间接访问</strong>。</p>
+<p>为了保证客户端使用的透明性，委托对象与代理对象需要实现相同的接口（或继承相同的抽象类）</p>
+<a id="more"></a>
+<h2 id="代理模式的UML类图"><a href="#代理模式的UML类图" class="headerlink" title="代理模式的UML类图"></a>代理模式的UML类图</h2><p><img src="https://user-images.githubusercontent.com/16668676/29449202-6aed8b00-842c-11e7-8e3f-362ead423f2d.png" alt="proxy uml"></p>
+<p>角色介绍：</p>
+<ul>
+<li>Subject 抽象主题类<ul>
+<li>主要职责是声明真实主题类与代理的共同接口方法，该类可以是一个抽象类也可以是一个接口</li>
+</ul>
+</li>
+<li>RealSubject 真实主题类<ul>
+<li>也称为被委托类或被代理理类，该类定义了代理所表示的真实对象，由其执行具体的业务逻辑方法，而客户类则通过代理类间接地调用真实主题类中定义的方法。</li>
+</ul>
+</li>
+<li>ProxySubject 代理类<ul>
+<li>也称为委托类，持有一个对真实主题类的引用，在其实现的接口方法中调用真实主题类中相应的接口方法执行，以此起到代理的作用。</li>
+</ul>
+</li>
+<li>Client 使用代理类的类</li>
+</ul>
+<h2 id="代理模式的简单实现"><a href="#代理模式的简单实现" class="headerlink" title="代理模式的简单实现"></a>代理模式的简单实现</h2><p>代理模式大致可分为两大部分，<strong>静态代理和动态代理</strong>。</p>
+<p><strong>动态代理</strong>通过反射机制动态地生成代理者的对象，code 阶段不需要知道代理谁，代理的真正对象会在执行阶段确定。</p>
+<p>Java 提供一个便捷的动态代理接口 InvocationHandler，实现该接口需要重写其调用方法 invoke。</p>
+<p>动态代理通过一个代理类来代理 N 多个被代理类，其实质是对代理者与被代理者进行解耦，使两者之间没有直接的的耦合关系。</p>
+<h3 id="静态代理-vs-动态代理"><a href="#静态代理-vs-动态代理" class="headerlink" title="静态代理 vs 动态代理"></a>静态代理 vs 动态代理</h3><p>相对而言静态代理则只能为给定接口下的实现类做代理，如果接口不同那么就需要重新定义不同代理类，较为复杂。</p>
+<ul>
+<li>但是静态代理更符合面向对象的原则。</li>
+</ul>
+<p>实际开发中具体使用哪种方式来实现代理，看自己的偏好。</p>
+<h3 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h3><p>静态代理和动态代理是从 code 方面来区分代理模式的。</p>
+<p>也可以<strong>从其使用范围来区分</strong>不同类型的代理实现：</p>
+<ul>
+<li><strong>远程代理</strong>（Remote Proxy）为某个对象<strong>在不同的内存地址空间</strong>提供局部代理。</li>
+<li><strong>虚拟代理</strong>（Virtual Proxy）使用一个代理对象<strong>表示一个十分耗资源的对象并在真正需要时才创建</strong>。</li>
+<li><strong>保护代理</strong>(Protection Proxy)：使用代理<strong>控制对原始对象的访问</strong>。该类型的代理常被<strong>用于原始对象具有不同访问权限</strong>的情况。</li>
+<li>智能引用(Smart Reference)：在访问原始对象时执行一些自己的<strong>附加操作并对指向原始对象的引用计数</strong>。</li>
+</ul>
+<p>静动态代理都可以应用于上述 4 种情形。</p>
+<h2 id="Android源码中的代理模式实现"><a href="#Android源码中的代理模式实现" class="headerlink" title="Android源码中的代理模式实现"></a>Android源码中的代理模式实现</h2><p>以 ActivityManager 为例。</p>
+<p><img src="https://user-images.githubusercontent.com/16668676/29449446-6771e5ce-842d-11e7-935f-d1e5685d43af.png" alt="source code proxy"></p>
+<ul>
+<li>抽象接口: IActivityManager</li>
+<li>代理类 ActivityManagerProxy</li>
+<li>被代理类<ul>
+<li>ActivityManagerNative(抽象类，并不处理太多的逻辑，大部分逻辑由其子类——ActivityManagerService 承担)</li>
+<li>ActivityManagerService(真实部分)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>ActivityManagerService 是系统级的 Service 并且运行于独立的进程空间中，可以通过 ServiceManger 获取到它。</li>
+<li>ActivityManagerProxy 运行于自己所处的进程空间中（也就是说，与 ActivityManagerService 运行在不同的进程中）</li>
+<li>所以此处源码所实现的代理实质为==远程代理==。</li>
+</ul>
+<p>ActivityManagerProxy 在实际的逻辑处理并<strong>没有过多地被外部类</strong>使用，Android 中管理与维护 Activity 相关信息的类是另一个叫做 ActivityManager 的类。不过实质上 ActivityManager 大多数逻辑还是由 ActivityManagerProxy 承担。</p>
+<p>以 ActivityManager 的 getAppTasks() 方法为例<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> List&lt;ActivityManager.AppTask&gt; getAppTasks() &#123;</div><div class="line">    ArrayList&lt;AppTask&gt; tasks = <span class="keyword">new</span> ArrayList&lt;AppTask&gt;();</div><div class="line">    List&lt;IAppTask&gt; appTasks;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        appTasks = ActivityManagerNative.getDefault().getAppTasks(mContext.getPackageName());</div><div class="line">    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</div><div class="line">        <span class="keyword">throw</span> e.rethrowFromSystemServer();</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">int</span> numAppTasks = appTasks.size();</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numAppTasks; i++) &#123;</div><div class="line">        tasks.add(<span class="keyword">new</span> AppTask(appTasks.get(i)));</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> tasks;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>ActivityManagerNative.getDefault();</code>方法 返回一个 <code>IActivityManager</code> 类型的对象，通过该对象调用其 getAppTasks 方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">public</span> IActivityManager <span class="title">getDefault</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> gDefault.get();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>gDefault 到底是什么？<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton&lt;IActivityManager&gt; gDefault = <span class="keyword">new</span> Singleton&lt;IActivityManager&gt;() &#123;</div><div class="line">    <span class="function"><span class="keyword">protected</span> IActivityManager <span class="title">create</span><span class="params">()</span> </span>&#123;</div><div class="line">        IBinder b = ServiceManager.getService(<span class="string">"activity"</span>);<span class="comment">//获取 AMS</span></div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        IActivityManager am = asInterface(b);<span class="comment">//完成创建一个 AMS 的客户端端代理对象—— ActivityManagerProxy</span></div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        <span class="keyword">return</span> am;</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>上述代码中构造了一个 <code>Singleton&lt;IActivityManager&gt;</code> 类型的 gDefault 对象，其中通过 <code>ServiceManager.getService(&quot;activity&quot;);</code> 获取一个系统级的 Service，而该 Service 实质上就是 AMS，接着调用 asInterface 方法，创建一个 ActivityManagerProxy 对象。</p>
+<p>ActivityManagerNative.asInterface 方法的具体实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">static public IActivityManager asInterface(IBinder obj) &#123;</div><div class="line">    if (obj == null) &#123;</div><div class="line">        return null;</div><div class="line">    &#125;</div><div class="line">    IActivityManager in = (IActivityManager)obj.queryLocalInterface(descriptor);</div><div class="line">    if (in != null) &#123;</div><div class="line">        return in;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    return new ActivityManagerProxy(obj);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>ActivityManagerProxy 的 <code>getTasks</code> 方法，将数据打包跨进程传递给 Server 端的 AMS 处理<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> List&lt;ActivityManager.RunningTaskInfo&gt; getTasks(<span class="keyword">int</span> maxNum, <span class="keyword">int</span> flags)</div><div class="line">            <span class="keyword">throws</span> RemoteException &#123;</div><div class="line">        Parcel data = Parcel.obtain();</div><div class="line">        Parcel reply = Parcel.obtain();</div><div class="line">        data.writeInterfaceToken(IActivityManager.descriptor);</div><div class="line">        data.writeInt(maxNum);</div><div class="line">        data.writeInt(flags);</div><div class="line">        mRemote.transact(GET_TASKS_TRANSACTION, data, reply, <span class="number">0</span>);</div><div class="line">        reply.readException();</div><div class="line">        ArrayList&lt;ActivityManager.RunningTaskInfo&gt; list = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">int</span> N = reply.readInt();</div><div class="line">        <span class="keyword">if</span> (N &gt;= <span class="number">0</span>) &#123;</div><div class="line">            list = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">            <span class="keyword">while</span> (N &gt; <span class="number">0</span>) &#123;</div><div class="line">                ActivityManager.RunningTaskInfo info =</div><div class="line">                        ActivityManager.RunningTaskInfo.CREATOR</div><div class="line">                                .createFromParcel(reply);</div><div class="line">                list.add(info);</div><div class="line">                N--;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        data.recycle();</div><div class="line">        reply.recycle();</div><div class="line">        <span class="keyword">return</span> list;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>看看 AMS 中的 getTasks 方法的具体实现。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> List&lt;IAppTask&gt; <span class="title">getAppTasks</span><span class="params">(String callingPackage)</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> callingUid = Binder.getCallingUid();</div><div class="line">    <span class="keyword">long</span> ident = Binder.clearCallingIdentity();</div><div class="line"></div><div class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</div><div class="line">        ArrayList&lt;IAppTask&gt; list = <span class="keyword">new</span> ArrayList&lt;IAppTask&gt;();</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">if</span> (DEBUG_ALL) Slog.v(TAG, <span class="string">"getAppTasks"</span>);</div><div class="line"></div><div class="line">            <span class="keyword">final</span> <span class="keyword">int</span> N = mRecentTasks.size();</div><div class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</div><div class="line">                TaskRecord tr = mRecentTasks.get(i);</div><div class="line">                <span class="comment">// Skip tasks that do not match the caller.  We don't need to verify</span></div><div class="line">                <span class="comment">// callingPackage, because we are also limiting to callingUid and know</span></div><div class="line">                <span class="comment">// that will limit to the correct security sandbox.</span></div><div class="line">                <span class="keyword">if</span> (tr.effectiveUid != callingUid) &#123;</div><div class="line">                    <span class="keyword">continue</span>;</div><div class="line">                &#125;</div><div class="line">                Intent intent = tr.getBaseIntent();</div><div class="line">                <span class="keyword">if</span> (intent == <span class="keyword">null</span> ||</div><div class="line">                        !callingPackage.equals(intent.getComponent().getPackageName())) &#123;</div><div class="line">                    <span class="keyword">continue</span>;</div><div class="line">                &#125;</div><div class="line">                ActivityManager.RecentTaskInfo taskInfo =</div><div class="line">                        createRecentTaskInfoFromTaskRecord(tr);</div><div class="line">                AppTaskImpl taskImpl = <span class="keyword">new</span> AppTaskImpl(taskInfo.persistentId, callingUid);</div><div class="line">                list.add(taskImpl);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">finally</span> &#123;</div><div class="line">            Binder.restoreCallingIdentity(ident);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> list;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="Android-中的-Binder-跨进程通信机制与-AIDL"><a href="#Android-中的-Binder-跨进程通信机制与-AIDL" class="headerlink" title="Android 中的 Binder 跨进程通信机制与 AIDL"></a>Android 中的 Binder 跨进程通信机制与 AIDL</h2><p>四个重要类：</p>
+<ul>
+<li>Binder Client 类比 PC、终端设备</li>
+<li>Binder Server 类比 服务器</li>
+<li>Binder Driver（实现在内核中） 类比 路由器</li>
+<li>Binder Manager 类比 DNS 服务器</li>
+</ul>
+<p>因为依赖于抽象，加上本地代理类的存在，所以调用远程方法时，还是与调用本地的普通的方法一样。但是代理类内部需要对参数什么的进行打包处理，然后再通过 Binder 机制，跨进程将数据传递给远程方法，远程方法执行完毕再返回数据。</p>
+<p><img src="https://user-images.githubusercontent.com/16668676/29453380-021cc0ea-843c-11e7-901d-a7490d12f9ea.jpg" alt="binder 通信大致模型图"></p>
+<p>Binder Driver 实现在内核中，主要负责 Binder 通信的建立，以及 Binder数据在进程间的传递和 Binder 引用计数管理/数据包的传输等。</p>
+<p>Binder Client 和 Binder Server 之间的跨进程通信统一通过 Binder Driver 处理转发，</p>
+<ul>
+<li>对于 Binder Client 而言，它只需要知道自己要使用的 Binder 的名字以及该 <strong>Binder 实体</strong>在 ServerManager 中的 0 号引用即可。<ul>
+<li>访问原理：<ul>
+<li>通过 0 号引用去访问 ServerManager <strong>获取该 Binder 的引用</strong>，</li>
+<li>得到引用后就可以像普通方法调用那样调用 Binder 实体的方法</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ServerManager 用来管理 Binder Server（Android 中通常是一个 Service）<ul>
+<li>Binder Client 通过它来查询 Binder Server 的引用</li>
+<li>ServerManager <strong>是一个标准的 Binder Server</strong>，并且在 Android 中约定其在 Binder 通信过程中的唯一标识（类似于 IP 地址）永远为 0。<ul>
+<li>在 IServiceManager 接口中定义有对外开放的接口方法，供客户端访问。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>匿名 Binder</strong>。很多时候 Binder Server 会将一个 Binder 实体封装进数据包传递给 Binder Client，而此时 Binder Server 会在该数据包中标注 Binder 实体的位置，Binder Driver 会为该匿名的 Binder 生成实体结点和实体引用，并将该引用传递给 Binder Client。</li>
+</ul>
+<p>IServiceManager 接口(声明 ServerManger 对外提供的方法、数据 )<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IServiceManager</span> <span class="keyword">extends</span> <span class="title">IInterface</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> IBinder <span class="title">getService</span><span class="params">(String name)</span> <span class="keyword">throws</span> RemoteException</span>;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> IBinder <span class="title">checkService</span><span class="params">(String name)</span> <span class="keyword">throws</span> RemoteException</span>;</div><div class="line"></div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addService</span><span class="params">(String name, IBinder service, <span class="keyword">boolean</span> allowIsolated)</span></span></div><div class="line">                <span class="keyword">throws</span> RemoteException;</div><div class="line">    <span class="keyword">public</span> String[] listServices() <span class="keyword">throws</span> RemoteException;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPermissionController</span><span class="params">(IPermissionController controller)</span></span></div><div class="line">            <span class="keyword">throws</span> RemoteException;</div><div class="line">    </div><div class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String descriptor = <span class="string">"android.os.IServiceManager"</span>;</div><div class="line"></div><div class="line">    <span class="keyword">int</span> GET_SERVICE_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION;</div><div class="line">    <span class="keyword">int</span> CHECK_SERVICE_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">1</span>;</div><div class="line">    <span class="keyword">int</span> ADD_SERVICE_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">2</span>;</div><div class="line">    <span class="keyword">int</span> LIST_SERVICES_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">3</span>;</div><div class="line">    <span class="keyword">int</span> CHECK_SERVICES_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">4</span>;</div><div class="line">    <span class="keyword">int</span> SET_PERMISSION_CONTROLLER_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">5</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>《Andorid 源码设计模式解析与实战》</p>
+<p>如果本文中有不正确的结论、说法，请大家提出和我讨论，共同进步，谢谢！</p>
+]]></content>
+      
+        <categories>
+            
+            <category> 设计模式 </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 设计模式 </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[深入理解 LayoutInflater]]></title>
       <url>https://ivanljt.github.io/blog/blog/2017/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%20LayoutInflater/</url>
       <content type="html"><![CDATA[<h1 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h1><h2 id="系统服务的注册"><a href="#系统服务的注册" class="headerlink" title="系统服务的注册"></a>系统服务的注册</h2><p>什么时候初始化 ContextImpl？</p>

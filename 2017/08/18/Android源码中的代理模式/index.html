@@ -1,0 +1,971 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="设计模式," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="代理模式的定义代理模式也称为委托模式，为其他对象提供一种代理以控制对这个对象的访问。
+代理模式的使用场景当无法或不想访问某个对象或者访问某个对象存在困难时可以通过一个代理对象来间接访问。
+为了保证客户端使用的透明性，委托对象与代理对象需要实现相同的接口（或继承相同的抽象类）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android源码中的代理模式">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/18/Android源码中的代理模式/index.html">
+<meta property="og:site_name" content="Tim's Track">
+<meta property="og:description" content="代理模式的定义代理模式也称为委托模式，为其他对象提供一种代理以控制对这个对象的访问。
+代理模式的使用场景当无法或不想访问某个对象或者访问某个对象存在困难时可以通过一个代理对象来间接访问。
+为了保证客户端使用的透明性，委托对象与代理对象需要实现相同的接口（或继承相同的抽象类）">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29449202-6aed8b00-842c-11e7-8e3f-362ead423f2d.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29449446-6771e5ce-842d-11e7-935f-d1e5685d43af.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29453380-021cc0ea-843c-11e7-901d-a7490d12f9ea.jpg">
+<meta property="og:updated_time" content="2017-08-18T09:49:27.180Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android源码中的代理模式">
+<meta name="twitter:description" content="代理模式的定义代理模式也称为委托模式，为其他对象提供一种代理以控制对这个对象的访问。
+代理模式的使用场景当无法或不想访问某个对象或者访问某个对象存在困难时可以通过一个代理对象来间接访问。
+为了保证客户端使用的透明性，委托对象与代理对象需要实现相同的接口（或继承相同的抽象类）">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/29449202-6aed8b00-842c-11e7-8e3f-362ead423f2d.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/08/18/Android源码中的代理模式/"/>
+
+
+
+
+
+  <title> Android源码中的代理模式 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/08/18/Android源码中的代理模式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android源码中的代理模式
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-18T17:45:11+08:00">
+                2017-08-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/设计模式/" itemprop="url" rel="index">
+                    <span itemprop="name">设计模式</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2017/08/18/Android源码中的代理模式/" class="leancloud_visitors" data-flag-title="Android源码中的代理模式">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  2,063
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  8
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="代理模式的定义"><a href="#代理模式的定义" class="headerlink" title="代理模式的定义"></a>代理模式的定义</h2><p>代理模式也称为委托模式，为其他对象提供一种代理以控制对这个对象的访问。</p>
+<h2 id="代理模式的使用场景"><a href="#代理模式的使用场景" class="headerlink" title="代理模式的使用场景"></a>代理模式的使用场景</h2><p>当无法或不想访问某个对象或者访问某个对象存在困难时可以<strong>通过一个代理对象来间接访问</strong>。</p>
+<p>为了保证客户端使用的透明性，委托对象与代理对象需要实现相同的接口（或继承相同的抽象类）</p>
+<a id="more"></a>
+<h2 id="代理模式的UML类图"><a href="#代理模式的UML类图" class="headerlink" title="代理模式的UML类图"></a>代理模式的UML类图</h2><p><img src="https://user-images.githubusercontent.com/16668676/29449202-6aed8b00-842c-11e7-8e3f-362ead423f2d.png" alt="proxy uml"></p>
+<p>角色介绍：</p>
+<ul>
+<li>Subject 抽象主题类<ul>
+<li>主要职责是声明真实主题类与代理的共同接口方法，该类可以是一个抽象类也可以是一个接口</li>
+</ul>
+</li>
+<li>RealSubject 真实主题类<ul>
+<li>也称为被委托类或被代理理类，该类定义了代理所表示的真实对象，由其执行具体的业务逻辑方法，而客户类则通过代理类间接地调用真实主题类中定义的方法。</li>
+</ul>
+</li>
+<li>ProxySubject 代理类<ul>
+<li>也称为委托类，持有一个对真实主题类的引用，在其实现的接口方法中调用真实主题类中相应的接口方法执行，以此起到代理的作用。</li>
+</ul>
+</li>
+<li>Client 使用代理类的类</li>
+</ul>
+<h2 id="代理模式的简单实现"><a href="#代理模式的简单实现" class="headerlink" title="代理模式的简单实现"></a>代理模式的简单实现</h2><p>代理模式大致可分为两大部分，<strong>静态代理和动态代理</strong>。</p>
+<p><strong>动态代理</strong>通过反射机制动态地生成代理者的对象，code 阶段不需要知道代理谁，代理的真正对象会在执行阶段确定。</p>
+<p>Java 提供一个便捷的动态代理接口 InvocationHandler，实现该接口需要重写其调用方法 invoke。</p>
+<p>动态代理通过一个代理类来代理 N 多个被代理类，其实质是对代理者与被代理者进行解耦，使两者之间没有直接的的耦合关系。</p>
+<h3 id="静态代理-vs-动态代理"><a href="#静态代理-vs-动态代理" class="headerlink" title="静态代理 vs 动态代理"></a>静态代理 vs 动态代理</h3><p>相对而言静态代理则只能为给定接口下的实现类做代理，如果接口不同那么就需要重新定义不同代理类，较为复杂。</p>
+<ul>
+<li>但是静态代理更符合面向对象的原则。</li>
+</ul>
+<p>实际开发中具体使用哪种方式来实现代理，看自己的偏好。</p>
+<h3 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h3><p>静态代理和动态代理是从 code 方面来区分代理模式的。</p>
+<p>也可以<strong>从其使用范围来区分</strong>不同类型的代理实现：</p>
+<ul>
+<li><strong>远程代理</strong>（Remote Proxy）为某个对象<strong>在不同的内存地址空间</strong>提供局部代理。</li>
+<li><strong>虚拟代理</strong>（Virtual Proxy）使用一个代理对象<strong>表示一个十分耗资源的对象并在真正需要时才创建</strong>。</li>
+<li><strong>保护代理</strong>(Protection Proxy)：使用代理<strong>控制对原始对象的访问</strong>。该类型的代理常被<strong>用于原始对象具有不同访问权限</strong>的情况。</li>
+<li>智能引用(Smart Reference)：在访问原始对象时执行一些自己的<strong>附加操作并对指向原始对象的引用计数</strong>。</li>
+</ul>
+<p>静动态代理都可以应用于上述 4 种情形。</p>
+<h2 id="Android源码中的代理模式实现"><a href="#Android源码中的代理模式实现" class="headerlink" title="Android源码中的代理模式实现"></a>Android源码中的代理模式实现</h2><p>以 ActivityManager 为例。</p>
+<p><img src="https://user-images.githubusercontent.com/16668676/29449446-6771e5ce-842d-11e7-935f-d1e5685d43af.png" alt="source code proxy"></p>
+<ul>
+<li>抽象接口: IActivityManager</li>
+<li>代理类 ActivityManagerProxy</li>
+<li>被代理类<ul>
+<li>ActivityManagerNative(抽象类，并不处理太多的逻辑，大部分逻辑由其子类——ActivityManagerService 承担)</li>
+<li>ActivityManagerService(真实部分)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>ActivityManagerService 是系统级的 Service 并且运行于独立的进程空间中，可以通过 ServiceManger 获取到它。</li>
+<li>ActivityManagerProxy 运行于自己所处的进程空间中（也就是说，与 ActivityManagerService 运行在不同的进程中）</li>
+<li>所以此处源码所实现的代理实质为==远程代理==。</li>
+</ul>
+<p>ActivityManagerProxy 在实际的逻辑处理并<strong>没有过多地被外部类</strong>使用，Android 中管理与维护 Activity 相关信息的类是另一个叫做 ActivityManager 的类。不过实质上 ActivityManager 大多数逻辑还是由 ActivityManagerProxy 承担。</p>
+<p>以 ActivityManager 的 getAppTasks() 方法为例<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> List&lt;ActivityManager.AppTask&gt; getAppTasks() &#123;</div><div class="line">    ArrayList&lt;AppTask&gt; tasks = <span class="keyword">new</span> ArrayList&lt;AppTask&gt;();</div><div class="line">    List&lt;IAppTask&gt; appTasks;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        appTasks = ActivityManagerNative.getDefault().getAppTasks(mContext.getPackageName());</div><div class="line">    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</div><div class="line">        <span class="keyword">throw</span> e.rethrowFromSystemServer();</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">int</span> numAppTasks = appTasks.size();</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numAppTasks; i++) &#123;</div><div class="line">        tasks.add(<span class="keyword">new</span> AppTask(appTasks.get(i)));</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> tasks;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>ActivityManagerNative.getDefault();</code>方法 返回一个 <code>IActivityManager</code> 类型的对象，通过该对象调用其 getAppTasks 方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">public</span> IActivityManager <span class="title">getDefault</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> gDefault.get();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>gDefault 到底是什么？<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton&lt;IActivityManager&gt; gDefault = <span class="keyword">new</span> Singleton&lt;IActivityManager&gt;() &#123;</div><div class="line">    <span class="function"><span class="keyword">protected</span> IActivityManager <span class="title">create</span><span class="params">()</span> </span>&#123;</div><div class="line">        IBinder b = ServiceManager.getService(<span class="string">"activity"</span>);<span class="comment">//获取 AMS</span></div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        IActivityManager am = asInterface(b);<span class="comment">//完成创建一个 AMS 的客户端端代理对象—— ActivityManagerProxy</span></div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        <span class="keyword">return</span> am;</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>上述代码中构造了一个 <code>Singleton&lt;IActivityManager&gt;</code> 类型的 gDefault 对象，其中通过 <code>ServiceManager.getService(&quot;activity&quot;);</code> 获取一个系统级的 Service，而该 Service 实质上就是 AMS，接着调用 asInterface 方法，创建一个 ActivityManagerProxy 对象。</p>
+<p>ActivityManagerNative.asInterface 方法的具体实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">static public IActivityManager asInterface(IBinder obj) &#123;</div><div class="line">    if (obj == null) &#123;</div><div class="line">        return null;</div><div class="line">    &#125;</div><div class="line">    IActivityManager in = (IActivityManager)obj.queryLocalInterface(descriptor);</div><div class="line">    if (in != null) &#123;</div><div class="line">        return in;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    return new ActivityManagerProxy(obj);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>ActivityManagerProxy 的 <code>getTasks</code> 方法，将数据打包跨进程传递给 Server 端的 AMS 处理<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> List&lt;ActivityManager.RunningTaskInfo&gt; getTasks(<span class="keyword">int</span> maxNum, <span class="keyword">int</span> flags)</div><div class="line">            <span class="keyword">throws</span> RemoteException &#123;</div><div class="line">        Parcel data = Parcel.obtain();</div><div class="line">        Parcel reply = Parcel.obtain();</div><div class="line">        data.writeInterfaceToken(IActivityManager.descriptor);</div><div class="line">        data.writeInt(maxNum);</div><div class="line">        data.writeInt(flags);</div><div class="line">        mRemote.transact(GET_TASKS_TRANSACTION, data, reply, <span class="number">0</span>);</div><div class="line">        reply.readException();</div><div class="line">        ArrayList&lt;ActivityManager.RunningTaskInfo&gt; list = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">int</span> N = reply.readInt();</div><div class="line">        <span class="keyword">if</span> (N &gt;= <span class="number">0</span>) &#123;</div><div class="line">            list = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">            <span class="keyword">while</span> (N &gt; <span class="number">0</span>) &#123;</div><div class="line">                ActivityManager.RunningTaskInfo info =</div><div class="line">                        ActivityManager.RunningTaskInfo.CREATOR</div><div class="line">                                .createFromParcel(reply);</div><div class="line">                list.add(info);</div><div class="line">                N--;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        data.recycle();</div><div class="line">        reply.recycle();</div><div class="line">        <span class="keyword">return</span> list;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>看看 AMS 中的 getTasks 方法的具体实现。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> List&lt;IAppTask&gt; <span class="title">getAppTasks</span><span class="params">(String callingPackage)</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> callingUid = Binder.getCallingUid();</div><div class="line">    <span class="keyword">long</span> ident = Binder.clearCallingIdentity();</div><div class="line"></div><div class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</div><div class="line">        ArrayList&lt;IAppTask&gt; list = <span class="keyword">new</span> ArrayList&lt;IAppTask&gt;();</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">if</span> (DEBUG_ALL) Slog.v(TAG, <span class="string">"getAppTasks"</span>);</div><div class="line"></div><div class="line">            <span class="keyword">final</span> <span class="keyword">int</span> N = mRecentTasks.size();</div><div class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</div><div class="line">                TaskRecord tr = mRecentTasks.get(i);</div><div class="line">                <span class="comment">// Skip tasks that do not match the caller.  We don't need to verify</span></div><div class="line">                <span class="comment">// callingPackage, because we are also limiting to callingUid and know</span></div><div class="line">                <span class="comment">// that will limit to the correct security sandbox.</span></div><div class="line">                <span class="keyword">if</span> (tr.effectiveUid != callingUid) &#123;</div><div class="line">                    <span class="keyword">continue</span>;</div><div class="line">                &#125;</div><div class="line">                Intent intent = tr.getBaseIntent();</div><div class="line">                <span class="keyword">if</span> (intent == <span class="keyword">null</span> ||</div><div class="line">                        !callingPackage.equals(intent.getComponent().getPackageName())) &#123;</div><div class="line">                    <span class="keyword">continue</span>;</div><div class="line">                &#125;</div><div class="line">                ActivityManager.RecentTaskInfo taskInfo =</div><div class="line">                        createRecentTaskInfoFromTaskRecord(tr);</div><div class="line">                AppTaskImpl taskImpl = <span class="keyword">new</span> AppTaskImpl(taskInfo.persistentId, callingUid);</div><div class="line">                list.add(taskImpl);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">finally</span> &#123;</div><div class="line">            Binder.restoreCallingIdentity(ident);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> list;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="Android-中的-Binder-跨进程通信机制与-AIDL"><a href="#Android-中的-Binder-跨进程通信机制与-AIDL" class="headerlink" title="Android 中的 Binder 跨进程通信机制与 AIDL"></a>Android 中的 Binder 跨进程通信机制与 AIDL</h2><p>四个重要类：</p>
+<ul>
+<li>Binder Client 类比 PC、终端设备</li>
+<li>Binder Server 类比 服务器</li>
+<li>Binder Driver（实现在内核中） 类比 路由器</li>
+<li>Binder Manager 类比 DNS 服务器</li>
+</ul>
+<p>因为依赖于抽象，加上本地代理类的存在，所以调用远程方法时，还是与调用本地的普通的方法一样。但是代理类内部需要对参数什么的进行打包处理，然后再通过 Binder 机制，跨进程将数据传递给远程方法，远程方法执行完毕再返回数据。</p>
+<p><img src="https://user-images.githubusercontent.com/16668676/29453380-021cc0ea-843c-11e7-901d-a7490d12f9ea.jpg" alt="binder 通信大致模型图"></p>
+<p>Binder Driver 实现在内核中，主要负责 Binder 通信的建立，以及 Binder数据在进程间的传递和 Binder 引用计数管理/数据包的传输等。</p>
+<p>Binder Client 和 Binder Server 之间的跨进程通信统一通过 Binder Driver 处理转发，</p>
+<ul>
+<li>对于 Binder Client 而言，它只需要知道自己要使用的 Binder 的名字以及该 <strong>Binder 实体</strong>在 ServerManager 中的 0 号引用即可。<ul>
+<li>访问原理：<ul>
+<li>通过 0 号引用去访问 ServerManager <strong>获取该 Binder 的引用</strong>，</li>
+<li>得到引用后就可以像普通方法调用那样调用 Binder 实体的方法</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ServerManager 用来管理 Binder Server（Android 中通常是一个 Service）<ul>
+<li>Binder Client 通过它来查询 Binder Server 的引用</li>
+<li>ServerManager <strong>是一个标准的 Binder Server</strong>，并且在 Android 中约定其在 Binder 通信过程中的唯一标识（类似于 IP 地址）永远为 0。<ul>
+<li>在 IServiceManager 接口中定义有对外开放的接口方法，供客户端访问。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>匿名 Binder</strong>。很多时候 Binder Server 会将一个 Binder 实体封装进数据包传递给 Binder Client，而此时 Binder Server 会在该数据包中标注 Binder 实体的位置，Binder Driver 会为该匿名的 Binder 生成实体结点和实体引用，并将该引用传递给 Binder Client。</li>
+</ul>
+<p>IServiceManager 接口(声明 ServerManger 对外提供的方法、数据 )<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IServiceManager</span> <span class="keyword">extends</span> <span class="title">IInterface</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> IBinder <span class="title">getService</span><span class="params">(String name)</span> <span class="keyword">throws</span> RemoteException</span>;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> IBinder <span class="title">checkService</span><span class="params">(String name)</span> <span class="keyword">throws</span> RemoteException</span>;</div><div class="line"></div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addService</span><span class="params">(String name, IBinder service, <span class="keyword">boolean</span> allowIsolated)</span></span></div><div class="line">                <span class="keyword">throws</span> RemoteException;</div><div class="line">    <span class="keyword">public</span> String[] listServices() <span class="keyword">throws</span> RemoteException;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPermissionController</span><span class="params">(IPermissionController controller)</span></span></div><div class="line">            <span class="keyword">throws</span> RemoteException;</div><div class="line">    </div><div class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String descriptor = <span class="string">"android.os.IServiceManager"</span>;</div><div class="line"></div><div class="line">    <span class="keyword">int</span> GET_SERVICE_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION;</div><div class="line">    <span class="keyword">int</span> CHECK_SERVICE_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">1</span>;</div><div class="line">    <span class="keyword">int</span> ADD_SERVICE_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">2</span>;</div><div class="line">    <span class="keyword">int</span> LIST_SERVICES_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">3</span>;</div><div class="line">    <span class="keyword">int</span> CHECK_SERVICES_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">4</span>;</div><div class="line">    <span class="keyword">int</span> SET_PERMISSION_CONTROLLER_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION+<span class="number">5</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>《Andorid 源码设计模式解析与实战》</p>
+<p>如果本文中有不正确的结论、说法，请大家提出和我讨论，共同进步，谢谢！</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/设计模式/" rel="tag"># 设计模式</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/08/17/深入理解 LayoutInflater/" rel="next" title="深入理解 LayoutInflater">
+                <i class="fa fa-chevron-left"></i> 深入理解 LayoutInflater
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/ivanljt" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#代理模式的定义"><span class="nav-number">1.</span> <span class="nav-text">代理模式的定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代理模式的使用场景"><span class="nav-number">2.</span> <span class="nav-text">代理模式的使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代理模式的UML类图"><span class="nav-number">3.</span> <span class="nav-text">代理模式的UML类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代理模式的简单实现"><span class="nav-number">4.</span> <span class="nav-text">代理模式的简单实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#静态代理-vs-动态代理"><span class="nav-number">4.1.</span> <span class="nav-text">静态代理 vs 动态代理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分类"><span class="nav-number">4.2.</span> <span class="nav-text">分类</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android源码中的代理模式实现"><span class="nav-number">5.</span> <span class="nav-text">Android源码中的代理模式实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-中的-Binder-跨进程通信机制与-AIDL"><span class="nav-number">6.</span> <span class="nav-text">Android 中的 Binder 跨进程通信机制与 AIDL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
