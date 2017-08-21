@@ -1,0 +1,999 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="设计模式，原理分析," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="备忘录模式的定义备忘录模式是一种行为模式，该模式用于保存对象当前的状态，并且在之后可以再次恢复到此状态。
+在不破坏封闭的前提下，捕获一个对象的内部状态，并在该对象之外保存这个状态，以便后续将对象恢复到原来的状态。
+备忘录模式的使用场景
+需要保存一个对象在某一个时刻的状态或部分状态
+一个对象不希望外界直接访问其内部状态，通过中间对象可以间接访问其内部状态。（如果使用接口来让其他对象获取对象的状态，会">
+<meta property="og:type" content="article">
+<meta property="og:title" content="行为型设计模式之备忘录模式">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/21/行为型设置模式之备忘录模式/index.html">
+<meta property="og:site_name" content="Tim's Track">
+<meta property="og:description" content="备忘录模式的定义备忘录模式是一种行为模式，该模式用于保存对象当前的状态，并且在之后可以再次恢复到此状态。
+在不破坏封闭的前提下，捕获一个对象的内部状态，并在该对象之外保存这个状态，以便后续将对象恢复到原来的状态。
+备忘录模式的使用场景
+需要保存一个对象在某一个时刻的状态或部分状态
+一个对象不希望外界直接访问其内部状态，通过中间对象可以间接访问其内部状态。（如果使用接口来让其他对象获取对象的状态，会">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29518826-890e58e8-86ad-11e7-9ce8-90ff79fcc071.png">
+<meta property="og:updated_time" content="2017-08-21T12:31:12.276Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="行为型设计模式之备忘录模式">
+<meta name="twitter:description" content="备忘录模式的定义备忘录模式是一种行为模式，该模式用于保存对象当前的状态，并且在之后可以再次恢复到此状态。
+在不破坏封闭的前提下，捕获一个对象的内部状态，并在该对象之外保存这个状态，以便后续将对象恢复到原来的状态。
+备忘录模式的使用场景
+需要保存一个对象在某一个时刻的状态或部分状态
+一个对象不希望外界直接访问其内部状态，通过中间对象可以间接访问其内部状态。（如果使用接口来让其他对象获取对象的状态，会">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/29518826-890e58e8-86ad-11e7-9ce8-90ff79fcc071.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/08/21/行为型设置模式之备忘录模式/"/>
+
+
+
+
+
+  <title> 行为型设计模式之备忘录模式 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/08/21/行为型设置模式之备忘录模式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                行为型设计模式之备忘录模式
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-21T20:19:44+08:00">
+                2017-08-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/设计模式，原理分析/" itemprop="url" rel="index">
+                    <span itemprop="name">设计模式，原理分析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2017/08/21/行为型设置模式之备忘录模式/" class="leancloud_visitors" data-flag-title="行为型设计模式之备忘录模式">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  3,541
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  14
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="备忘录模式的定义"><a href="#备忘录模式的定义" class="headerlink" title="备忘录模式的定义"></a>备忘录模式的定义</h2><p>备忘录模式是一种<strong>行为模式</strong>，该模式用于保存对象当前的状态，并且在之后可以再次恢复到此状态。</p>
+<p>在不破坏封闭的前提下，捕获一个对象的内部状态，并在该对象之外保存这个状态，以便后续将对象恢复到原来的状态。</p>
+<h2 id="备忘录模式的使用场景"><a href="#备忘录模式的使用场景" class="headerlink" title="备忘录模式的使用场景"></a>备忘录模式的使用场景</h2><ol>
+<li>需要保存一个对象在某一个时刻的状态或部分状态</li>
+<li>一个对象不希望外界直接访问其内部状态，通过中间对象可以间接访问其内部状态。（如果使用接口来让其他对象获取对象的状态，会破坏封装性）</li>
+</ol>
+<a id="more"></a>
+<h2 id="备忘录模式的UML类图"><a href="#备忘录模式的UML类图" class="headerlink" title="备忘录模式的UML类图"></a>备忘录模式的UML类图</h2><p><img src="https://user-images.githubusercontent.com/16668676/29518826-890e58e8-86ad-11e7-9ce8-90ff79fcc071.png" alt="memoto pattern"></p>
+<p>三个角色：</p>
+<ul>
+<li>Originator：需要保存状态的对象。负责创建一个备忘录，可以记录、恢复自身的内部状态。同时 Originator 还可以根据需要决定 Memento 存储自身的哪些内部状态。</li>
+<li>Memento（类似于 pojo 类）备忘录角色。用于存储 Originator 内部状态，并且可以防止 Originator 以外的对象访问 Memento</li>
+<li>Caretaker：负责存储备忘录，不能对<strong>备忘录的内容</strong>进行操作和访问，只能将备忘录传递给其他对象。</li>
+</ul>
+<h2 id="Android源码中的备忘录模式"><a href="#Android源码中的备忘录模式" class="headerlink" title="Android源码中的备忘录模式"></a>Android源码中的备忘录模式</h2><p>日常开发中如果需要保存什么数据以防止 Activity 意外销毁，第一时间会想到 Activity 中的这两个方法——<code>onSaveInstanceState</code>、<code>onRestoreInstanceState</code>。其内部具体是如何实现数据保存的呢？</p>
+<p>先透漏一下，这里面使用到了备忘录模式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onSaveInstanceState</span><span class="params">(Bundle outState)</span> </span>&#123;</div><div class="line">    <span class="comment">//1. 存储窗口的视图树的状态</span></div><div class="line">    outState.putBundle(WINDOW_HIERARCHY_TAG, mWindow.saveHierarchyState());</div><div class="line">    <span class="comment">//2. 存储 Fragment 中的状态    </span></div><div class="line">    Parcelable p = mFragments.saveAllState();</div><div class="line">    <span class="keyword">if</span> (p != <span class="keyword">null</span>) &#123;</div><div class="line">        outState.putParcelable(FRAGMENTS_TAG, p);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//3. 若用户设置了 Activity 的 ActivityLifeCycleCallbacks，</span></div><div class="line">    <span class="comment">//则调用 ActivityLifeCycleCallbacks 的 onSaveInstanceState 进行存储状态。</span></div><div class="line">    getApplication().dispatchActivitySaveInstanceState(<span class="keyword">this</span>, outState);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Activity.onSaveInstanceState 方法中主要做了三件事</p>
+<ol>
+<li>存储窗口的视图树的状态</li>
+<li>存储 Fragment 中的状态</li>
+<li>若用户设置了 Activity 的 ActivityLifeCycleCallbacks，则调用 ActivityLifeCycleCallbacks 的 onSaveInstanceState 进行存储状态。</li>
+</ol>
+<p>首先看看步骤 1，该步骤将 Window 对象中的视图树中的各个 View 状态存储到 Bundle 中。</p>
+<p>Window 的具体实现在 <code>PhoneWindow</code> 中.以下为 <code>PhoneWindow.saveHierarchyState</code> 的具体实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Bundle <span class="title">saveHierarchyState</span><span class="params">()</span> </span>&#123;</div><div class="line">    Bundle outState = <span class="keyword">new</span> Bundle();</div><div class="line">    <span class="keyword">if</span> (mContentParent == <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> outState;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// SparseArray 相当于一个 key 为 整型的 map</span></div><div class="line">    SparseArray&lt;Parcelable&gt; states = <span class="keyword">new</span> SparseArray&lt;Parcelable&gt;();</div><div class="line">    <span class="comment">//此处的 mContentParent 就是我们 setContentView 时设置的 View</span></div><div class="line">    mContentParent.saveHierarchyState(states);</div><div class="line">    outState.putSparseParcelableArray(VIEWS_TAG, states);</div><div class="line"></div><div class="line">    <span class="comment">// 持有焦点的 View 必须设置 id，否则重新进入该界面时不会恢复它的焦点状态</span></div><div class="line">    <span class="keyword">final</span> View focusedView = mContentParent.findFocus();</div><div class="line">    <span class="keyword">if</span> (focusedView != <span class="keyword">null</span> &amp;&amp; focusedView.getId() != View.NO_ID) &#123;</div><div class="line">        outState.putInt(FOCUSED_ID_TAG, focusedView.getId());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 存储整个面板的状态</span></div><div class="line">    SparseArray&lt;Parcelable&gt; panelStates = <span class="keyword">new</span> SparseArray&lt;Parcelable&gt;();</div><div class="line">    savePanelState(panelStates);</div><div class="line">    <span class="keyword">if</span> (panelStates.size() &gt; <span class="number">0</span>) &#123;</div><div class="line">        outState.putSparseParcelableArray(PANELS_TAG, panelStates);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 保存 actionbar 的状态</span></div><div class="line">    <span class="keyword">if</span> (mDecorContentParent != <span class="keyword">null</span>) &#123;</div><div class="line">        SparseArray&lt;Parcelable&gt; actionBarStates = <span class="keyword">new</span> SparseArray&lt;Parcelable&gt;();</div><div class="line">        mDecorContentParent.saveToolbarHierarchyState(actionBarStates);</div><div class="line">        outState.putSparseParcelableArray(ACTION_BAR_TAG, actionBarStates);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> outState;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>看看步骤 2 中的 <code>mContentParent.saveHierarchyState</code> 方法，mContentParent 是一个 ViewGroup 但是 saveHierarchyState 方法并不是定义在 ViewGroup 中，而是定义在它的父类——View 中，查看下该方法在 View 中的实现。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">saveHierarchyState</span><span class="params">(SparseArray&lt;Parcelable&gt; container)</span> </span>&#123;</div><div class="line">    dispatchSaveInstanceState(container);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">dispatchSaveInstanceState</span><span class="params">(SparseArray&lt;Parcelable&gt; container)</span> </span>&#123;</div><div class="line">    <span class="comment">//1. 只有含有 id 的 View，状态才会被存储</span></div><div class="line">    <span class="keyword">if</span> (mID != NO_ID &amp;&amp; (mViewFlags &amp; SAVE_DISABLED_MASK) == <span class="number">0</span>) &#123;</div><div class="line">        mPrivateFlags &amp;= ~PFLAG_SAVE_STATE_CALLED;</div><div class="line">        <span class="comment">//2. 调用 onSaveInstanceState 方法获取自身状态</span></div><div class="line">        Parcelable state = onSaveInstanceState();</div><div class="line">        <span class="keyword">if</span> ((mPrivateFlags &amp; PFLAG_SAVE_STATE_CALLED) == <span class="number">0</span>) &#123;</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(</div><div class="line">                    <span class="string">"Derived class did not call super.onSaveInstanceState()"</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//3. 将自身状态存放到 container 中</span></div><div class="line">        <span class="keyword">if</span> (state != <span class="keyword">null</span>) &#123;</div><div class="line">            container.put(mID, state);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>View.onSaveInstanceState</code> 方法默认存储的状态为空状态。但是它的子类通常都有定义自身的覆盖方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@CallSuper</span></div><div class="line"><span class="function"><span class="keyword">protected</span> Parcelable <span class="title">onSaveInstanceState</span><span class="params">()</span> </span>&#123;</div><div class="line">    mPrivateFlags |= PFLAG_SAVE_STATE_CALLED;</div><div class="line">    <span class="keyword">if</span> (mStartActivityRequestWho != <span class="keyword">null</span>) &#123;</div><div class="line">        BaseSavedState state = <span class="keyword">new</span> BaseSavedState(AbsSavedState.EMPTY_STATE);</div><div class="line">        state.mStartActivityRequestWhoSaved = mStartActivityRequestWho;</div><div class="line">        <span class="keyword">return</span> state;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> BaseSavedState.EMPTY_STATE;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>步骤 2 中的 View 的调用大致如下：saveHierarchyState ==》 dispatchSaveInstanceState ==》 onSaveInstanceState</p>
+<ul>
+<li>其中要注意的是 只有含有 id 的 View，状态才会被存储，如果没有给 view 赋一个 id，那么系统是不会帮忙保存该 view 的状态的。</li>
+</ul>
+<p>View 类中的 saveHierarchyState 方法调用了dispatchSaveInstanceState 方法用来存储自身状态。 ViewGroup 覆写了 dispatchSaveInstanceState 来存储自身以及子视图的状态。 </p>
+<p><code>ViewGroup.dispatchSaveInstanceState</code>具体实现如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">dispatchSaveInstanceState</span><span class="params">(SparseArray&lt;Parcelable&gt; container)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.dispatchSaveInstanceState(container);</div><div class="line">    <span class="keyword">final</span> <span class="keyword">int</span> count = mChildrenCount;</div><div class="line">    <span class="keyword">final</span> View[] children = mChildren;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;<span class="comment">//遍历调用子 View 的 dispatchSaveInstanceState 方法</span></div><div class="line">        View c = children[i];</div><div class="line">        <span class="keyword">if</span> ((c.mViewFlags &amp; PARENT_SAVE_DISABLED_MASK) != PARENT_SAVE_DISABLED) &#123;</div><div class="line">            c.dispatchSaveInstanceState(container);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>可以看到 ViewGroup 的 <code>dispatchSaveInstanceState</code> 方法会先调用 <code>super.dispatchSaveInstanceState(container);</code> 存储自身的状态。然后遍历调用所有子视图的 <code>dispatchSaveInstanceState(container)</code> 方法来保存它们的状态，如果子 View 也是一个 ViewGroup，则会再次执行这个过程。</p>
+<hr>
+<p>我们以 TextView 的 saveInstanceState 方法为例，看看具体的控件是如何保存自身状态的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> Parcelable <span class="title">onSaveInstanceState</span><span class="params">()</span> </span>&#123;</div><div class="line">    Parcelable superState = <span class="keyword">super</span>.onSaveInstanceState();</div><div class="line"></div><div class="line">    <span class="comment">// Save state if we are forced to</span></div><div class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> freezesText = getFreezesText();</div><div class="line">    <span class="keyword">boolean</span> hasSelection = <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">int</span> start = -<span class="number">1</span>;</div><div class="line">    <span class="keyword">int</span> end = -<span class="number">1</span>;</div><div class="line">    <span class="comment">//存储 TextView 的 start、end </span></div><div class="line">    <span class="keyword">if</span> (mText != <span class="keyword">null</span>) &#123;</div><div class="line">        start = getSelectionStart();</div><div class="line">        end = getSelectionEnd();</div><div class="line">        <span class="keyword">if</span> (start &gt;= <span class="number">0</span> || end &gt;= <span class="number">0</span>) &#123;</div><div class="line">            <span class="comment">// 是否存存在选项</span></div><div class="line">            hasSelection = <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (freezesText || hasSelection) &#123;</div><div class="line">        SavedState ss = <span class="keyword">new</span> SavedState(superState);</div><div class="line">        <span class="comment">//保存 TextView 的文本内容</span></div><div class="line">        <span class="keyword">if</span> (freezesText) &#123;</div><div class="line">            <span class="keyword">if</span> (mText <span class="keyword">instanceof</span> Spanned) &#123;</div><div class="line">                <span class="keyword">final</span> Spannable sp = <span class="keyword">new</span> SpannableStringBuilder(mText);</div><div class="line"></div><div class="line">                <span class="keyword">if</span> (mEditor != <span class="keyword">null</span>) &#123;</div><div class="line">                    removeMisspelledSpans(sp);</div><div class="line">                    sp.removeSpan(mEditor.mSuggestionRangeSpan);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                ss.text = sp;</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                ss.text = mText.toString();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//存储 TextView 的 start、end </span></div><div class="line">        <span class="keyword">if</span> (hasSelection) &#123;</div><div class="line">            <span class="comment">// XXX Should also save the current scroll position!</span></div><div class="line">            ss.selStart = start;</div><div class="line">            ss.selEnd = end;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (isFocused() &amp;&amp; start &gt;= <span class="number">0</span> &amp;&amp; end &gt;= <span class="number">0</span>) &#123;</div><div class="line">            ss.frozenWithFocus = <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        ss.error = getError();</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (mEditor != <span class="keyword">null</span>) &#123;</div><div class="line">            ss.editorState = mEditor.saveInstanceState();</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//返回状态对象</span></div><div class="line">        <span class="keyword">return</span> ss;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> superState;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>调用 View 的 onSaveInstance 函数之后就得到了 View 要存储的数据，此时执行到 View 的  dispatchSaveInstanceState 方法中的注释 3。这里以 View 的 id 为 key，以状态为 value，存储到 container（ SparseArray 类型）中。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//3. 将自身状态存放到 container 中</span></div><div class="line"><span class="keyword">if</span> (state != <span class="keyword">null</span>) &#123;</div><div class="line">    container.put(mID, state);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<ul>
+<li>存储完 Window 的视图状态信息之后，便会执行存储 Fragment 中的状态信息、回退栈等。Fragment  也是通过调用自身的 onSaveInstaceState 方法来存储自身的 View 视图树状态的。</li>
+<li>最后就是调用用户设置的 ActivityLifecycleCallbacks 的 onSaveInstaceState 方法，让用户做一些额外的处理</li>
+</ul>
+<h2 id="前面我们所提及到的只是备忘录模式中的-Originator-角色，即需要保存备忘录的对象。不过也有涉及到-CareTaker-角色——Activity。下面我们再看看另外两个角色——Memoto-和-CareTaker。"><a href="#前面我们所提及到的只是备忘录模式中的-Originator-角色，即需要保存备忘录的对象。不过也有涉及到-CareTaker-角色——Activity。下面我们再看看另外两个角色——Memoto-和-CareTaker。" class="headerlink" title="前面我们所提及到的只是备忘录模式中的 Originator 角色，即需要保存备忘录的对象。不过也有涉及到 CareTaker 角色——Activity。下面我们再看看另外两个角色——Memoto 和 CareTaker。"></a>前面我们所提及到的只是备忘录模式中的 Originator 角色，即需要保存备忘录的对象。不过也有涉及到 CareTaker 角色——Activity。下面我们再看看另外两个角色——Memoto 和 CareTaker。</h2><p>存了状态信息的 Bundle 数据存储在哪？</p>
+<ul>
+<li>onSaveInstance 方法是在 onStop 方法之前调用的。Activity.onStop 方法是通过 Activity 的 performStopActivity 间接调用。<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"> <span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">performStopActivity</span><span class="params">(IBinder token, <span class="keyword">boolean</span> saveState, String reason)</span> </span>&#123;</div><div class="line">    <span class="comment">//获取 ActivityClientRecord</span></div><div class="line">    ActivityClientRecord r = mActivities.get(token);</div><div class="line">    <span class="comment">// saveState 表示是否保存状态</span></div><div class="line">    performStopActivityInner(r, <span class="keyword">null</span>, <span class="keyword">false</span>, saveState, reason);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">performStopActivityInner</span><span class="params">(ActivityClientRecord r,</span></span></div><div class="line">        StopInfo info, <span class="keyword">boolean</span> keepShown, <span class="keyword">boolean</span> saveState, String reason) &#123;</div><div class="line">    <span class="keyword">if</span> (r != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">if</span> (!keepShown &amp;&amp; r.stopped) &#123;</div><div class="line">            <span class="keyword">if</span> (r.activity.mFinished) &#123;</div><div class="line">                <span class="comment">// 如果正在执行销毁过程，是用户主动销毁。 activity 不打算恢复，我们也没必要调用 onStop 方法</span></div><div class="line">                <span class="keyword">return</span>;</div><div class="line">            &#125;</div><div class="line">            <span class="comment">//代码省略</span></div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// 在调用 onStop 之前必须先调用 onPause </span></div><div class="line">        performPauseActivityIfNeeded(r, reason);</div><div class="line"></div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        <span class="comment">// 接下来让 activity 保存它目前的状态和它所管理的 dialogs </span></div><div class="line">        <span class="keyword">if</span> (!r.activity.mFinished &amp;&amp; saveState) &#123;</div><div class="line">            <span class="keyword">if</span> (r.state == <span class="keyword">null</span>) &#123;</div><div class="line">                <span class="comment">// 间接调用 Activity.onSaveInstance()</span></div><div class="line">                callCallActivityOnSaveInstanceState(r);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (!keepShown) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                <span class="comment">// 执行 onStop 方法</span></div><div class="line">                r.activity.performStop(<span class="keyword">false</span> <span class="comment">/*preserveWindow*/</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">                <span class="comment">// ...</span></div><div class="line">            &#125;</div><div class="line">            <span class="comment">//将 stop 字段置为 true 表示已经调用了 stop 方法。</span></div><div class="line">            r.stopped = <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">callCallActivityOnSaveInstanceState</span><span class="params">(ActivityClientRecord r)</span> </span>&#123;</div><div class="line">    r.state = <span class="keyword">new</span> Bundle();<span class="comment">//内容就存储在该 Bundle 中</span></div><div class="line">    r.state.setAllowFds(<span class="keyword">false</span>);</div><div class="line">    <span class="keyword">if</span> (r.isPersistable()) &#123;</div><div class="line">        r.persistentState = <span class="keyword">new</span> PersistableBundle();</div><div class="line">        mInstrumentation.callActivityOnSaveInstanceState(r.activity, r.state,</div><div class="line">                r.persistentState);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="comment">//该方法实际调用了 Activity.onSaveInstanceState 方法</span></div><div class="line">        mInstrumentation.callActivityOnSaveInstanceState(r.activity, r.state);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">callActivityOnSaveInstanceState</span><span class="params">(Activity activity, Bundle outState,</span></span></div><div class="line">        PersistableBundle outPersistentState) &#123;</div><div class="line">    activity.performSaveInstanceState(outState, outPersistentState);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面的 performStopActivity 与 performStopActivityInner 方法中，首先通过 token 从 mActivities 中获取一个 ActivityClientRecord 对象，状态信息就是存储在这里面的。获取该对象之后，调用了 performStopActivityInner 方法，对于保存状态而言，该方法大概有如下三步</p>
+<ol>
+<li>判断 Activity 是否需要保存状态</li>
+<li>如果需要，则调用 onSaveInstance 方法，该方法会将状态信息存储到 ActivityClientRecord 中</li>
+<li>调用 <code>Activity.onStop()</code> 方法</li>
+</ol>
+<p>执行 onStop 方法之前，系统会根据情况来选择是否存储 Activity 的状态，并且将这些状态（简介地）存储到 mActivities 中。</p>
+<p>mActivities 是一个 <code>ArrayMap&lt;IBinder, ActivityClientRecord&gt;</code> ，它维护了一个 Activity 的信息表，当 Activity 重新启动时，会从 mActivities 中查询对应的 ActivityClientRecord，如果这个记录对象中含有状态信息就调用 Activity 的 onRestoreInstanceState 方法。开发人员可以从这个方法中做一些状态恢复操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Activity <span class="title">performLaunchActivity</span><span class="params">(ActivityClientRecord r, Intent customIntent)</span> </span>&#123;</div><div class="line">    <span class="comment">//代码省略</span></div><div class="line">    Activity activity = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        java.lang.ClassLoader cl = r.packageInfo.getClassLoader();</div><div class="line">        <span class="comment">//1. 构建 Activity </span></div><div class="line">        activity = mInstrumentation.newActivity(cl, component.getClassName(), r.intent);</div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        <span class="comment">//2. 创建一个 Application 对象</span></div><div class="line">        Application app = r.packageInfo.makeApplication(<span class="keyword">false</span>, mInstrumentation);</div><div class="line"></div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        <span class="keyword">if</span> (activity != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="comment">//创建 appContext，类型为 ContextImpl</span></div><div class="line">            Context appContext = createBaseContextForActivity(r, activity);</div><div class="line">            <span class="comment">//代码省略</span></div><div class="line">            <span class="comment">//3. 关联 appContext、Application 等对象到 Activity 中</span></div><div class="line">            activity.attach(appContext, <span class="keyword">this</span>, getInstrumentation(), r.token,</div><div class="line">                    r.ident, app, r.intent, r.activityInfo, title, r.parent,</div><div class="line">                    r.embeddedID, r.lastNonConfigurationInstances, config,</div><div class="line">                    r.referrer, r.voiceInteractor, window);</div><div class="line">            <span class="comment">//代码省略</span></div><div class="line">            activity.mCalled = <span class="keyword">false</span>;</div><div class="line">            <span class="comment">//4. 调用 Activity.onCreate 方法</span></div><div class="line">            <span class="keyword">if</span> (r.isPersistable()) &#123;</div><div class="line">                mInstrumentation.callActivityOnCreate(activity, r.state, r.persistentState);</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                mInstrumentation.callActivityOnCreate(activity, r.state);</div><div class="line">            &#125;</div><div class="line">            <span class="comment">//代码省略</span></div><div class="line">            r.activity = activity;</div><div class="line">            r.stopped = <span class="keyword">true</span>;</div><div class="line">            <span class="keyword">if</span> (!r.activity.mFinished) &#123;</div><div class="line">                <span class="comment">//调用 onStart 方法</span></div><div class="line">                activity.performStart();</div><div class="line">                r.stopped = <span class="keyword">false</span>;</div><div class="line">            &#125;</div><div class="line">             <span class="comment">//5. 如果有保存状态的话，调用 Activity.onRestoreInstanceState 方法恢复状态</span></div><div class="line">            <span class="keyword">if</span> (!r.activity.mFinished) &#123;</div><div class="line">                <span class="keyword">if</span> (r.isPersistable()) &#123;</div><div class="line">                    <span class="keyword">if</span> (r.state != <span class="keyword">null</span> || r.persistentState != <span class="keyword">null</span>) &#123;</div><div class="line">   </div><div class="line">                        mInstrumentation.callActivityOnRestoreInstanceState(activity, r.state,</div><div class="line">                                r.persistentState);</div><div class="line">                    &#125;</div><div class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (r.state != <span class="keyword">null</span>) &#123;</div><div class="line">                    mInstrumentation.callActivityOnRestoreInstanceState(activity, r.state);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="comment">//代码省略</span></div><div class="line">        &#125;</div><div class="line">        r.paused = <span class="keyword">true</span>;</div><div class="line">        <span class="comment">//6. 将 Activity 的信息记录对象——ActivityClientRecord 存储到 mActivities 中。 </span></div><div class="line">        mActivities.put(r.token, r);</div><div class="line"></div><div class="line">    &#125; <span class="keyword">catch</span> (SuperNotCalledException e) &#123;</div><div class="line">        <span class="keyword">throw</span> e;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> activity;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在上面的注释 5 处，系统会判断 Activity 是否调用过了 <code>Activity.finish()</code> 方法、是否是「永久的」以及 ActivityClientRecord 对象中的 state 是否为空，</p>
+<ul>
+<li>如果满足条件，就会获取存储的状态信息传递给 <code>Activity.onRestoreInstanceState</code> 方法，也会将这些数据传递给 onCreate 方法的 bundle 参数 。</li>
+<li>不过 Google 官方推荐调用 onRestoreInstanceState 方法来恢复状态，因为只有在存储有状态信息的时候才会调用该方法，而在 onCreate 方法中还需要先进行判空处理。</li>
+</ul>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>上述过程中备忘录模式的三种关键角色分别由什么类扮演？</p>
+<ul>
+<li><strong>CareTaker</strong>：Activity 负责存储、恢复 UI 的态信息。</li>
+<li><strong>Originator</strong>：Activity、Fragment、View、ViewGroup ，是需要存储状态的对象</li>
+<li><strong>Memoto</strong>：由 Bundle 类扮演</li>
+</ul>
+<ul>
+<li>Activity 会在停止之前根据 Activity 的退出情景来选择是否需要存储状态</li>
+<li>在<strong>重新启动</strong>该 Activity 时会判断 ActivityClientRecord 对象中是否存储了 Activity 的状态<ul>
+<li>如果含有状态，调用 <code>Activity.onRestoreInstanceState()</code> 方法恢复状态。从而使得 Activity 的 UI 可以恢复至异常退出前的状态。</li>
+</ul>
+</li>
+</ul>
+<h2 id="你可能会问的问题"><a href="#你可能会问的问题" class="headerlink" title="你可能会问的问题"></a>你可能会问的问题</h2><h3 id="onSaveInstanceState-何时被调用"><a href="#onSaveInstanceState-何时被调用" class="headerlink" title="onSaveInstanceState 何时被调用"></a>onSaveInstanceState 何时被调用</h3><p>onSaveInstanceState() 方法会在什么时候被执行？<br>有这么几种情况：</p>
+<ol>
+<li>当用户按下 HOME 键时。<ul>
+<li>这是显而易见的，系统不知道你按下HOME后要运行多少其他的程序，自然也不知道activity A是否会被销毁，因此系统会调用onSaveInstanceState()，让用户有机会保存某些非永久性的数据。以下几种情况的分析都遵循该原则</li>
+</ul>
+</li>
+<li>长按HOME键，选择运行其他的程序时。</li>
+<li>按下电源按键（关闭屏幕显示）时。</li>
+<li>从 Activity A 中启动一个新的 Activity 时。</li>
+<li>屏幕方向切换时，例如从竖屏切换到横屏时。</li>
+</ol>
+<p>onSaveInstanceState 的调用在 onStop 方法之前，但是与 onPause 方法之间没有既定关系。</p>
+<ul>
+<li>总而言之，当系统存在「==未经用户许可==」时销毁了我们的 Activity，则 <code>onSaveInstanceState()</code> 会被系统调用，这是系统的责任，因此它必须提供一个机会让用户保存数据。</li>
+<li>「经用户许可」的情况不多，通常只有用户按下回退键这一种。这种情况下是用户主动退出某个 Activity，系统不会调用  <code>onSaveInstanceState()</code> 方法。</li>
+</ul>
+<h3 id="各个-「Originator-」-的-onSaveInstanceState-方法的默认实现是怎么样的？"><a href="#各个-「Originator-」-的-onSaveInstanceState-方法的默认实现是怎么样的？" class="headerlink" title="各个 「Originator 」 的 onSaveInstanceState() 方法的默认实现是怎么样的？"></a>各个 「Originator 」 的 onSaveInstanceState() 方法的默认实现是怎么样的？</h3><p>在前面的分析中我们知道即使没有覆写 onSaveInstanceState()方法, ViewGroup、View、Fragment、Activity 内部都有自己的默认实现，它们的默认实现也会<strong>保存某些状态数据</strong>。 </p>
+<ul>
+<li>比如 activity 中各种 UI 控件的状态。android 应用框架中定义的几乎所有 UI 控件都恰当的实现了 onSaveInstanceState() 方法,因此当 Activity 被销毁和重建时, 这些 UI 控件会自动保存和恢复状态数据.<ul>
+<li>EditText 控件会自动保存和恢复输入的数据</li>
+<li>CheckBox 控件会自动保存和恢复选中状态</li>
+<li>…</li>
+</ul>
+</li>
+<li>开发者只<strong>需要为这些控件指定一个唯一的 id</strong>(通过设置 <code>android:id</code> 属性即可), 剩余的事情就可以自动完成了<ul>
+<li>注意：如果没有为控件指定ID, 则这个控件就不会进行自动的数据保存和恢复操作。</li>
+</ul>
+</li>
+</ul>
+<p>由上所述, 如果我们需要覆写 onSaveInstanceState() 方法, 一般会在第一行代码中调用该方法的默认实现:super.onSaveInstanceState(outState)。</p>
+<h3 id="有默认实现，还需要重写-onSaveInstanceState-方法吗？"><a href="#有默认实现，还需要重写-onSaveInstanceState-方法吗？" class="headerlink" title="有默认实现，还需要重写 onSaveInstanceState() 方法吗？"></a>有默认实现，还需要重写 onSaveInstanceState() 方法吗？</h3><p>既然该方法的默认实现可以自动的保存UI控件的状态数据, 那什么时候需要覆写该方法呢? </p>
+<p>如果<strong>需要保存额外的数据时</strong>, 就需要覆写 onSaveInstanceState() 方法。大家需要注意的是：onSaveInstanceState()方法<strong>只适合保存瞬态数据</strong>, 比如 UI 控件的状态，成员变量的值等，而不应该用来保存持久化数据，持久化数据应该当用户离开当前的 activity时，在 onPause() 中保存（比如将数据保存到数据库或文件中）。说到这里，还要说一点的就是在onPause()中不适合用来保存比较费时的数据，所以这点要理解。</p>
+<p>另外由于 <code>onSaveInstanceState()</code> 方法方法不一定会被调用, 因此<strong>不适合在该方法中保存持久化数据</strong>, 例如向数据库中插入记录等。 保存持久化数据的操作应该放在 onPause() 中。若是永久性值，则在 onPause() 中保存；若有大量要保存的数据，则另开线程，以免阻塞 UI 线程。 </p>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li>《Android 源码设计模式解析与实战》</li>
+<li><a href="http://www.cnblogs.com/hanyonglu/archive/2012/03/28/2420515.html" target="_blank" rel="external">Android 开发之 instanceState详解</a></li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/设计模式，原理分析/" rel="tag"># 设计模式，原理分析</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/08/21/谈谈-ThreadLocal/" rel="next" title="谈谈 ThreadLocal">
+                <i class="fa fa-chevron-left"></i> 谈谈 ThreadLocal
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/ivanljt" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#备忘录模式的定义"><span class="nav-number">1.</span> <span class="nav-text">备忘录模式的定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#备忘录模式的使用场景"><span class="nav-number">2.</span> <span class="nav-text">备忘录模式的使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#备忘录模式的UML类图"><span class="nav-number">3.</span> <span class="nav-text">备忘录模式的UML类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android源码中的备忘录模式"><span class="nav-number">4.</span> <span class="nav-text">Android源码中的备忘录模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前面我们所提及到的只是备忘录模式中的-Originator-角色，即需要保存备忘录的对象。不过也有涉及到-CareTaker-角色——Activity。下面我们再看看另外两个角色——Memoto-和-CareTaker。"><span class="nav-number">5.</span> <span class="nav-text">前面我们所提及到的只是备忘录模式中的 Originator 角色，即需要保存备忘录的对象。不过也有涉及到 CareTaker 角色——Activity。下面我们再看看另外两个角色——Memoto 和 CareTaker。</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">5.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#你可能会问的问题"><span class="nav-number">6.</span> <span class="nav-text">你可能会问的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#onSaveInstanceState-何时被调用"><span class="nav-number">6.1.</span> <span class="nav-text">onSaveInstanceState 何时被调用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#各个-「Originator-」-的-onSaveInstanceState-方法的默认实现是怎么样的？"><span class="nav-number">6.2.</span> <span class="nav-text">各个 「Originator 」 的 onSaveInstanceState() 方法的默认实现是怎么样的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#有默认实现，还需要重写-onSaveInstanceState-方法吗？"><span class="nav-number">6.3.</span> <span class="nav-text">有默认实现，还需要重写 onSaveInstanceState() 方法吗？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">7.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
