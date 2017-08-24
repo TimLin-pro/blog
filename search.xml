@@ -4,6 +4,118 @@
   
     
     <entry>
+      <title><![CDATA[Android 源码中的模板方法模式——AsyncTask解析]]></title>
+      <url>https://ivanljt.github.io/blog/blog/2017/08/24/Android-%E6%BA%90%E7%A0%81%E4%B8%AD%E7%9A%84%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94AsyncTask%E8%A7%A3%E6%9E%90/</url>
+      <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>假设我们知道一个算法所需的关键步骤，并确定了这些步骤的执行顺序，但是，<strong>某些步骤的具体实现是未知的</strong>，或者说某些步骤的实现是会<strong>随着环境的变化而改变的</strong>。<br>就好像执行程序的流程：</p>
+<ol>
+<li>检查代码的正确性</li>
+<li>链接相关代码</li>
+<li>编译相关代码</li>
+<li>执行程序</li>
+</ol>
+<p>对于不同的语言，上述 4 个步骤都是不一样的，但是它们的执行流程是固定的，这类问题的解决方案就是我们介绍的模板方法模式。</p>
+<h2 id="模板方法模式的定义"><a href="#模板方法模式的定义" class="headerlink" title="模板方法模式的定义"></a>模板方法模式的定义</h2><p>定义一个操作中的<strong>算法的框架</strong>，而将一些步骤延迟到子类中，使得子类可以不改变一个算法的结构即可重定义该算法的某些特定步骤。</p>
+<h2 id="模板方法模式的使用场景"><a href="#模板方法模式的使用场景" class="headerlink" title="模板方法模式的使用场景"></a>模板方法模式的使用场景</h2><ol>
+<li>多个子类有公有的方法，并且逻辑基本相同时。</li>
+<li>重要、复杂的算法，可以把核心算法设计为模板方法，周边的相关细节功能则由各个子类实现。</li>
+<li>重构时，把相同的代码抽取到父类中，然后通过<strong>钩子方法</strong>约束其行为。</li>
+</ol>
+<h3 id="注：何谓钩子方法？"><a href="#注：何谓钩子方法？" class="headerlink" title="注：何谓钩子方法？"></a>注：何谓钩子方法？</h3><p>基本方法又可以分为三种：抽象方法（Abstract Method）、具体方法（Concrete Method）和钩子方法（Hook Method）。</p>
+<p>这是《java与模式》书里的一种说法，三种方法也是在书中的模板方法模式中提及到的。</p>
+<p>先说这个三个方法的基本定义：</p>
+<ul>
+<li>抽象方法：由抽象类声明，由具体子类实现。在java语言里一个抽象方法以abstract关键字标示出来。</li>
+<li>具体方法：由抽象类声明并实现，而子类并不实现或覆盖。其实就是<strong>一般的方法</strong>，但是不需要子类来实现。</li>
+<li>钩子方法：由抽象类<strong>声明并实现</strong>，而子类也会加以扩展。通常抽象类给出的是一个空的钩子方法，也就是方法体为空的方法（也可以根据需要实现部分逻辑）。其实它和具体方法在代码上没有区别，不过是意识上的一种区别。</li>
+</ul>
+<p>详见<a href="https://www.the5fire.com/%E6%8A%BD%E8%B1%A1%E6%96%B9%E6%B3%95-%E5%85%B7%E4%BD%93%E6%96%B9%E6%B3%95-%E9%92%A9%E5%AD%90%E6%96%B9%E6%B3%95.html" target="_blank" rel="external">抽象方法 具体方法 钩子方法</a></p>
+<h2 id="模板方法模式的-UML-类图"><a href="#模板方法模式的-UML-类图" class="headerlink" title="模板方法模式的 UML 类图"></a>模板方法模式的 UML 类图</h2><p><img src="https://user-images.githubusercontent.com/16668676/29603702-be32185a-8817-11e7-95f3-9cf7ee08c644.png" alt="template method pattern"></p>
+<ul>
+<li>AbsTemplate：抽象类，定义一套算法框架</li>
+<li>ConcreteImplA：具体实现类 A</li>
+<li>ConcreteImplB：具体实现类 B</li>
+</ul>
+<h2 id="模板方法模式的简单示例"><a href="#模板方法模式的简单示例" class="headerlink" title="模板方法模式的简单示例"></a>模板方法模式的简单示例</h2><p>实际上是封装一个固定流程，就像是一套执行模板一样，第一步该做什么，第二步该做什么都已经在抽象类中定义好。而子类可以有不同的算法实现，在框架不被修改的情况下实现某些步骤的算法替换。</p>
+<h2 id="Android-源码中的模板方法模式"><a href="#Android-源码中的模板方法模式" class="headerlink" title="Android 源码中的模板方法模式"></a>Android 源码中的模板方法模式</h2><h3 id="AsyncTask"><a href="#AsyncTask" class="headerlink" title="AsyncTask"></a>AsyncTask</h3><p>使用过 AsyncTask 的同学都知道，我们调用 execute 之后，（如果没有调用 cancel 方法的话）以下三个方法会依次执行：</p>
+<ul>
+<li>onPreExecute</li>
+<li>doInBackground </li>
+<li>onPostExecute</li>
+</ul>
+<p>为什么能让它们依次执行呢？其内部是怎么实现的？我们看看源码，一探究竟。</p>
+<p>首先看看异步任务的入口方法 execute。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"> <span class="meta">@MainThread</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> AsyncTask&lt;Params, Progress, Result&gt; <span class="title">execute</span><span class="params">(Params... params)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> executeOnExecutor(sDefaultExecutor, params);</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@MainThread</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> AsyncTask&lt;Params, Progress, Result&gt; <span class="title">executeOnExecutor</span><span class="params">(Executor exec,</span></span></div><div class="line">        Params... params) &#123;</div><div class="line">    <span class="keyword">if</span> (mStatus != Status.PENDING) &#123;</div><div class="line">        <span class="keyword">switch</span> (mStatus) &#123;</div><div class="line">            <span class="keyword">case</span> RUNNING:</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Cannot execute task:"</span></div><div class="line">                        + <span class="string">" the task is already running."</span>);</div><div class="line">            <span class="keyword">case</span> FINISHED:</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Cannot execute task:"</span></div><div class="line">                        + <span class="string">" the task has already been executed "</span></div><div class="line">                        + <span class="string">"(a task can be executed only once)"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    mStatus = Status.RUNNING;</div><div class="line"></div><div class="line">    onPreExecute();</div><div class="line"></div><div class="line">    mWorker.mParams = params;</div><div class="line">    exec.execute(mFuture);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>以上两个构造方法中主要做了如下几件事：</p>
+<ul>
+<li>状态判断</li>
+<li>判断之后执行 <code>onPreExecute();</code></li>
+<li>使用线程池执行 mFuture<ul>
+<li>什么样的线程池？<ul>
+<li>默认为 SerialExecutor 单线程的线程池</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">AsyncTask</span><span class="params">()</span> </span>&#123;</div><div class="line">    mWorker = <span class="keyword">new</span> WorkerRunnable&lt;Params, Result&gt;() &#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> Result <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">            mTaskInvoked.set(<span class="keyword">true</span>);</div><div class="line">            Result result = <span class="keyword">null</span>;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);<span class="comment">//设置进程优先级</span></div><div class="line">                <span class="comment">//noinspection unchecked</span></div><div class="line">                result = doInBackground(mParams);<span class="comment">//调用 doInBackground 方法</span></div><div class="line">                Binder.flushPendingCommands();</div><div class="line">            &#125; <span class="keyword">catch</span> (Throwable tr) &#123;</div><div class="line">                mCancelled.set(<span class="keyword">true</span>);</div><div class="line">                <span class="keyword">throw</span> tr;</div><div class="line">            &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                postResult(result);<span class="comment">//调用 postResult 方法</span></div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> result;</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    mFuture = <span class="keyword">new</span> FutureTask&lt;Result&gt;(mWorker) &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">done</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                postResultIfNotInvoked(get());<span class="comment">//任务完成</span></div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                android.util.Log.w(LOG_TAG, e);</div><div class="line">            &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"An error occurred while executing doInBackground()"</span>,</div><div class="line">                        e.getCause());</div><div class="line">            &#125; <span class="keyword">catch</span> (CancellationException e) &#123;</div><div class="line">                postResultIfNotInvoked(<span class="keyword">null</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> WorkerRunnable&lt;Params, Result&gt; mWorker;</div><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> FutureTask&lt;Result&gt; mFuture;</div></pre></td></tr></table></figure>
+<ul>
+<li>mWorker 类型为 <code>WorkerRunnable&lt;Params, Result&gt;</code> ， WorkerRunnable 实现了 Callable</li>
+<li>mFuture 类型为 <code>FutureTask&lt;Result&gt;</code></li>
+</ul>
+<p>简而言之，这个 mFuture 包装了这个 mWorker 对象，而 mFuture 是在线程池中执行的，会调用 mFuture 的 run 方法，该 run 方法中调用了 mWorker 的 call 方法，mWorker 的 call 方法又调用了 doInBackground 方法，所以 doInBackground 是在工作线程执行的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">postResultIfNotInvoked</span><span class="params">(Result result)</span> </span>&#123;</div><div class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> wasTaskInvoked = mTaskInvoked.get();</div><div class="line">    <span class="keyword">if</span> (!wasTaskInvoked) &#123;</div><div class="line">        postResult(result);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>doInBackground</code> 执行完成后会通过 <code>postResult(result)</code> 方法将结果传递给主线程。</p>
+<ul>
+<li><code>postResult(result)</code> 可能通过 call 方法的 finally 块直接调用或者通过 FutureTask 中的 done 方法里面的 <code>postResultIfNotInvoked(get());</code> 来间接调用。</li>
+</ul>
+<p>接下来我们看看 <code>postResult(result)</code> 方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Result <span class="title">postResult</span><span class="params">(Result result)</span> </span>&#123;</div><div class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</div><div class="line">    Message message = getHandler().obtainMessage(MESSAGE_POST_RESULT,</div><div class="line">            <span class="keyword">new</span> AsyncTaskResult&lt;Result&gt;(<span class="keyword">this</span>, result));</div><div class="line">    message.sendToTarget();</div><div class="line">    <span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">InternalHandler</span> <span class="keyword">extends</span> <span class="title">Handler</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">InternalHandler</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>(Looper.getMainLooper());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@SuppressWarnings</span>(&#123;<span class="string">"unchecked"</span>, <span class="string">"RawUseOfParameterizedType"</span>&#125;)</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</div><div class="line">        AsyncTaskResult&lt;?&gt; result = (AsyncTaskResult&lt;?&gt;) msg.obj;</div><div class="line">        <span class="keyword">switch</span> (msg.what) &#123;</div><div class="line">            <span class="keyword">case</span> MESSAGE_POST_RESULT:</div><div class="line">                <span class="comment">// 调用 AsyncTask 的 finish 方法</span></div><div class="line">                result.mTask.finish(result.mData[<span class="number">0</span>]);</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            <span class="keyword">case</span> MESSAGE_POST_PROGRESS:</div><div class="line">                result.mTask.onProgressUpdate(result.mData);</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">finish</span><span class="params">(Result result)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (isCancelled()) &#123;</div><div class="line">        onCancelled(result);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        onPostExecute(result);</div><div class="line">    &#125;</div><div class="line">    mStatus = Status.FINISHED;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>postResult(result)</code>  方法就是通过发送一条消息（msg.what == MESSAGE_POST_RESULT）给 sHandler，sHandler 为 InternalHanlder。当 InternalHanlder 接收到 MESSAGE_POST_RESULT 时，就会调用 <code>result.mTask.finish(result.mData[0])</code> 方法，result 的类型为 AsyncTaskResult</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">AsyncTaskResult</span>&lt;<span class="title">Data</span>&gt; </span>&#123;</div><div class="line">    <span class="keyword">final</span> AsyncTask mTask;</div><div class="line">    <span class="keyword">final</span> Data[] mData;</div><div class="line"></div><div class="line">    AsyncTaskResult(AsyncTask task, Data... data) &#123;</div><div class="line">        mTask = task;</div><div class="line">        mData = data;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>从 AsyncTaskResult 的具体实现中吗，我们知道 mTask 就是 AsyncTask，finish 方法中又调用了 <code>onPostExecute</code> ，此时整个执行流程就完成了。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>execute 方法内部封装了 onPreExecute、doInBackGround、onPostExecute 这个逻辑流程。<br>通过这种方式，用户可以根据自己的需求再覆写这几个方法，使得用户可以很方便地使用异步任务来完成耗时的操作及更新 UI。实际上就是通过线程池来执行耗时的任务，得到结果之后，通过 Handler 将结果传递给 UI 线程执行。</p>
+<h3 id="Activity-的生命周期函数"><a href="#Activity-的生命周期函数" class="headerlink" title="Activity 的生命周期函数"></a>Activity 的生命周期函数</h3><p>除了 AsyncTask 以外，Android 源码中还有不少地方有模板方法的身影，比如说 Activity 的生命周期方法—— onCreate 、onStart、onResume 等，都是按照顺序调用的，我们会在对应的方法中执行合适的操作。</p>
+<p>其内部实现涉及到进程间通信，限于篇幅，本文不作深入介绍。有兴趣的同学可以看看 ActivityThread 的 main 方法，以之作为入口，对生命周期方法的调用时机做进一步研究。</p>
+<h2 id="模板方法总结"><a href="#模板方法总结" class="headerlink" title="模板方法总结"></a>模板方法总结</h2><p>简单概括模板方法模式就是流程封装。把某一个固定的流程封装到一个固定的 final 方法中。并且让子类能够定制这个过程中的某些甚至所有步骤，这就要求父类提取共用的代码，提升代码的复用率，同时也带来了更高的可扩展性。</p>
+<ul>
+<li>优点：<ul>
+<li>封装不变的部分，扩展可变的部分</li>
+<li>提取公共部分代码，便于维护。</li>
+</ul>
+</li>
+<li>缺点：<ul>
+<li>提高了代码阅读的难度，会让用户觉得难以理解</li>
+</ul>
+</li>
+</ul>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li>《Android 源码设计模式解析与实战》</li>
+<li><a href="https://www.the5fire.com/%E6%8A%BD%E8%B1%A1%E6%96%B9%E6%B3%95-%E5%85%B7%E4%BD%93%E6%96%B9%E6%B3%95-%E9%92%A9%E5%AD%90%E6%96%B9%E6%B3%95.html" target="_blank" rel="external">抽象方法 具体方法 钩子方法</a></li>
+</ul>
+<p>若有不正之处请多多谅解，欢迎批评指正。</p>
+]]></content>
+      
+        <categories>
+            
+            <category> 设计模式 </category>
+            
+            <category> 原理分析 </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 原理分析 </tag>
+            
+            <tag> 设计模式 </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[行为型设计模式之备忘录模式]]></title>
       <url>https://ivanljt.github.io/blog/blog/2017/08/21/%E8%A1%8C%E4%B8%BA%E5%9E%8B%E8%AE%BE%E7%BD%AE%E6%A8%A1%E5%BC%8F%E4%B9%8B%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8F/</url>
       <content type="html"><![CDATA[<h2 id="备忘录模式的定义"><a href="#备忘录模式的定义" class="headerlink" title="备忘录模式的定义"></a>备忘录模式的定义</h2><p>备忘录模式是一种<strong>行为型设计模式</strong>，该模式用于保存对象当前的状态，并且在之后可以再次恢复到此状态。</p>
