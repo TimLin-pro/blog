@@ -975,9 +975,9 @@
 <li>Android 开发中使用单例模式，如果获取单例对象需要使用 Context，那么尽量使用 ApplicationContext(只要用 <code>contxt.getApplicationContext()</code> 即可获取)。<br>因为如果使用其他 Context（如 Activity)  可能会造成 Activiity 生命周期 执行完成之后，因为其引用被单例所持有，而无法被回收。</li>
 <li>多进程环境下，单例模式会失效。</li>
 </ul>
-<h2 id="Android-源码中的单例模式"><a href="#Android-源码中的单例模式" class="headerlink" title="Android 源码中的单例模式"></a>Android 源码中的单例模式</h2><p>我们经常会通过 Context 去获取系统服务，如 LayoutInflater、NetworkStatsManager，这些服务在创建时会以键值对的形式缓存到 HashMap 中，便于管理。</p>
-<p>需要时就通过调用  <code>context.getSystemService(String name)</code> 方法获取 ，首先会以 name 作为 key，到 hashMap 中查找中相应的服务，如果就创建，创建后缓存到 HashMap 中。</p>
-<h1 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h1><ul>
+<h2 id="Android-源码中的单例模式简述"><a href="#Android-源码中的单例模式简述" class="headerlink" title="Android 源码中的单例模式简述"></a>Android 源码中的单例模式简述</h2><p>我们经常会通过 Context 去获取系统服务，如 LayoutInflater、NetworkStatsManager，这些服务在创建时会以键值对的形式缓存到 HashMap 中，便于管理。</p>
+<p>需要时就通过调用  <code>context.getSystemService(String name)</code> 方法获取 。首先会以 name 作为 key，到 hashMap 中查找中相应的服务，如果对应的服务为 null 就创建一个实例，并将该实例缓存到 HashMap 中；如果对应的服务已经存在，则直接返回。</p>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
 <li><a href="https://zh.wikipedia.org/wiki/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F" target="_blank" rel="external">wiki 单例模式</a></li>
 <li><a href="">Android 源码设计模式 单例模式</a></li>
 </ul>
