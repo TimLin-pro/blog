@@ -93,7 +93,7 @@
 
 可以共享的状态称为内部状态。内部状态">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android 源码中的享元模式——消息机制中的 Message 复用原理">
+<meta property="og:title" content="Android 源码中的享元模式——Message 复用原理">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/index.html">
 <meta property="og:site_name" content="Tim's Track">
 <meta property="og:description" content="介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。
@@ -103,9 +103,9 @@
 可以共享的状态称为内部状态。内部状态">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29702859-ac3f4f5c-89a5-11e7-92cd-2c26051b399f.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29739978-6c03d780-8a7e-11e7-8aad-3da3590c2ea1.png">
-<meta property="og:updated_time" content="2017-08-26T09:19:09.966Z">
+<meta property="og:updated_time" content="2017-08-26T09:24:54.452Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android 源码中的享元模式——消息机制中的 Message 复用原理">
+<meta name="twitter:title" content="Android 源码中的享元模式——Message 复用原理">
 <meta name="twitter:description" content="介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。
 享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提升性能，避免内存移除等。
 享元模式中的部分状态是可以共享的，
@@ -145,7 +145,7 @@
 
 
 
-  <title> Android 源码中的享元模式——消息机制中的 Message 复用原理 | Tim's Track </title>
+  <title> Android 源码中的享元模式——Message 复用原理 | Tim's Track </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -325,7 +325,7 @@
             
             
               
-                Android 源码中的享元模式——消息机制中的 Message 复用原理
+                Android 源码中的享元模式——Message 复用原理
               
             
           </h1>
@@ -391,7 +391,7 @@
 
           
           
-             <span id="/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/" class="leancloud_visitors" data-flag-title="Android 源码中的享元模式——消息机制中的 Message 复用原理">
+             <span id="/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/" class="leancloud_visitors" data-flag-title="Android 源码中的享元模式——Message 复用原理">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -415,7 +415,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,550
+                  1,551
                 </span>
               
 
@@ -457,11 +457,9 @@
 <li>可以共享的状态称为<strong>内部状态</strong>。内部状态不会随着环境变化</li>
 <li>不可共享的状态则称之为<strong>外部状态</strong>，他们会随着环境的改变而改变。</li>
 </ul>
-<p>享元模式会建立一个<strong>对象容器</strong>，</p>
-<ul>
-<li>在经典的享元模式中，该容器为一个 Map，它的键是享元对象的内部状态，它的值就是享元对象本身。</li>
-</ul>
-<h2 id="享元模式定义"><a href="#享元模式定义" class="headerlink" title="享元模式定义"></a>享元模式定义</h2><p>享元模式是一种结构型设计模式，以共享的方式高效地支持大量的细粒度对象。</p>
+<p>享元模式会建立一个<strong>对象容器</strong>，在经典的享元模式中，该容器为一个 Map，它的键是享元对象的内部状态，它的值就是享元对象本身。</p>
+<a id="more"></a>
+<h2 id="享元模式的定义"><a href="#享元模式的定义" class="headerlink" title="享元模式的定义"></a>享元模式的定义</h2><p>享元模式是一种结构型设计模式，以共享的方式高效地支持大量的细粒度对象。</p>
 <h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><ol>
 <li>系统中存在<strong>大量的相似对象</strong></li>
 <li>细粒度的对象都具备较接近的外部状态，而且内部状态与环境无关，也就是说对象没有特定身份。</li>
@@ -731,7 +729,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#享元模式定义"><span class="nav-number">2.</span> <span class="nav-text">享元模式定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用场景"><span class="nav-number">3.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UML-类图"><span class="nav-number">4.</span> <span class="nav-text">UML 类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-源码中的享元模式"><span class="nav-number">5.</span> <span class="nav-text">Android 源码中的享元模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">5.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">7.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍"><span class="nav-number">1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#享元模式的定义"><span class="nav-number">2.</span> <span class="nav-text">享元模式的定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用场景"><span class="nav-number">3.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UML-类图"><span class="nav-number">4.</span> <span class="nav-text">UML 类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-源码中的享元模式"><span class="nav-number">5.</span> <span class="nav-text">Android 源码中的享元模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">5.1.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">7.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
             
 
           </div>

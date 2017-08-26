@@ -313,7 +313,7 @@
               
                 
                 <a class="post-title-link" href="/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/" itemprop="url">
-                  Android 源码中的享元模式——消息机制中的 Message 复用原理
+                  Android 源码中的享元模式——Message 复用原理
                 </a>
               
             
@@ -380,7 +380,7 @@
 
           
           
-             <span id="/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/" class="leancloud_visitors" data-flag-title="Android 源码中的享元模式——消息机制中的 Message 复用原理">
+             <span id="/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/" class="leancloud_visitors" data-flag-title="Android 源码中的享元模式——Message 复用原理">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -404,7 +404,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,550
+                  1,551
                 </span>
               
 
@@ -440,10 +440,14 @@
 
       
         
-          
-          介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。
-享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提
-          ...
+          <h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。</p>
+<p>享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提升性能，避免内存移除等。</p>
+<p>享元模式中的部分状态是可以共享的，</p>
+<ul>
+<li>可以共享的状态称为<strong>内部状态</strong>。内部状态不会随着环境变化</li>
+<li>不可共享的状态则称之为<strong>外部状态</strong>，他们会随着环境的改变而改变。</li>
+</ul>
+<p>享元模式会建立一个<strong>对象容器</strong>，在经典的享元模式中，该容器为一个 Map，它的键是享元对象的内部状态，它的值就是享元对象本身。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/#more" rel="contents">
