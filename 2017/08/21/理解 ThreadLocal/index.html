@@ -90,14 +90,14 @@
 <meta name="description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。
 为什么要使用 ThreadLocal从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地变">
 <meta property="og:type" content="article">
-<meta property="og:title" content="谈谈 ThreadLocal">
-<meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/21/谈谈-ThreadLocal/index.html">
+<meta property="og:title" content="理解 ThreadLocal">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/21/理解 ThreadLocal/index.html">
 <meta property="og:site_name" content="Tim's Track">
 <meta property="og:description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。
 为什么要使用 ThreadLocal从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地变">
-<meta property="og:updated_time" content="2017-08-26T05:37:19.693Z">
+<meta property="og:updated_time" content="2017-08-27T05:18:34.051Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="谈谈 ThreadLocal">
+<meta name="twitter:title" content="理解 ThreadLocal">
 <meta name="twitter:description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。
 为什么要使用 ThreadLocal从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地变">
 
@@ -127,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/08/21/谈谈-ThreadLocal/"/>
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/08/21/理解 ThreadLocal/"/>
 
 
 
 
 
-  <title> 谈谈 ThreadLocal | Tim's Track </title>
+  <title> 理解 ThreadLocal | Tim's Track </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -296,7 +296,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/08/21/谈谈-ThreadLocal/">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/08/21/理解 ThreadLocal/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Tim Lin">
@@ -317,7 +317,7 @@
             
             
               
-                谈谈 ThreadLocal
+                理解 ThreadLocal
               
             
           </h1>
@@ -383,7 +383,7 @@
 
           
           
-             <span id="/blog/2017/08/21/谈谈-ThreadLocal/" class="leancloud_visitors" data-flag-title="谈谈 ThreadLocal">
+             <span id="/blog/2017/08/21/理解 ThreadLocal/" class="leancloud_visitors" data-flag-title="理解 ThreadLocal">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -586,23 +586,34 @@
     <div class="post-spread">
       
         
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
   <script>
     window._bd_share_config = {
       "common": {
         "bdText": "",
-        "bdMini": "1",
+        "bdMini": "2",
         "bdMiniList": false,
         "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
       },
       "image": {
         "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
         "viewText": "分享到：",
         "viewSize": "16"
-      },
-      "slide": {
-        "bdImg": "5",
-        "bdPos": "left",
-        "bdTop": "100"
       }
     }
   </script>
