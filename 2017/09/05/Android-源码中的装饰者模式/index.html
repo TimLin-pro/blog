@@ -1,0 +1,1200 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="原理分析,设计模式," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。
+通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 源码中的装饰者模式">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2017/09/05/Android-源码中的装饰者模式/index.html">
+<meta property="og:site_name" content="Tim's Track">
+<meta property="og:description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。
+通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30046081-a4423c2c-923a-11e7-9dad-170e000c5ece.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30047048-b4aeb6e2-9241-11e7-9a04-b11bb1acdc44.png">
+<meta property="og:updated_time" content="2017-09-05T08:02:52.503Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 源码中的装饰者模式">
+<meta name="twitter:description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。
+通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/30046081-a4423c2c-923a-11e7-9dad-170e000c5ece.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/09/05/Android-源码中的装饰者模式/"/>
+
+
+
+
+
+  <title> Android 源码中的装饰者模式 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/09/05/Android-源码中的装饰者模式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android 源码中的装饰者模式
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-05T15:54:40+08:00">
+                2017-09-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/并发/" itemprop="url" rel="index">
+                    <span itemprop="name">并发</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/并发/原理分析/" itemprop="url" rel="index">
+                    <span itemprop="name">原理分析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2017/09/05/Android-源码中的装饰者模式/" class="leancloud_visitors" data-flag-title="Android 源码中的装饰者模式">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  1,903
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  8
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="装饰者模式的定义"><a href="#装饰者模式的定义" class="headerlink" title="装饰者模式的定义"></a>装饰者模式的定义</h2><p>装饰模式（Decorator Pattern） 也称<strong>包装模式</strong>（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来<strong>动态地拓展对象的功能</strong>，同时它也是继承关系的一种替代方案之一。</p>
+<p>通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法，因此可以在不破坏原类层次结构的情况下为类增加一些功能，我们只需要在被装饰者对象的相应方法前后增加相应的功能逻辑即可。</p>
+<a id="more"></a>
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>需要透明且动态地拓展类的功能时。</p>
+<h2 id="UML-类图"><a href="#UML-类图" class="headerlink" title="UML 类图"></a>UML 类图</h2><p><img src="https://user-images.githubusercontent.com/16668676/30046081-a4423c2c-923a-11e7-9dad-170e000c5ece.png" alt="decorator uml"></p>
+<ul>
+<li>Component  抽象组件<ul>
+<li>可以是接口或者抽象类，充当一个被装饰的原始对象。（在该模式中位于继承结构的顶部，大家都直接/间接地继承它）</li>
+</ul>
+</li>
+<li>ConcreteComponent 组件具体实现类<ul>
+<li>该类是 Component 类的具体实现，也是我们装饰的具体对象。</li>
+</ul>
+</li>
+<li>Decorator  抽象装饰者<ul>
+<li>继承自 Component 并且<strong>必须持有一个指向 Component 的引用</strong></li>
+<li>通常会在其方法中调用 ConcreteComponent 的方法。</li>
+<li>如果装饰逻辑单一，可以直接省略该类，直接写一个具体的装饰者对象即可。</li>
+</ul>
+</li>
+<li>ConcreteDecoratorA,B,C<ul>
+<li>继承自 Decoration， 在父类对 Component 的方法调用基础上上，增加自己的一些功能。（通常都是在基础方法执行前或者后调用自己新增的方法）</li>
+</ul>
+</li>
+</ul>
+<p>使用时经常会把 ComponentImpl 或者说 ConcreteComponent 传入给具体的 Decorator。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Compoent component = <span class="keyword">new</span> ConponentImpl();</div><div class="line">DecoratorImpl decoratorImpl = <span class="keyword">new</span> DecoratorImpl(component);</div><div class="line">decoratorImpl.xxOperation();</div></pre></td></tr></table></figure>
+<h2 id="Android-源码中的模式实现"><a href="#Android-源码中的模式实现" class="headerlink" title="Android 源码中的模式实现"></a>Android 源码中的模式实现</h2><p><img src="https://user-images.githubusercontent.com/16668676/30047048-b4aeb6e2-9241-11e7-9a04-b11bb1acdc44.png" alt="context"></p>
+<p>角色简介：</p>
+<ul>
+<li>Context ：抽象组件</li>
+<li>ComtextImpl ：Context 的具体实现类</li>
+<li>ContextWrapper ：装饰者的父类（其中的所有方法都只是调用了 ContextImpl 中对应的方法）</li>
+<li>ContextThemeWrapper ：继承自 ContextWrapper  的装饰者</li>
+<li>Activity ：继承自 ContextThemeWrapper 的装饰者</li>
+</ul>
+<p>我们以常用的方法为例，看看装饰者模式在其中的具体实现方式</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContextWrapper</span> <span class="keyword">extends</span> <span class="title">Context</span> </span>&#123;</div><div class="line">    Context mBase;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ContextWrapper</span><span class="params">(Context base)</span> </span>&#123;</div><div class="line">        mBase = base;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">   <span class="comment">//启动 Activity</span></div><div class="line">   <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivity</span><span class="params">(Intent intent, Bundle options)</span> </span>&#123;</div><div class="line">        mBase.startActivity(intent, options);</div><div class="line">    &#125;</div><div class="line">  	</div><div class="line">    <span class="comment">//发送广播</span></div><div class="line">    <span class="meta">@SystemApi</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendBroadcast</span><span class="params">(Intent intent, String receiverPermission, Bundle options)</span> </span>&#123;</div><div class="line">        mBase.sendBroadcast(intent, receiverPermission, options);</div><div class="line">    &#125;</div><div class="line">	</div><div class="line">    <span class="comment">//注册监听器</span></div><div class="line">      <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> Intent <span class="title">registerReceiver</span><span class="params">(</span></span></div><div class="line">        BroadcastReceiver receiver, IntentFilter filter) &#123;</div><div class="line">        <span class="keyword">return</span> mBase.registerReceiver(receiver, filter);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>从以上的代码中可以看出，ContextWrapper 作为装饰者的父类，持有 Context 的引用 mBase（mBase 的实际类型为 ContextImpl），其中的所有方法都只是调用了 ContextImpl 中对应的方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ContextImpl</span> <span class="keyword">extends</span> <span class="title">Context</span> </span>&#123;</div><div class="line">     <span class="comment">//启动 Activity 的逻辑实现</span></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivity</span><span class="params">(Intent intent)</span> </span>&#123;</div><div class="line">        warnIfCallingFromSystemProcess();</div><div class="line">        startActivity(intent, <span class="keyword">null</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivity</span><span class="params">(Intent intent, Bundle options)</span> </span>&#123;</div><div class="line">        warnIfCallingFromSystemProcess();</div><div class="line"></div><div class="line">        <span class="comment">// 代码省略</span></div><div class="line">        <span class="comment">//调用 Instrumentation.execStartActivity() 方法</span></div><div class="line">        mMainThread.getInstrumentation().execStartActivity(</div><div class="line">                getOuterContext(), mMainThread.getApplicationThread(), <span class="keyword">null</span>,</div><div class="line">                (Activity) <span class="keyword">null</span>, intent, -<span class="number">1</span>, options);</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendBroadcast</span><span class="params">(Intent intent, String receiverPermission)</span> </span>&#123;</div><div class="line">        warnIfCallingFromSystemProcess();</div><div class="line">        String resolvedType = intent.resolveTypeIfNeeded(getContentResolver());</div><div class="line">        String[] receiverPermissions = receiverPermission == <span class="keyword">null</span> ? <span class="keyword">null</span></div><div class="line">                : <span class="keyword">new</span> String[] &#123;receiverPermission&#125;;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            intent.prepareToLeaveProcess(<span class="keyword">this</span>);</div><div class="line">          	<span class="comment">//调用 AMS 的 broadcastIntent 方法</span></div><div class="line">            ActivityManagerNative.getDefault().broadcastIntent(</div><div class="line">                    mMainThread.getApplicationThread(), intent, resolvedType, <span class="keyword">null</span>,</div><div class="line">                    Activity.RESULT_OK, <span class="keyword">null</span>, <span class="keyword">null</span>, receiverPermissions, AppOpsManager.OP_NONE,</div><div class="line">                    <span class="keyword">null</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, getUserId());</div><div class="line">        &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</div><div class="line">            <span class="keyword">throw</span> e.rethrowFromSystemServer();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">//注册广播的方法</span></div><div class="line">    <span class="function"><span class="keyword">public</span> Intent <span class="title">registerReceiver</span><span class="params">(BroadcastReceiver receiver, IntentFilter filter)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> registerReceiver(receiver, filter, <span class="keyword">null</span>, <span class="keyword">null</span>);</div><div class="line">    &#125;  </div><div class="line">   <span class="comment">//注册广播</span></div><div class="line">  	<span class="meta">@Override</span></div><div class="line">  	<span class="function"><span class="keyword">public</span> Intent <span class="title">registerReceiver</span><span class="params">(BroadcastReceiver receiver, IntentFilter filter,</span></span></div><div class="line">            String broadcastPermission, Handler scheduler) &#123;</div><div class="line">        <span class="keyword">return</span> registerReceiverInternal(receiver, getUserId(),</div><div class="line">                filter, broadcastPermission, scheduler, getOuterContext());</div><div class="line">    &#125;</div><div class="line">   <span class="comment">//注册广播的具体实现</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Intent <span class="title">registerReceiverInternal</span><span class="params">(BroadcastReceiver receiver, <span class="keyword">int</span> userId,</span></span></div><div class="line">            IntentFilter filter, String broadcastPermission,</div><div class="line">            Handler scheduler, Context context) &#123;</div><div class="line">        IIntentReceiver rd = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">if</span> (receiver != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (mPackageInfo != <span class="keyword">null</span> &amp;&amp; context != <span class="keyword">null</span>) &#123;</div><div class="line">                <span class="keyword">if</span> (scheduler == <span class="keyword">null</span>) &#123;</div><div class="line">                    scheduler = mMainThread.getHandler();</div><div class="line">                &#125;</div><div class="line">                rd = mPackageInfo.getReceiverDispatcher(</div><div class="line">                    receiver, context, scheduler,</div><div class="line">                    mMainThread.getInstrumentation(), <span class="keyword">true</span>);</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                <span class="keyword">if</span> (scheduler == <span class="keyword">null</span>) &#123;</div><div class="line">                    scheduler = mMainThread.getHandler();</div><div class="line">                &#125;</div><div class="line">                rd = <span class="keyword">new</span> LoadedApk.ReceiverDispatcher(</div><div class="line">                        receiver, context, scheduler, <span class="keyword">null</span>, <span class="keyword">true</span>).getIIntentReceiver();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          	<span class="comment">//调用 AMS 的 registerReceiver 方法</span></div><div class="line">            <span class="keyword">final</span> Intent intent = ActivityManagerNative.getDefault().registerReceiver(</div><div class="line">                    mMainThread.getApplicationThread(), mBasePackageName,</div><div class="line">                    rd, filter, broadcastPermission, userId);</div><div class="line">            <span class="keyword">if</span> (intent != <span class="keyword">null</span>) &#123;</div><div class="line">                intent.setExtrasClassLoader(getClassLoader());</div><div class="line">                intent.prepareToEnterProcess();</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> intent;</div><div class="line">        &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</div><div class="line">            <span class="keyword">throw</span> e.rethrowFromSystemServer();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到，ContextImpl 中提供了具体的方法实现。</p>
+<p>ContextWrapper 的子类，例如 Activity 会根据需要对具体方法的实现进行装饰或者修改。</p>
+<p>比如 startActivity() 方法，Activity 没有使用被装饰者的实现，而是自己实现了一套逻辑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Activity</span> <span class="keyword">extends</span> <span class="title">ContextThemeWrapper</span></span></div><div class="line">        <span class="keyword">implements</span> <span class="title">LayoutInflater</span>.<span class="title">Factory2</span>,</div><div class="line">        <span class="title">Window</span>.<span class="title">Callback</span>, <span class="title">KeyEvent</span>.<span class="title">Callback</span>,</div><div class="line">        <span class="title">OnCreateContextMenuListener</span>, <span class="title">ComponentCallbacks2</span>,</div><div class="line">        <span class="title">Window</span>.<span class="title">OnWindowDismissedCallback</span>, <span class="title">WindowControllerCallback</span> &#123;</div><div class="line">        </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivity</span><span class="params">(Intent intent)</span> </span>&#123;</div><div class="line">            <span class="keyword">this</span>.startActivity(intent, <span class="keyword">null</span>);</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">         <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivity</span><span class="params">(Intent intent, @Nullable Bundle options)</span> </span>&#123;</div><div class="line">            <span class="keyword">if</span> (options != <span class="keyword">null</span>) &#123;</div><div class="line">                startActivityForResult(intent, -<span class="number">1</span>, options);</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                <span class="comment">// Note we want to go through this call for compatibility with</span></div><div class="line">                <span class="comment">// applications that may have overridden the method.</span></div><div class="line">                startActivityForResult(intent, -<span class="number">1</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;   </div><div class="line">             </div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivityForResult</span><span class="params">(@RequiresPermission Intent intent, <span class="keyword">int</span> requestCode,@Nullable Bundle options)</span> </span>&#123;</div><div class="line">              <span class="keyword">if</span> (mParent == <span class="keyword">null</span>) &#123;</div><div class="line">                  options = transferSpringboardActivityOptions(options);</div><div class="line">                  <span class="comment">//调用 Instrumentation.execStartActivity() 方法</span></div><div class="line">                  Instrumentation.ActivityResult ar =</div><div class="line">                      mInstrumentation.execStartActivity(</div><div class="line">                          <span class="keyword">this</span>, mMainThread.getApplicationThread(), mToken, <span class="keyword">this</span>,</div><div class="line">                          intent, requestCode, options);</div><div class="line">                <span class="comment">//代码省略</span></div><div class="line">        &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="ContextImpl-的创建"><a href="#ContextImpl-的创建" class="headerlink" title="ContextImpl 的创建"></a>ContextImpl 的创建</h2><p>从上面解析中我们知道 Context 的实现中使用了装饰者模式也知道了 ContextImpl 是 Context 具体实现类，但是 ContextImpl 是在上面地方被初始化的呢？</p>
+<p>我们猜想 Activity 启动之后我们便可以调用 Context 中的方法了，我们猜想 ContextImpl 是在 Activity 创建过程中初始化的。</p>
+<p>对 Android FrameWork 层有所了解同学应该知道 Activity 是由 AMS 管理的，AMS 会通过调用 ApplicationThread 与间接地控制 Activity。 ApplicationThread 的 scheduleXxx 方法中会调用 sendMessage 方法将相应的 Message 发送给 H，H 根据不同的 Message 调用 ActivityThread 中相应的 handleXxx 方法。</p>
+<p>ActivityThread#H</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">H</span> <span class="keyword">extends</span> <span class="title">Handler</span> </span>&#123;</div><div class="line">	<span class="comment">//代码省略</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        <span class="keyword">switch</span> (msg.what) &#123;</div><div class="line">            <span class="keyword">case</span> LAUNCH_ACTIVITY: &#123;</div><div class="line">                Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, <span class="string">"activityStart"</span>);</div><div class="line">                <span class="keyword">final</span> ActivityClientRecord r = (ActivityClientRecord) msg.obj;</div><div class="line">                r.packageInfo = getPackageInfoNoCheck(</div><div class="line">                        r.activityInfo.applicationInfo, r.compatInfo);</div><div class="line">              	<span class="comment">//调用 handleLaunchActivity</span></div><div class="line">                handleLaunchActivity(r, <span class="keyword">null</span>, <span class="string">"LAUNCH_ACTIVITY"</span>);</div><div class="line">                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);</div><div class="line">            &#125; <span class="keyword">break</span>;       </div><div class="line">    <span class="comment">//代码省略</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当需要启动新的 Activity 时，ApplicationThread 的  scheduleLaunchActivity 方法会先被调用，该方法会通过 H 调用 handleLaunchActivity 方法，而 handleLaunchActivity 方法又会调用  performLaunchActivity 方法。</p>
+<p>ActivityThread#performLaunchActivity </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Activity <span class="title">performLaunchActivity</span><span class="params">(ActivityClientRecord r, Intent customIntent)</span> </span>&#123;</div><div class="line"></div><div class="line">  <span class="comment">//代码省略</span></div><div class="line">    Activity activity = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        java.lang.ClassLoader cl = r.packageInfo.getClassLoader();</div><div class="line">      	<span class="comment">//创建 Activity</span></div><div class="line">        activity = mInstrumentation.newActivity(</div><div class="line">                cl, component.getClassName(), r.intent);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        Application app = r.packageInfo.makeApplication(<span class="keyword">false</span>, mInstrumentation);</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (activity != <span class="keyword">null</span>) &#123;</div><div class="line">          	<span class="comment">//获取 Context</span></div><div class="line">            Context appContext = createBaseContextForActivity(r, activity);</div><div class="line">			<span class="comment">//将前面准备的值关联到 Activity 中</span></div><div class="line">            activity.attach(appContext, <span class="keyword">this</span>, getInstrumentation(), r.token,</div><div class="line">                    r.ident, app, r.intent, r.activityInfo, title, r.parent,</div><div class="line">                    r.embeddedID, r.lastNonConfigurationInstances, config,</div><div class="line">                    r.referrer, r.voiceInteractor, window);</div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> activity;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ActivityThread#createBaseContextForActivity</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Context <span class="title">createBaseContextForActivity</span><span class="params">(ActivityClientRecord r, <span class="keyword">final</span> Activity activity)</span> </span>&#123;</div><div class="line">    ContextImpl appContext = ContextImpl.createActivityContext(<span class="comment">//调用 ContextImpl 的静态方法创建 Activity Context</span></div><div class="line">            <span class="keyword">this</span>, r.packageInfo, r.token, displayId, r.overrideConfig);</div><div class="line">    appContext.setOuterContext(activity);<span class="comment">//外部的 context（此处为 Activity）设置给 ContextImpl</span></div><div class="line">    Context baseContext = appContext;</div><div class="line">	<span class="comment">//代码省略</span></div><div class="line">    <span class="keyword">return</span> baseContext;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ContextImpl#createActivityContext()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> ContextImpl <span class="title">createActivityContext</span><span class="params">(ActivityThread mainThread,</span></span></div><div class="line">        LoadedApk packageInfo, IBinder activityToken, <span class="keyword">int</span> displayId,</div><div class="line">        Configuration overrideConfiguration) &#123;</div><div class="line">    <span class="keyword">if</span> (packageInfo == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"packageInfo"</span>);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ContextImpl(<span class="keyword">null</span>, mainThread, packageInfo, activityToken, <span class="keyword">null</span>, <span class="number">0</span>,</div><div class="line">            <span class="keyword">null</span>, overrideConfiguration, displayId);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>经过上面的分析，我们可以得出结论，Activity 的 Context 是在 performLaunchActivity 方法中通过调用 createBaseContextForActivity  初始化的。在 createBaseContextForActivity 方法中，通过调用 ContextImpl 的静态方法 createActivityContext 创建 获取一个 ContextImpl 的实例对象，并通过 setOuterContext 方法将两者建立关联。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>学过代理模式的同学可能觉得装饰模式与代理模式有点像（因为同样持有引用）。但是既然是它们是两个不同的设计模式，先看看它们的格子的定义。</p>
+<p>装饰模式：以对客户端透明的方式<strong>扩展对象的功能</strong>，是<strong>继承关系的一个替代方案</strong>；<br>代理模式：给一个对象提供一个代理对象，并<strong>由代理对象来控制对原有对象的引用</strong>；</p>
+<p>光看定义可能还是比较模糊。二者<strong>区别</strong>在哪里呢？</p>
+<ul>
+<li>装饰模式应该为所装饰的对象<strong>增强功能</strong></li>
+<li>代理模式对代理的对象施加控制，但<strong>不对对象本身的功能进行增强</strong>。</li>
+</ul>
+<p>可以简单地理解为：你在一个地方写装饰，大家就知道这是在增加功能，你写代理，大家就知道是在限制。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/原理分析/" rel="tag"># 原理分析</a>
+          
+            <a href="/blog/tags/设计模式/" rel="tag"># 设计模式</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/" rel="next" title="Android 源码中的享元模式——Message 复用原理">
+                <i class="fa fa-chevron-left"></i> Android 源码中的享元模式——Message 复用原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/ivanljt" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#装饰者模式的定义"><span class="nav-number">1.</span> <span class="nav-text">装饰者模式的定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用场景"><span class="nav-number">2.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UML-类图"><span class="nav-number">3.</span> <span class="nav-text">UML 类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-源码中的模式实现"><span class="nav-number">4.</span> <span class="nav-text">Android 源码中的模式实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ContextImpl-的创建"><span class="nav-number">5.</span> <span class="nav-text">ContextImpl 的创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>
