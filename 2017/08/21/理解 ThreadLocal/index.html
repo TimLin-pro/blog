@@ -88,18 +88,21 @@
 
 
 <meta name="description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。
-为什么要使用 ThreadLocal从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地变">
+为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
 <meta property="og:type" content="article">
-<meta property="og:title" content="理解 ThreadLocal">
+<meta property="og:title" content="深入理解 ThreadLocal">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/21/理解 ThreadLocal/index.html">
 <meta property="og:site_name" content="Tim's Track">
 <meta property="og:description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。
-为什么要使用 ThreadLocal从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地变">
-<meta property="og:updated_time" content="2017-08-27T05:18:34.051Z">
+为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30096800-004b9f36-930d-11e7-9c27-c7f17619c3a7.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30096799-0047aeee-930d-11e7-8ac5-1927aadeab2d.png">
+<meta property="og:updated_time" content="2017-09-06T09:14:47.516Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="理解 ThreadLocal">
+<meta name="twitter:title" content="深入理解 ThreadLocal">
 <meta name="twitter:description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。
-为什么要使用 ThreadLocal从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地变">
+为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/30096800-004b9f36-930d-11e7-9c27-c7f17619c3a7.png">
 
 
 
@@ -133,7 +136,7 @@
 
 
 
-  <title> 理解 ThreadLocal | Tim's Track </title>
+  <title> 深入理解 ThreadLocal | Tim's Track </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -317,7 +320,7 @@
             
             
               
-                理解 ThreadLocal
+                深入理解 ThreadLocal
               
             
           </h1>
@@ -383,7 +386,7 @@
 
           
           
-             <span id="/blog/2017/08/21/理解 ThreadLocal/" class="leancloud_visitors" data-flag-title="理解 ThreadLocal">
+             <span id="/blog/2017/08/21/理解 ThreadLocal/" class="leancloud_visitors" data-flag-title="深入理解 ThreadLocal">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -407,7 +410,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,856
+                  2,351
                 </span>
               
 
@@ -423,7 +426,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  7
+                  9
                 </span>
               
             </div>
@@ -443,23 +446,26 @@
 
       
         <h2 id="ThreadLocal-是什么？"><a href="#ThreadLocal-是什么？" class="headerlink" title="ThreadLocal 是什么？"></a>ThreadLocal 是什么？</h2><p>ThreadLocal 是一个<strong>线程内部</strong>的<strong>数据存储类</strong>，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。</p>
-<h2 id="为什么要使用-ThreadLocal"><a href="#为什么要使用-ThreadLocal" class="headerlink" title="为什么要使用 ThreadLocal"></a>为什么要使用 ThreadLocal</h2><p>从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地变量，但是在整个 Thread 的生命周期中，如果要穿梭很多 class 的很多 method 来使用这个本地变量的话，就要一直一直向下传送这个变量，显然很麻烦。<br>那么怎么才能在这个 Thread 的生命中，在任何地方都能够方便的访问到这个变量呢，这时候 ThreadLocal 就诞生了。</p>
+<h2 id="为什么要使用-ThreadLocal？"><a href="#为什么要使用-ThreadLocal？" class="headerlink" title="为什么要使用 ThreadLocal？"></a>为什么要使用 ThreadLocal？</h2><p>从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地变量，但是在整个 Thread 的生命周期中，如果要穿梭很多 class 的很多 method 来使用这个本地变量的话，就要一直一直向下传送这个变量，显然很麻烦。<br>那么怎么才能在这个 Thread 的生命中，在任何地方都能够方便的访问到这个变量呢，这时候 ThreadLocal 就诞生了。</p>
 <a id="more"></a>
 <p>ThreadLocal 就是这么个作用，除此之外和通常使用的本地变量没有任何区别。<br>也就是说，没有 ThreadLocal 也是可以解决问题的，但是会比较麻烦，ThreadLocal 的作用便是简化线程内部数据的使用流程。</p>
 <h2 id="ThreadLocal-的内部实现"><a href="#ThreadLocal-的内部实现" class="headerlink" title="ThreadLocal 的内部实现"></a>ThreadLocal 的内部实现</h2><p>既然是线程的本地变量，那自然与线程有着密切的联系。</p>
-<p>打开 Thread 的源码可以看到，源码中有一个实例变量 threadLocals。该变量的实际类型为 <code>ThreadLocal.ThreadLocalMap</code><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ThreadLocal.ThreadLocalMap threadLocals = <span class="keyword">null</span>;</div></pre></td></tr></table></figure></p>
-<p>这里我们主要关注三个问题</p>
-<ol>
-<li>threadLocals 是如何创建的？</li>
-<li>怎么设置值？</li>
-<li>怎么获取值？</li>
-</ol>
-<h3 id="ThreadLocals-是如何创建的？"><a href="#ThreadLocals-是如何创建的？" class="headerlink" title="ThreadLocals 是如何创建的？"></a>ThreadLocals 是如何创建的？</h3><p>ThreadLocal.createMap 方法中，会以当前的 ThreadLocal 对象作为 key，将初始值设置进去。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">createMap</span><span class="params">(Thread t, T firstValue)</span> </span>&#123;</div><div class="line">    t.threadLocals = <span class="keyword">new</span> ThreadLocalMap(<span class="keyword">this</span>, firstValue);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>ThreadLocalMap 是 ThreadLocal 的一个静态内部类。其中以键值对的形式存储数据。可以简单但是不严谨的将它理解为一个 HashMap。</p>
-<p>先看看 <code>ThreadLocalMap</code> 的构造函数<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">ThreadLocalMap(ThreadLocal firstKey, Object firstValue) &#123;</div><div class="line">    table = <span class="keyword">new</span> Entry[INITIAL_CAPACITY];</div><div class="line">    <span class="keyword">int</span> i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - <span class="number">1</span>);<span class="comment">//计算哈希值</span></div><div class="line">    table[i] = <span class="keyword">new</span> Entry(firstKey, firstValue);<span class="comment">//将 Entry 存到指定位置。</span></div><div class="line">    size = <span class="number">1</span>;</div><div class="line">    setThreshold(INITIAL_CAPACITY);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&gt; </span>&#123;</div><div class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></div><div class="line">    Object value;</div><div class="line"></div><div class="line">    Entry(ThreadLocal k, Object v) &#123;</div><div class="line">        <span class="keyword">super</span>(k);</div><div class="line">        value = v;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p><code>ThreadLocalMap</code> 的构造函数主要做了下面几件事</p>
+<p>打开 Thread 的源码可以看到，源码中有一个类型为 <code>ThreadLocal.ThreadLocalMap</code> 的变量<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ThreadLocal.ThreadLocalMap threadLocals = <span class="keyword">null</span>;</div></pre></td></tr></table></figure></p>
+<h3 id="ThreadLocal-get-流程"><a href="#ThreadLocal-get-流程" class="headerlink" title="ThreadLocal#get 流程"></a>ThreadLocal#get 流程</h3><p>我们以 ThreadLocal#get 方法作为分析的源头。这些方法的逻辑都比较简单，因此直接在注释中说明。可参考小结部分的调用流程图。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123;</div><div class="line">    Thread t = Thread.currentThread();<span class="comment">//获取当前线程</span></div><div class="line">    ThreadLocalMap map = getMap(t);<span class="comment">//获取当前线程的 ThreadLocalMap 对象</span></div><div class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>) &#123;</div><div class="line">        ThreadLocalMap.Entry e = map.getEntry(<span class="keyword">this</span>);<span class="comment">//获取存储该 ThreadLocal 的 Entry</span></div><div class="line">        <span class="keyword">if</span> (e != <span class="keyword">null</span>)</div><div class="line">            <span class="keyword">return</span> (T)e.value;<span class="comment">//获取目标值并返回</span></div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> setInitialValue();<span class="comment">//设置初始值</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ThreadLocal#getMap，该方法返回当前线程的 ThreadLocalMap  对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function">ThreadLocalMap <span class="title">getMap</span><span class="params">(Thread t)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> t.threadLocals;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Entry 类继承自弱引用，防止内存泄漏。其中存储了 ThreadLocal 以及对应的值</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&gt; </span>&#123;</div><div class="line">    Object value;</div><div class="line"></div><div class="line">    Entry(ThreadLocal k, Object v) &#123;</div><div class="line">        <span class="keyword">super</span>(k);</div><div class="line">        value = v;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ThreadLocal#setInitialValue</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> T <span class="title">setInitialValue</span><span class="params">()</span> </span>&#123;</div><div class="line">    T value = initialValue();<span class="comment">//获取默认的初始值</span></div><div class="line">    Thread t = Thread.currentThread();<span class="comment">//获取当前线程</span></div><div class="line">    ThreadLocalMap map = getMap(t);<span class="comment">//获取当前线程的 ThreadLocalMap 对象</span></div><div class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>)</div><div class="line">        map.set(<span class="keyword">this</span>, value);<span class="comment">//当前线程的 ThreadLocalMap 对象不为空，直接设置给目标对象。</span></div><div class="line">    <span class="keyword">else</span></div><div class="line">        createMap(t, value);<span class="comment">//为当前线程创建 ThreadLocalMap 对象。</span></div><div class="line">    <span class="keyword">return</span> value;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ThreadLocal#createMap</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">createMap</span><span class="params">(Thread t, T firstValue)</span> </span>&#123;</div><div class="line">    t.threadLocals = <span class="keyword">new</span> ThreadLocalMap(<span class="keyword">this</span>, firstValue);<span class="comment">//调用构造方法初始化</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="ThreadLocal-set-流程"><a href="#ThreadLocal-set-流程" class="headerlink" title="ThreadLocal#set 流程"></a>ThreadLocal#set 流程</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T value)</span> </span>&#123;</div><div class="line">    Thread t = Thread.currentThread();<span class="comment">//获取当前线程</span></div><div class="line">    ThreadLocalMap map = getMap(t);<span class="comment">//获取当前线程的 ThreadLocalMap 对象</span></div><div class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>)</div><div class="line">        map.set(<span class="keyword">this</span>, value);<span class="comment">//当前线程的 ThreadLocalMap 对象 已经存在直接设置值</span></div><div class="line">    <span class="keyword">else</span></div><div class="line">        createMap(t, value);<span class="comment">//为当前线程创建 ThreadLocalMap </span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到 ThreadLocal#set 方法的逻辑与 ThreadLocal#setInitialValue 方法中的逻辑如出一辙，这里不再赘述。</p>
+<h3 id="ThreadLocalMap-的构造方法"><a href="#ThreadLocalMap-的构造方法" class="headerlink" title="ThreadLocalMap 的构造方法"></a>ThreadLocalMap 的构造方法</h3><p>ThreadLocalMap 是 ThreadLocal 的一个静态内部类。其中以键值对的形式存储数据。可以将它简单理解为一个 HashMap。ThreadLocal#createMap 方法通过调用 ThreadLocalMap 的构造方法为当前线程创建一个 ThreadLocalMap 对象。</p>
+<p><code>ThreadLocalMap</code> 的构造函数<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">ThreadLocalMap(ThreadLocal firstKey, Object firstValue) &#123;</div><div class="line">    table = <span class="keyword">new</span> Entry[INITIAL_CAPACITY];<span class="comment">//创建一个长度为 16 的 Entry 数组</span></div><div class="line">    <span class="keyword">int</span> i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - <span class="number">1</span>);<span class="comment">//计算 key 的哈希值</span></div><div class="line">    table[i] = <span class="keyword">new</span> Entry(firstKey, firstValue);<span class="comment">//将 Entry 存到指定位置。</span></div><div class="line">    size = <span class="number">1</span>;</div><div class="line">    setThreshold(INITIAL_CAPACITY);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>ThreadLocalMap</code> 的构造函数主要做了下面几件事：</p>
 <ul>
 <li>首先创建了一个 <code>Entry</code> 数组，<ul>
 <li><code>Entry</code> 是 <code>ThreadLocalMap</code> 中的一个静态内部类,它以 <code>ThreadLocal</code> 为 key，以要存储的值为 value。</li>
@@ -469,35 +475,40 @@
 <li>接着创建一个 Entry 对象存储在数组中</li>
 <li>最后设置大小和阈值。</li>
 </ul>
-<h3 id="怎么设置值？"><a href="#怎么设置值？" class="headerlink" title="怎么设置值？"></a>怎么设置值？</h3><ul>
-<li>首先通过 <code>getMap</code> 方法，获取当前线程的 ThreadLocalMap，<ul>
-<li>如果 map 不为空，则调用 <code>ThreadLocalMap.set</code> 方法，以当前的 ThreadLocal 对象 作为 key，将目标值设置进去。</li>
-<li>如果 map 为空，就创建一个（创建的时候会设初始值）</li>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><h4 id="get-方法调用大致流程"><a href="#get-方法调用大致流程" class="headerlink" title="get 方法调用大致流程"></a>get 方法调用大致流程</h4><p><img src="https://user-images.githubusercontent.com/16668676/30096800-004b9f36-930d-11e7-9c27-c7f17619c3a7.png" alt="threadlocal get"></p>
+<p>get 方法中会尝试获取当前线程的 ThreadLocalMap</p>
+<ul>
+<li>如果 ThreadLocalMap 非空，并且以当前 ThreadLocal 对象为 key 去获取到的 Entry 不为空，就返回该 ThreadLocal 对应的值；</li>
+<li>否则，先获取默认的初始值（默认实现为空，可以自己重写 initialValue 方法来设置需要的值）<ul>
+<li>然后判断 ThreadLocalMap 是否为空<ul>
+<li>如果为空创建一个 ThreadLocalMap 同时将初始值设置进去。</li>
+<li>如果不为空，直接把初始值存储在其中。</li>
 </ul>
 </li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function">ThreadLocalMap <span class="title">getMap</span><span class="params">(Thread t)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> t.threadLocals;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T value)</span> </span>&#123;</div><div class="line">    Thread t = Thread.currentThread();</div><div class="line">    ThreadLocalMap map = getMap(t);</div><div class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>)</div><div class="line">        map.set(<span class="keyword">this</span>, value);</div><div class="line">    <span class="keyword">else</span></div><div class="line">        createMap(t, value);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="怎么获取值？"><a href="#怎么获取值？" class="headerlink" title="怎么获取值？"></a>怎么获取值？</h3><ul>
-<li>与 set 方法一样，首先通过 getMap 方法，获取当前线程的 ThreadLocalMap<ul>
-<li>如果 map 不为空，就以当前的 ThreadLocal 对象为键去获取值，(值存在 ThreadLocalMap.Entry)</li>
-<li>如果 map 为空，会返回调用 setInitialValue 方法之后的返回值。（一般都为 null）</li>
-</ul>
 </li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123;</div><div class="line">    Thread t = Thread.currentThread();</div><div class="line">    ThreadLocalMap map = getMap(t);</div><div class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>) &#123;</div><div class="line">        ThreadLocalMap.Entry e = map.getEntry(<span class="keyword">this</span>);</div><div class="line">        <span class="keyword">if</span> (e != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</div><div class="line">            T result = (T)e.value;</div><div class="line">            <span class="keyword">return</span> result;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> setInitialValue();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> T <span class="title">setInitialValue</span><span class="params">()</span> </span>&#123;</div><div class="line">    T value = initialValue();</div><div class="line">    Thread t = Thread.currentThread();</div><div class="line">    ThreadLocalMap map = getMap(t);</div><div class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>)</div><div class="line">        map.set(<span class="keyword">this</span>, value);</div><div class="line">    <span class="keyword">else</span></div><div class="line">        createMap(t, value);</div><div class="line">    <span class="keyword">return</span> value;</div><div class="line">&#125;h</div></pre></td></tr></table></figure>
+<h4 id="set-方法调用流程"><a href="#set-方法调用流程" class="headerlink" title="set 方法调用流程"></a>set 方法调用流程</h4><p><img src="https://user-images.githubusercontent.com/16668676/30096799-0047aeee-930d-11e7-8ac5-1927aadeab2d.png" alt="threadlocal set"></p>
 <h2 id="你可能存在的疑问"><a href="#你可能存在的疑问" class="headerlink" title="你可能存在的疑问"></a>你可能存在的疑问</h2><h3 id="每个-ThreadLocal-只能放一个对象吗？"><a href="#每个-ThreadLocal-只能放一个对象吗？" class="headerlink" title="每个 ThreadLocal 只能放一个对象吗？"></a>每个 ThreadLocal 只能放一个对象吗？</h3><p>每个 ThreadLocal 只能放一个对象。要是需要放其他的对象，就再 new 一个新的 ThreadLocal 出来，这个新的 ThreadLocal 将作为 key,需要放的对象作为value，放在 ThreadLocalMap 中。也就是说一个线程可以含有多个 ThreadLocal 类。</p>
 <p>当然也可以根据需要在 ThreadLocal 存放一些容器对象，比如 List、Set、Map，一个 ThreadLocal 存放一个容器对象，借助该容器对象也可以实现存储多个对象。 </p>
 <h3 id="为什么-ThreadLocal-只存储一个对象却要用一个-ThreadLocalMap-来存储值？"><a href="#为什么-ThreadLocal-只存储一个对象却要用一个-ThreadLocalMap-来存储值？" class="headerlink" title="为什么 ThreadLocal  只存储一个对象却要用一个 ThreadLocalMap 来存储值？"></a>为什么 ThreadLocal  只存储一个对象却要用一个 ThreadLocalMap 来存储值？</h3><p>实际上每个线程中都有一个 ThreadLocal.ThreadLocalMap，真正存储数据的类是 ThreadLocalMap ，可以将它看作是一个 HashMap，而 ThreadLocal 是一个<strong>维护类</strong>。我们知道，存储的时候，都是以 ThreadLocal 实例作为 key，然后存储到 ThreadLocalMap 中。当我们调用不同 ThreadLocal 的 set 方法时，如果 ThreadLocalMap 不为空，那么直接在里面存储值就可以了，不需要再创建新的值。也就是说，<strong>同一个线程上的不同 ThreadLocal 对象，存储的值是在同一个 ThreadLocalMap 上</strong>。</p>
 <h3 id="没有-ThreadLocal-能不能解决问题？"><a href="#没有-ThreadLocal-能不能解决问题？" class="headerlink" title="没有 ThreadLocal 能不能解决问题？"></a>没有 ThreadLocal 能不能解决问题？</h3><p>能。</p>
 <p>可以自己定义一个静态的 map，将当前 thread 作为 key，将目标值作为 value，put 到 map 中，这也是一般人的想法。</p>
 <p>ThreadLocal 的实现刚好相反，它是在每个线程中有一个 map，而将 ThreadLocal 实例作为 key，这样每个 map 中的项数很少，而且当线程销毁时相应的东西也一起销毁了。<br>因为各线程访问的 map 是各自不同的 map，所以不需要同步，速度会快些；而如果把所有线程要用的对象都放到一个静态 map中的话 多线程并发访问需要进行同步。</p>
-<p>所以说 ThreadLocal 只是实现线程局部变量的一种方式。但是综合来看这种方式相比其他实现方式要更好。</p>
+<p>所以说 ThreadLocal 只是实现线程私有变量的一种方式。但是综合来看这种方式相比其他实现方式要更好。</p>
+<h2 id="典型应用"><a href="#典型应用" class="headerlink" title="典型应用"></a>典型应用</h2><p>我们通常会用下面的方式为普通线程创建一个 Looper。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">LooperThread</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</div><div class="line">        <span class="keyword">public</span> Handler mHandler;</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            Looper.prepare();<span class="comment">//为当前线程创建一个 Looper</span></div><div class="line">            mHandler = <span class="keyword">new</span> Handler() &#123;</div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</div><div class="line">                    <span class="comment">// process incoming messages here</span></div><div class="line">                &#125;</div><div class="line">            &#125;;</div><div class="line">            Looper.loop();<span class="comment">//开启消息循环</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>Android 中每个线程中最多只能有一个 Looper，这种限制就是通过 ThreadLocal 来实现的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Looper</span> </span>&#123;</div><div class="line">  	<span class="comment">//创建一个 ThreadLocal 对象，其泛型类型为 Looper，在调用 prepare 之前 sThreadLocal.get() 都返回空。</span></div><div class="line">    <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;Looper&gt; sThreadLocal = <span class="keyword">new</span> ThreadLocal&lt;Looper&gt;();</div><div class="line">  	<span class="comment">//...</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>创建 Looper 时会同时创建一个泛型类型为 Looper 的 ThreadLocal 对象。</p>
+<p>Looper#prepare()，通过 prepare 方法可以为当前线程创建一个 Looper。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">()</span> </span>&#123;</div><div class="line">    prepare(<span class="keyword">true</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">(<span class="keyword">boolean</span> quitAllowed)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (sThreadLocal.get() != <span class="keyword">null</span>) &#123;<span class="comment">//如果线程已经存在 Looper 了</span></div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Only one Looper may be created per thread"</span>);</div><div class="line">    &#125;</div><div class="line">    sThreadLocal.set(<span class="keyword">new</span> Looper(quitAllowed));<span class="comment">//为当前线程创建一个 Looper 对象，并将它存储在当前线程的 ThreadLocalMap 中</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Looper#myLooper() ，通过该方法可以获取当前线程的 Looper 对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="meta">@Nullable</span> <span class="function">Looper <span class="title">myLooper</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> sThreadLocal.get();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>如果一个对象的引用被多个线程持有，那么即使该对象存在 ThreadLocalMap 中也不是线程的本地变量。</p>
 <p>首先，ThreadLocal 不是用来解决共享对象的多线程访问问题的，一般情况下，通过 <code>ThreadLocal.set()</code> 到线程中的对象是该线程自己使用的对象，其他线程是不需要访问的，也访问不到的。各个线程中访问的是不同的对象。 </p>
 <p>也就是说，其他线程能否访问，还要看你的 set 进去的对象引用是否被其他线程持有。 如果两个线程都存入同一个对象引用，那就会有线程共享问题。</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>我们总结 ThreadLocal 具体是怎么一步一步去为每一个线程创建一个~线程私有变量~的：</p>
+<h2 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h2><p>我们总结 ThreadLocal 具体是怎么一步一步去为每一个线程创建一个~线程私有变量~的：</p>
 <ul>
 <li>首先，在每个线程 Thread 内部有一个 <code>ThreadLocal.ThreadLocalMap</code> 类型的成员变量 threadLocals，这个 threadLocals 就是用来存储~线程私有变量的~，键值（key）为当前 ThreadLocal 变量，值 value 为~线程的私有变量~（即 T 类型的变量）。</li>
 <li>初始时，在 Thread 里面，threadLocals 为空，当通过 ThreadLocal 变量调用 get() 方法或者 set() 方法，就会对 Thread 类中的 threadLocals 进行初始化，并且以当前 ThreadLocal 变量为 key，以 ThreadLocal 要保存的~线程私有变量~为 value，存到 threadLocals 中。<ul>
@@ -716,7 +727,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-count">15</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -727,7 +738,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -738,7 +749,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -784,7 +795,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadLocal-是什么？"><span class="nav-number">1.</span> <span class="nav-text">ThreadLocal 是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要使用-ThreadLocal"><span class="nav-number">2.</span> <span class="nav-text">为什么要使用 ThreadLocal</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadLocal-的内部实现"><span class="nav-number">3.</span> <span class="nav-text">ThreadLocal 的内部实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ThreadLocals-是如何创建的？"><span class="nav-number">3.1.</span> <span class="nav-text">ThreadLocals 是如何创建的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#怎么设置值？"><span class="nav-number">3.2.</span> <span class="nav-text">怎么设置值？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#怎么获取值？"><span class="nav-number">3.3.</span> <span class="nav-text">怎么获取值？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#你可能存在的疑问"><span class="nav-number">4.</span> <span class="nav-text">你可能存在的疑问</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#每个-ThreadLocal-只能放一个对象吗？"><span class="nav-number">4.1.</span> <span class="nav-text">每个 ThreadLocal 只能放一个对象吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么-ThreadLocal-只存储一个对象却要用一个-ThreadLocalMap-来存储值？"><span class="nav-number">4.2.</span> <span class="nav-text">为什么 ThreadLocal  只存储一个对象却要用一个 ThreadLocalMap 来存储值？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#没有-ThreadLocal-能不能解决问题？"><span class="nav-number">4.3.</span> <span class="nav-text">没有 ThreadLocal 能不能解决问题？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注意"><span class="nav-number">5.</span> <span class="nav-text">注意</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number">6.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考与学习资源推荐"><span class="nav-number">7.</span> <span class="nav-text">参考与学习资源推荐</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadLocal-是什么？"><span class="nav-number">1.</span> <span class="nav-text">ThreadLocal 是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要使用-ThreadLocal？"><span class="nav-number">2.</span> <span class="nav-text">为什么要使用 ThreadLocal？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadLocal-的内部实现"><span class="nav-number">3.</span> <span class="nav-text">ThreadLocal 的内部实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ThreadLocal-get-流程"><span class="nav-number">3.1.</span> <span class="nav-text">ThreadLocal#get 流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ThreadLocal-set-流程"><span class="nav-number">3.2.</span> <span class="nav-text">ThreadLocal#set 流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ThreadLocalMap-的构造方法"><span class="nav-number">3.3.</span> <span class="nav-text">ThreadLocalMap 的构造方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">3.4.</span> <span class="nav-text">小结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#get-方法调用大致流程"><span class="nav-number">3.4.1.</span> <span class="nav-text">get 方法调用大致流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#set-方法调用流程"><span class="nav-number">3.4.2.</span> <span class="nav-text">set 方法调用流程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#你可能存在的疑问"><span class="nav-number">4.</span> <span class="nav-text">你可能存在的疑问</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#每个-ThreadLocal-只能放一个对象吗？"><span class="nav-number">4.1.</span> <span class="nav-text">每个 ThreadLocal 只能放一个对象吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么-ThreadLocal-只存储一个对象却要用一个-ThreadLocalMap-来存储值？"><span class="nav-number">4.2.</span> <span class="nav-text">为什么 ThreadLocal  只存储一个对象却要用一个 ThreadLocalMap 来存储值？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#没有-ThreadLocal-能不能解决问题？"><span class="nav-number">4.3.</span> <span class="nav-text">没有 ThreadLocal 能不能解决问题？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#典型应用"><span class="nav-number">5.</span> <span class="nav-text">典型应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注意"><span class="nav-number">6.</span> <span class="nav-text">注意</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结-1"><span class="nav-number">7.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考与学习资源推荐"><span class="nav-number">8.</span> <span class="nav-text">参考与学习资源推荐</span></a></li></ol></div>
             
 
           </div>

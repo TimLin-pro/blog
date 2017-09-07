@@ -97,7 +97,7 @@
 通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30046081-a4423c2c-923a-11e7-9dad-170e000c5ece.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30047048-b4aeb6e2-9241-11e7-9a04-b11bb1acdc44.png">
-<meta property="og:updated_time" content="2017-09-05T08:02:52.503Z">
+<meta property="og:updated_time" content="2017-09-05T12:43:42.645Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 源码中的装饰者模式">
 <meta name="twitter:description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。
@@ -410,7 +410,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,903
+                  1,926
                 </span>
               
 
@@ -510,6 +510,9 @@
 <li>代理模式对代理的对象施加控制，但<strong>不对对象本身的功能进行增强</strong>。</li>
 </ul>
 <p>可以简单地理解为：你在一个地方写装饰，大家就知道这是在增加功能，你写代理，大家就知道是在限制。</p>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li>《Android 源码设计模式解析与实战》</li>
+</ul>
 
       
     </div>
@@ -563,6 +566,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2017/09/06/Java-集合框架之ArrayList/" rel="prev" title="Java 集合框架之 ArrayList">
+                Java 集合框架之 ArrayList <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -708,7 +715,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-count">15</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -719,7 +726,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -730,7 +737,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -776,7 +783,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#装饰者模式的定义"><span class="nav-number">1.</span> <span class="nav-text">装饰者模式的定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用场景"><span class="nav-number">2.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UML-类图"><span class="nav-number">3.</span> <span class="nav-text">UML 类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-源码中的模式实现"><span class="nav-number">4.</span> <span class="nav-text">Android 源码中的模式实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ContextImpl-的创建"><span class="nav-number">5.</span> <span class="nav-text">ContextImpl 的创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#装饰者模式的定义"><span class="nav-number">1.</span> <span class="nav-text">装饰者模式的定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用场景"><span class="nav-number">2.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UML-类图"><span class="nav-number">3.</span> <span class="nav-text">UML 类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-源码中的模式实现"><span class="nav-number">4.</span> <span class="nav-text">Android 源码中的模式实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ContextImpl-的创建"><span class="nav-number">5.</span> <span class="nav-text">ContextImpl 的创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">7.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
             
 
           </div>

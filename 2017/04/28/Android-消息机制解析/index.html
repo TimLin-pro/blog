@@ -71,7 +71,7 @@
 <link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="原理分析,Android," />
+  <meta name="keywords" content="Android,原理分析," />
 
 
 
@@ -97,7 +97,7 @@
 从开发的角度来看，Handler 是 Android 消息机制的上层接口，这使得开发过程中只需要设计这方面的内容即可。但是作为一名合格的开发者，弄清它的实现原理是很有必要的。">
 <meta property="og:image" content="http://img.blog.csdn.net/20150801014511416">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29739304-0513811c-8a6d-11e7-8a78-510d3c98feb7.png">
-<meta property="og:updated_time" content="2017-08-27T03:23:32.966Z">
+<meta property="og:updated_time" content="2017-09-06T05:10:17.395Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 消息机制解析">
 <meta name="twitter:description" content="概述提起 Handler，相信大家都不会陌生，日常开发中不可避免地要使用到它。今天要讲的是消息机制。消息机制？咋听起来有点抽象。其实我们在使用 Handler 的时候，就使用了 Android 的消息机制。
@@ -399,7 +399,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  4,624
+                  4,656
                 </span>
               
 
@@ -505,7 +505,7 @@
 </li>
 </ol>
 <p>从 ThreadLocal 的 set 和 get 方法 可以看出，它们所操作的对象都是<strong>当前线程的 localValues 对象的 table 数组</strong>，因此在不同的线程中访问同一个 ThreadLocal 的 get 和 set 方法，他们对 ThreadLocal 所做的读/写操作仅限于各自线程的内部。</p>
-<p>关于 ThreadLocal 的具体介绍请见 <a href="https://ivanljt.github.io/blog/2017/08/21/谈谈-ThreadLocal/#more">理解 ThreadLocal</a></p>
+<p>关于 ThreadLocal 的具体介绍请见 <a href="https://ivanljt.github.io/blog/2017/08/21/谈谈-ThreadLocal/#more">这篇文章</a></p>
 <p>理解 ThreadLocal 对后面理解 Looper 有很大的帮助，建议先细看 ThreadLocal  的内容再看后面的内容。</p>
 <h2 id="Looper-的工作原理"><a href="#Looper-的工作原理" class="headerlink" title="Looper 的工作原理"></a>Looper 的工作原理</h2><p>Android 的官方文档中是这么介绍 Looper 的：</p>
 <blockquote>
@@ -556,6 +556,8 @@
 </li>
 </ul>
 <p>查看源码不难发现，Handler 的发送消息的过程仅仅是向 MessageQueue 插入了一条 Message，MessageQueue 的 next 方法就会返回此 Message 给 Looper， Looper 在 loop 方法中对 Message 进行处理，最终由 Looper 交回给 Handler 处理（调用 Handler 的 dispatchMessage 方法）。</p>
+<h2 id="数量关系"><a href="#数量关系" class="headerlink" title="数量关系"></a>数量关系</h2><p>一个线程最多只能有一个 Looper ，一个 MessageQueue，可以有多个 Handler。</p>
+<p>MessageQueue 封装在 Looper 中。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Looper 对象封装了消息队列，Looper 对象被封装在 ThreadLocal 中，是线程私有的，不同线程之间的 Looper 无法共享。Handler 通过与 Looper 之间的绑定来实现与执行线程之间的绑定，handler 发送消息时会将 Message 对象追加到与线程相关的消息队列中，然后由 Looper 回调它的分发消息方法，根据情况处理消息。</p>
 <p>最后我们看一张完整的流程图（图片参考自<a href="http://www.jianshu.com/p/9fe944ee02f7" target="_blank" rel="external">Handler 异步通信机制全面解析</a>），笔者修改了原图中的 Handler dispatchMessage  方法描述。</p>
 <p><img src="https://user-images.githubusercontent.com/16668676/29739304-0513811c-8a6d-11e7-8a78-510d3c98feb7.png" alt=""></p>
@@ -598,9 +600,9 @@
       
         <div class="post-tags">
           
-            <a href="/blog/tags/原理分析/" rel="tag"># 原理分析</a>
-          
             <a href="/blog/tags/android/" rel="tag"># Android</a>
+          
+            <a href="/blog/tags/原理分析/" rel="tag"># 原理分析</a>
           
         </div>
       
@@ -767,7 +769,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-count">15</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -778,7 +780,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -789,7 +791,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -835,7 +837,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Android-的消息机制分析"><span class="nav-number">2.</span> <span class="nav-text">Android 的消息机制分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#从-Handler-出发"><span class="nav-number">2.1.</span> <span class="nav-text">从 Handler 出发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">2.1.1.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MessageQueue-对象是从哪里来的？"><span class="nav-number">2.1.2.</span> <span class="nav-text">MessageQueue 对象是从哪里来的？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MessageQueue-的工作原理"><span class="nav-number">2.2.</span> <span class="nav-text">MessageQueue 的工作原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#enqueueMessage-方法："><span class="nav-number">2.2.1.</span> <span class="nav-text">enqueueMessage 方法：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#next-方法"><span class="nav-number">2.2.2.</span> <span class="nav-text">next 方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadLocal-简介"><span class="nav-number">2.3.</span> <span class="nav-text">ThreadLocal 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Looper-的工作原理"><span class="nav-number">2.4.</span> <span class="nav-text">Looper 的工作原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-Looper"><span class="nav-number">2.4.1.</span> <span class="nav-text">创建 Looper</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建普通线程上的-Looper"><span class="nav-number">2.4.1.1.</span> <span class="nav-text">创建普通线程上的 Looper</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建主线程上的-Looper"><span class="nav-number">2.4.1.2.</span> <span class="nav-text">创建主线程上的 Looper</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结-1"><span class="nav-number">2.4.1.3.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#loop-方法"><span class="nav-number">2.4.2.</span> <span class="nav-text">loop 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#退出-Looper"><span class="nav-number">2.4.3.</span> <span class="nav-text">退出 Looper</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#回到-Handler"><span class="nav-number">2.5.</span> <span class="nav-text">回到 Handler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">2.6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">2.7.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Android-的消息机制分析"><span class="nav-number">2.</span> <span class="nav-text">Android 的消息机制分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#从-Handler-出发"><span class="nav-number">2.1.</span> <span class="nav-text">从 Handler 出发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">2.1.1.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MessageQueue-对象是从哪里来的？"><span class="nav-number">2.1.2.</span> <span class="nav-text">MessageQueue 对象是从哪里来的？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MessageQueue-的工作原理"><span class="nav-number">2.2.</span> <span class="nav-text">MessageQueue 的工作原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#enqueueMessage-方法："><span class="nav-number">2.2.1.</span> <span class="nav-text">enqueueMessage 方法：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#next-方法"><span class="nav-number">2.2.2.</span> <span class="nav-text">next 方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ThreadLocal-简介"><span class="nav-number">2.3.</span> <span class="nav-text">ThreadLocal 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Looper-的工作原理"><span class="nav-number">2.4.</span> <span class="nav-text">Looper 的工作原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-Looper"><span class="nav-number">2.4.1.</span> <span class="nav-text">创建 Looper</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建普通线程上的-Looper"><span class="nav-number">2.4.1.1.</span> <span class="nav-text">创建普通线程上的 Looper</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建主线程上的-Looper"><span class="nav-number">2.4.1.2.</span> <span class="nav-text">创建主线程上的 Looper</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结-1"><span class="nav-number">2.4.1.3.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#loop-方法"><span class="nav-number">2.4.2.</span> <span class="nav-text">loop 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#退出-Looper"><span class="nav-number">2.4.3.</span> <span class="nav-text">退出 Looper</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#回到-Handler"><span class="nav-number">2.5.</span> <span class="nav-text">回到 Handler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数量关系"><span class="nav-number">2.6.</span> <span class="nav-text">数量关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">2.7.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">2.8.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></li></ol></div>
             
 
           </div>
