@@ -95,7 +95,7 @@
 <meta property="og:site_name" content="Tim's Track">
 <meta property="og:description" content="概要ArrayList 是一个动态数组，它是线程不安全的，允许元素为 null。它的底层数据结构是数组，ArrayList 实现了 List&amp;lt;E&amp;gt;, RandomAccess, Cloneable, java.io.Serializable 接口，其中 RandomAccess 代表了其拥有随机快速访问的能力，ArrayList 可以以 O(1) 的时间复杂度去根据下标访问元素。
 时间">
-<meta property="og:updated_time" content="2017-09-07T03:27:44.739Z">
+<meta property="og:updated_time" content="2017-09-08T05:59:25.609Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 集合框架之 ArrayList">
 <meta name="twitter:description" content="概要ArrayList 是一个动态数组，它是线程不安全的，允许元素为 null。它的底层数据结构是数组，ArrayList 实现了 List&amp;lt;E&amp;gt;, RandomAccess, Cloneable, java.io.Serializable 接口，其中 RandomAccess 代表了其拥有随机快速访问的能力，ArrayList 可以以 O(1) 的时间复杂度去根据下标访问元素。
@@ -445,6 +445,7 @@
         <h2 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h2><p>ArrayList 是一个动态数组，它是线程不安全的，允许元素为 null。它的底层数据结构是数组，ArrayList 实现了 <code>List&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable</code> 接口，其中 RandomAccess 代表了其拥有随机快速访问的能力，<code>ArrayList</code> 可以以 O(1) 的时间复杂度去根据下标访问元素。</p>
 <h3 id="时间、空间效率"><a href="#时间、空间效率" class="headerlink" title="时间、空间效率"></a>时间、空间效率</h3><p>因为数组内存的连续，可以根据下标以 O1 的时间改查元素，因此<strong>时间效率很高</strong></p>
 <p>同样也因为数组要占据一块连续的内存空间，所以它也有数组的缺点——<strong>空间效率不高</strong>。</p>
+<a id="more"></a>
 <h3 id="性能"><a href="#性能" class="headerlink" title="性能"></a>性能</h3><p>当集合中的元素超出容量时，会进行<strong>扩容操作</strong>，扩容操作是一个性能消耗较大的地方，所以如果能预知数据的规模，最好在初始化时通过 <code>public ArrayList(int initialCapacity)</code> 构造方法指定 ArrayList 的大小，来构造 ArrayList 实例，以<strong>减少扩容次数，提高效率</strong>。</p>
 <p>在添加大量元素前，应用程序也可以使用 ensureCapacity 操作来增加 ArrayList 实例的容量，这可以减少递增式再分配的数量。 不过该方法是 ArrayList 中添加的，List 中没有该方法。所以如果声明的类型为 List 的话，需要进行强转。<code>((ArrayList)list).ensureCapacity(number);</code></p>
 <p>当每次修改结构时(添加或者删除元素)，都会修改 modCount。</p>
@@ -698,7 +699,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">18</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -709,7 +710,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -720,7 +721,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

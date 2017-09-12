@@ -71,7 +71,7 @@
 <link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="JVM," />
 
 
 
@@ -107,7 +107,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28902291-989d0c04-7830-11e7-8c0f-68559b75a4d4.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28902476-a8394528-7831-11e7-8fae-73813a57bc06.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28903495-d71fceb0-7837-11e7-8e8e-6f26da762c22.png">
-<meta property="og:updated_time" content="2017-09-08T05:38:19.192Z">
+<meta property="og:updated_time" content="2017-09-08T05:57:42.493Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JVM 垃圾收集器与内存分配策略">
 <meta name="twitter:description" content="确定回收的对象「死去」的对象即不可能再被任何途径使用的对象。
@@ -357,6 +357,28 @@
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">JVM</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -388,7 +410,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  10,211
+                  10,308
                 </span>
               
 
@@ -664,6 +686,7 @@
 <li>但是当 CPU 不足 4 个（譬如 2 个）时，CMS 对用户程序的影响就可能变得很大.</li>
 </ul>
 </li>
+<li>用户程序在 GC 过程中执行 缓慢的问题，推出了<strong>增量式 CMS</strong>（i-CMS），在并发标记、清除时让 GC 线程与用户线程交替执行，尽量减少 GC 线程独占资源的时间，虽然这样会导致整个垃圾回收过程变长。但是效果不明显，目前版本中已经不再推荐使用。</li>
 </ul>
 </li>
 <li><strong>无法处理浮动垃圾</strong>（Floating  Garbage）<br>可能出现「Concurrent  Mode Failure」失败而导致另一次 Full GC 的产生。<ul>
@@ -864,6 +887,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/blog/tags/JVM/" rel="tag"># JVM</a>
+          
+        </div>
+      
 
       
         
@@ -882,6 +911,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2017/09/10/Java 集合框架之 HashMap 工作原理/" rel="prev" title="Java 集合框架之 HashMap 工作原理">
+                Java 集合框架之 HashMap 工作原理 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -1027,7 +1060,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">18</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1038,7 +1071,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -1049,7 +1082,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
