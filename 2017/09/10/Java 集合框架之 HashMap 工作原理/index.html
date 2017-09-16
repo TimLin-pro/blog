@@ -98,7 +98,7 @@
 <meta property="og:image" content="https://tech.meituan.com/img/java-hashmap/hashMap%201.8%20%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%E4%BE%8B%E5%9B%BE1.png">
 <meta property="og:image" content="https://tech.meituan.com/img/java-hashmap/hashMap%201.8%20%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%E4%BE%8B%E5%9B%BE2.png">
 <meta property="og:image" content="https://tech.meituan.com/img/java-hashmap/jdk1.8%20hashMap%E6%89%A9%E5%AE%B9%E4%BE%8B%E5%9B%BE.png">
-<meta property="og:updated_time" content="2017-09-12T06:02:22.537Z">
+<meta property="og:updated_time" content="2017-09-16T01:29:40.250Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 集合框架之 HashMap 工作原理">
 <meta name="twitter:description" content="概要概括的说，HashMap 是一个关联数组、哈希表，它是线程不安全的，允许key 为 null,value 为 null。遍历时无序。其底层数据结构是数组称之为哈希桶，每个桶里面放的是链表，链表中的每个节点，就是哈希表中的每个元素。在 JDK8 中，当链表长度达到 8，会转化成红黑树，以提升它的查询、插入效率，它实现了Map&amp;lt;K,V&amp;gt;, Cloneable, Serializable">
@@ -448,9 +448,10 @@
         <h2 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h2><p>概括的说，<code>HashMap</code> 是一个<strong>关联数组、哈希表</strong>，它是<strong>线程不安全</strong>的，允许<strong>key 为 null</strong>,<strong>value 为 null</strong>。遍历时<strong>无序</strong>。<br>其底层数据结构是<strong>数组</strong>称之为<strong>哈希桶</strong>，每个<strong>桶里面放的是链表</strong>，链表中的<strong>每个节点</strong>，就是哈希表中的<strong>每个元素</strong>。<br>在 JDK8 中，当链表长度达到 8，会转化成红黑树，以提升它的查询、插入效率，它实现了<code>Map&lt;K,V&gt;, Cloneable, Serializable</code>接口。</p>
 <p>因其底层哈希桶的数据结构是数组，所以也会涉及到<strong>扩容</strong>的问题。</p>
 <p>当<code>HashMap</code>的容量达到<code>threshold</code>域值时，就会触发扩容。扩容前后，哈希桶的<strong>长度一定会是 2 的次方</strong>。<br>这样在根据 key 的 hash 值寻找对应的哈希桶时，可以<strong>用位运算替代取余操作</strong>，<strong>更加高效</strong>。</p>
-<p>而 key 的 hash 值，并不仅仅只是 key 对象的<code>hashCode()</code>方法的返回值，还会经过<strong>扰动函数</strong>的扰动，以使 hash 值更加均衡。<br>因为<code>hashCode()</code>是<code>int</code>类型，取值范围是 40 多亿，只要哈希函数映射的比较均匀松散，碰撞几率是很小的。<br>但就算原本的<code>hashCode()</code>取得很好，每个 key 的<code>hashCode()</code>不同，但是由于<code>HashMap</code>的哈希桶的长度远比 hash 取值范围小，默认是 16，所以当对 hash 值以桶的长度取余，以找到存放该 key 的桶的下标时，由于取余是通过与操作完成的，会忽略 hash 值的高位。因此只有<code>hashCode()</code>的低位参加运算，发生不同的 hash 值，但是得到的 index 相同的情况的几率会大大增加，这种情况称之为<strong>hash 碰撞。</strong> 即，碰撞率会增大。</p>
-<p><strong>扰动函数</strong>就是为了解决 hash 碰撞的。它会综合 hash 值高位和低位的特征，并存放在低位，因此在与运算时，相当于高低位一起参与了运算，以减少 hash 碰撞的概率。（在 JDK8 之前，扰动函数会扰动四次，JDK8 简化了这个操作）</p>
+<p>而 key 的 hash 值，并不仅仅只是 key 对象的<code>hashCode()</code>方法的返回值，还会经过<strong>扰动函数</strong>的扰动，以使 hash 值更加均衡。<br>因为<code>hashCode()</code>是<code>int</code>类型，取值范围是 40 多亿，只要哈希函数映射的比较均匀松散，碰撞几率是很小的。 </p>
 <a id="more"></a>
+<p>但就算原本的<code>hashCode()</code>取得很好，每个 key 的<code>hashCode()</code>不同，但是由于<code>HashMap</code>的哈希桶的长度远比 hash 取值范围小，默认是 16，所以当对 hash 值以桶的长度取余，以找到存放该 key 的桶的下标时，由于取余是通过与操作完成的，会忽略 hash 值的高位。因此只有<code>hashCode()</code>的低位参加运算，发生不同的 hash 值，但是得到的 index 相同的情况的几率会大大增加，这种情况称之为<strong>hash 碰撞。</strong> 即，碰撞率会增大。</p>
+<p><strong>扰动函数</strong>就是为了解决 hash 碰撞的。它会综合 hash 值高位和低位的特征，并存放在低位，因此在与运算时，相当于高低位一起参与了运算，以减少 hash 碰撞的概率。（在 JDK8 之前，扰动函数会扰动四次，JDK8 简化了这个操作）</p>
 <p>执行扩容操作时，会 new 一个新的<code>Node</code>数组作为哈希桶，然后将原哈希表中的所有数据(<code>Node</code>节点)移动到新的哈希桶中，相当于对原哈希表中所有的数据重新做了一个 put 操作。所以性能消耗很大，<strong>可想而知，在哈希表的容量越大时，性能消耗越明显。</strong></p>
 <p>扩容时，如果发生过哈希碰撞，节点数小于 8 个。则要根据链表上每个节点的哈希值，依次放入新哈希桶对应下标位置。<br>因为扩容是容量翻倍，所以原链表上的每个节点，现在可能存放在原来的下标，即 low 位， 或者扩容后的下标，即 high 位。 high 位= low 位+原哈希桶容量<br>如果追加节点后，链表数量》=8，则转化为红黑树</p>
 <p>由迭代器的实现可以看出，遍历 HashMap 时，顺序是按照哈希桶从低到高，链表从前往后，依次遍历的。属于<strong>无序</strong>集合。</p>
@@ -732,7 +733,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-count">19</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -743,7 +744,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">12</span>
+                <span class="site-state-item-count">13</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -754,7 +755,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
