@@ -1,0 +1,1362 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java,原理解析," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。
+缓存虽然解决了速度差，但是也引入了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 内存模型与线程浅析">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2017/09/14/Java-内存模型与线程浅析/index.html">
+<meta property="og:site_name" content="Tim's Track">
+<meta property="og:description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。
+缓存虽然解决了速度差，但是也引入了">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28780154-57045378-7638-11e7-8145-c98bc2ab581b.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28780155-570d932a-7638-11e7-90cf-082ba9b59d00.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30509011-80b17200-9ad7-11e7-9244-2081c271c752.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30508637-9ff0e262-9ace-11e7-8a3a-608482184f5d.jpg">
+<meta property="og:updated_time" content="2017-09-19T07:04:05.808Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java 内存模型与线程浅析">
+<meta name="twitter:description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。
+缓存虽然解决了速度差，但是也引入了">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/28780154-57045378-7638-11e7-8145-c98bc2ab581b.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/09/14/Java-内存模型与线程浅析/"/>
+
+
+
+
+
+  <title> Java 内存模型与线程浅析 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/09/14/Java-内存模型与线程浅析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java 内存模型与线程浅析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-14T22:42:43+08:00">
+                2017-09-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/java/" itemprop="url" rel="index">
+                    <span itemprop="name">Java</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/java/原理解析/" itemprop="url" rel="index">
+                    <span itemprop="name">原理解析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2017/09/14/Java-内存模型与线程浅析/" class="leancloud_visitors" data-flag-title="Java 内存模型与线程浅析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  6,670
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  23
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="硬件的效率与一致性"><a href="#硬件的效率与一致性" class="headerlink" title="硬件的效率与一致性"></a>硬件的效率与一致性</h2><p><strong>多级缓存的作用</strong>：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。</p>
+<p>缓存虽然解决了速度差，但是也引入了新问题——缓存与主内存的数据一致性(Cache Coherence)</p>
+<a id="more"></a>
+<p><img src="https://user-images.githubusercontent.com/16668676/28780154-57045378-7638-11e7-8145-c98bc2ab581b.png" alt="default"></p>
+<p>本文中「内存模型」一词，可以理解为在<strong>特定的操作协议</strong>下，对<strong>特定的内存或高速缓存</strong>进行读写访问的过程抽象。</p>
+<p>除了增加高速缓存之外，为了使得处理器内部的运算单元能尽量被充分利用，处理器可能<strong>会对输入代码进行乱序执行(Out-Of-Order Execution)优化</strong>，处理器会在计算之后将乱序执行的结果重组，保证该结果与顺序执行的结果是一致。</p>
+<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><h3 id="主内存与工作内存"><a href="#主内存与工作内存" class="headerlink" title="主内存与工作内存"></a>主内存与工作内存</h3><p>以下所谈的<strong>变量</strong>(Variables)与 Java 编程中所说的变量有所区别，它包括了实例字段、静态字段和构成数组对象的元素，但<strong>不包括局部变量与方法参数</strong>，因为后者是线程私有的，不会被共享，自然就不会存在竞争问题。</p>
+<ul>
+<li>~注~：如果局部变量是一个 reference 类型，它引用的对象在 Java 堆中可被各个线程共享，但是 reference 本身在 Java 栈的局部变量表中，它是线程私有的。</li>
+</ul>
+<ul>
+<li>Java 内存模型规定了<strong>所有的变量都存储在主内存</strong>(Main  Memory)中(此处的主内存与介绍物理硬件时的主内存名字一样，两者也可以互相类比，但此处仅是虚拟机内存的一部分)。</li>
+<li>每条线程还有自己的<strong>工作内存</strong>(Working  Memory，可与前面讲的处理器高速缓存类比)，线程的工作内存中保存了被该线程使用到的变量的<strong>主内存副本拷贝</strong> [4]</li>
+<li>线程对变量的所有<strong>操作(读取、赋值等)都必须在==工作==内存中进行</strong>，而不能直接读写主内存中的变量 [5] 。<ul>
+<li>干活要在操作线程中干。</li>
+<li>这个对象的引用、对象中某个在线程访问到的字段是有可能存在拷贝的，但不会有虚拟机实现成把整个对象拷<br>贝 A 一次。</li>
+</ul>
+</li>
+<li><strong>不同的线程</strong>之间也无法直接访问对方工作内存中的变量，线程间变量值的传递均<strong>需要通过主内存来完成</strong>。</li>
+</ul>
+<p><img src="https://user-images.githubusercontent.com/16668676/28780155-570d932a-7638-11e7-90cf-082ba9b59d00.png" alt="12.2 线程、主内存、工作内存三者的交互关系"></p>
+<h3 id="内存间交互操作"><a href="#内存间交互操作" class="headerlink" title="内存间交互操作"></a>内存间交互操作</h3><p>Java 内存模型中定义了以下 8 种操作来完成，虚拟机实现时必须保证下面提及的每一种操作都是原子的、不可再分的(对于 double 和 long 类型的变量来说，load、store、read 和 write 操作在某些平台上允许有例外。</p>
+<ul>
+<li>lock</li>
+<li>unlock</li>
+<li>read</li>
+<li>load</li>
+<li>use</li>
+<li>assign</li>
+<li>store</li>
+<li>write</li>
+<li>如果要把一个变量从主内存复制到工作内存，那就要顺序地执行 read 和 load 操作，</li>
+<li>如果要把变量从工作内存同步回主内存，就要顺序地执行 store 和 write 操作。</li>
+<li>注意，Java 内存模型只要求上述两个操作<strong>必须按顺序执行</strong>，而<strong>没有保证是==连续==执行</strong>。</li>
+</ul>
+<p>Java 内存模型还规定了在执行上述 8 种基本操作时必须满足如下规则：</p>
+<ul>
+<li>不允许 read 和 load、store 和 write 操作之一<strong>单独出现</strong>，即不允许一个变量从主内存读取了但工作内存不接受，或者从工作内存发起回写了但主内存不接受的情况出现。<ul>
+<li>read 和 load、store 和 write 。工作内存与主内存之间有求必应。</li>
+</ul>
+</li>
+<li>不允许一个线程丢弃它的最近的 assign 操作，即变量在工作内存中改变了之后必须把该变化同步回主内存。<ul>
+<li>改了一定要让主内存知道。</li>
+</ul>
+</li>
+<li>不允许一个线程无原因地(没有发生过任何 assign 操作)把数据从线程的工作内存同步回主内存中。<ul>
+<li>没改就别瞎折腾。</li>
+</ul>
+</li>
+<li>一个新的变量只能在主内存中「诞生」，不允许在工作内存中直接使用一个未被初始化(load 或 assign)的变量，换句话说，就是对一个变量实施 use、store 操作之前，必须先执行过了 assign 和 load 操作。<ul>
+<li>​</li>
+</ul>
+</li>
+<li>一个变量在同一个时刻<strong>只允许一条线程</strong>对其进行 lock 操作，但 lock 操作可以被同一条线程重复执行多次，多次执行 lock 后，只有执行相同次数的 unlock 操作，变量才会被解锁。<ul>
+<li>锁了多少次，开多少次。</li>
+</ul>
+</li>
+<li>如果对一个变量执行 lock 操作，那将会清空工作内存中此变量的值，在执行引擎使用这个变量前，需要重新执行 load 或 assign 操作初始化变量的值。</li>
+<li>如果一个变量事先没有被 lock 操作锁定，那就不允许对它执行 unlock 操作，也不允许去 unlock 一个被其他线程锁定住的变量。<ul>
+<li>没有锁不要乱开锁</li>
+</ul>
+</li>
+<li>对一个变量执行 unlock 操作之前，必须先把此变量同步回主内存中(执行 store、write 操作)。<ul>
+<li>做好手尾，再开锁。</li>
+</ul>
+</li>
+</ul>
+<p>这 8 种内存访问操作以及上述规则限定，再加上稍后介绍的对 volatile 的一些特殊规定，就已经完全确定了 Java 程序中哪些内存访问操作在并发下是安全的。</p>
+<h3 id="对于-volatile-型变量的特殊规则"><a href="#对于-volatile-型变量的特殊规则" class="headerlink" title="对于 volatile 型变量的特殊规则"></a>对于 volatile 型变量的特殊规则</h3><p>当一个变量定义为 volatile 之后，它将具备两种特性，</p>
+<ul>
+<li>第一是保证此变量对所有线程的<strong>可见性</strong>，这里的「可见性」是指当一条线程修改了这个变量的值，新值<strong>对于其他线程来说是可以立即得知</strong>的。<ul>
+<li>而普通变量不能做到这一点，普通变量的值在线程间传递均需要通过主内存来完成，例如，线程 A 修改一个普通变量的值，然后向主内存进行回写，另外一条线程 B 在线程 A 回写完成了之后再从主内存进行读取操作，新变量值才会对线程 B 可见。</li>
+</ul>
+</li>
+<li>第二个语义是禁止指令重排序。</li>
+</ul>
+<p>可见性 != 线程安全</p>
+<p>volatile 变量在各个线程的工作内存中不存在一致性问题(在各个线程的工作内存中，volatile 变量也可以存在不一致的情况，但由于每次使用之前都要先刷新，执行引擎看不到不一致的情况，因此可以认为不存在一致性问题)，但是 <strong>Java 里面的==运算并非原子操作==</strong>，导致 volatile 变量的运算在并发下一样是不安全的，</p>
+<ul>
+<li>非原子操作会导致读取数据后，多个线程并行进行操作的都是旧值。那么加载到主内存的值也就不是最新的了。</li>
+</ul>
+<p>由于 volatile 变量只能保证可见性，在不符合以下<strong>两条规则</strong>的运算场景中，我们仍然要通<br>过加锁(使用 synchronized 或 java.util.concurrent 中的原子类)来保证原子性。</p>
+<ul>
+<li><strong>运算结果并不依赖变量的当前值</strong>，或者能够<strong>确保只有单一的线程修改变量的值</strong>。</li>
+<li>变量<strong>不需要与其他的状态变量共同参与不变约束</strong></li>
+</ul>
+<h4 id="性能"><a href="#性能" class="headerlink" title="性能"></a>性能</h4><p>某些情况下，volatile 的同步机制的性能确实要优于锁(使用 synchronized 关键字或 java.util.concurrent 包里面的锁)，但是由于虚拟机对锁实行的许多消除和优化，使得我们很难量化地认为 volatile 就会比 synchronized 快多少。</p>
+<ul>
+<li>volatile 变量<strong>读操作的性能消耗与普通变量几乎没有什么差别</strong>，但是<strong>写操作则可能会慢一些</strong>，因为它需要在本地代码中插入许<br>多内存屏障指令来保证处理器不发生乱序执行。</li>
+</ul>
+<p>大多数场景下 volatile 的总开销仍然要比锁低，我们在 volatile 与锁之中选择的唯一依据仅仅是 volatile 的语义能否满足使用场景的需求。</p>
+<h3 id="内存屏障"><a href="#内存屏障" class="headerlink" title="内存屏障"></a>内存屏障</h3><p>内存屏障（Memory Barrier，或有时叫做内存栅栏，Memory Fence）是一种 CPU 指令，用于控制特定条件下的重排序和内存可见性问题。Java 编译器也会根据内存屏障的规则禁止重排序。<br>内存屏障可以被分为以下 4 种类型</p>
+<ul>
+<li><strong>LoadLoad 屏障</strong>：对于这样的语句 Load1; LoadLoad 屏障; Load2，在 Load2 及后续读取操作要读取的数据被访问前，保证 Load1 要读取的数据被读取完毕。</li>
+<li><strong>StoreStore 屏障</strong>：对于这样的语句 Store1; StoreStore 屏障; Store2，在 Store2 及后续写入操作执行前，保证 Store1 的写入操作对其它处理器可见。</li>
+<li><strong>LoadStore 屏障</strong>：对于这样的语句 Load1; LoadStore 屏障; Store2，在 Store2 及后续写入操作被刷出前，保证 Load1 要读取的数据被读取完毕。</li>
+<li><strong>StoreLoad 屏障</strong>：对于这样的语句 Store1; StoreLoad 屏障; Load2，在 Load2 及后续所有读取操作执行前，保证 Store1 的写入对所有处理器可见。它的<strong>开销是四种屏障中最大的</strong>。在大多数处理器的实现中，这个屏障是个万能屏障，兼具其它三种内存屏障的功能。</li>
+</ul>
+<p>有的处理器的重排序规则较严，无需内存屏障也能很好的工作，Java 编译器会在这种情况下不放置内存屏障。<br>为了实现 JSR-133 的规定，Java 编译器会这样使用内存屏障：</p>
+<p><img src="https://user-images.githubusercontent.com/16668676/30509011-80b17200-9ad7-11e7-9244-2081c271c752.png" alt="fences-table"></p>
+<h3 id="对于-long-和-double-型变量的特殊规则"><a href="#对于-long-和-double-型变量的特殊规则" class="headerlink" title="对于 long 和 double 型变量的特殊规则"></a>对于 long 和 double 型变量的特殊规则</h3><p>允许虚拟机实现选择可以不保证 64 位数据类型的 load、store、read 和 write 这 4 个操作的<br>原子性，这点就是所谓的 long 和 double 的<strong>非原子性协定</strong>(Nonatomic Treatment ofdouble and<br>long Variables)。</p>
+<p>Java 内存模型「强烈建议」虚拟机把这些操作实现为具有原子性的操作。目前各种商用虚拟机也都是将它们实现为原子操作，因此我们在<strong>编写代码时==一般不需要==把用到的 long 和 double 变量专门声明为 volatile</strong>。</p>
+<h3 id="原子性、可见性与有序性"><a href="#原子性、可见性与有序性" class="headerlink" title="原子性、可见性与有序性"></a>原子性、可见性与有序性</h3><h4 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h4><p><strong>原子性</strong>是指<strong>一个操作是不可中断的。即使是在多个线程一起执行的时候，一个操作一旦开始，就不会被其它线程干扰</strong>。</p>
+<p>由 Java 内存模型直接保证的原子性变量操作包括 read、load、assign、use、store 和 write，我们大致可以认为<strong>基本数据类型的访问读写是具备原子性的</strong>(例外就是 long 和 double 的非原子性协定)。</p>
+<p>尽管虚拟机未把 lock 和 unlock 操作直接开放给用户使用，但是却提供了更高层次的字节码指令 monitorenter 和 monitorexit 来隐式地使用这两个操作，这两个字节码指令反映到 Java 代码中就是同步块——synchronized 关键字，因此在 synchronized 块之间的操作也具备原子性。</p>
+<h4 id="可见性"><a href="#可见性" class="headerlink" title="可见性"></a>可见性</h4><p><strong>可见性</strong>(Visibility)：可见性是指当一个线程修改了共享变量的值，其他线程能够<strong>立即得知这个修改</strong>。</p>
+<p>除了 volatile 以外，Java 还有两个关键字能实现可见性，即 synchronized 和 final。</p>
+<ul>
+<li>同步块的可见性是由「对一个变量执行 unlock 操作之前，必须先把此变量同步回主内存中(执行 store、write 操作)」这条规则获得的，</li>
+<li>final 关键字的可见性是指：保证一个对象的构建方法结束前，所有 final 成员变量都必须完成初始化（前提是没有 this 引用溢出）。在构造器中一旦初始化完成，并且构造器没有把「this」的引用传递出去，那在其他线程中就能看见 final 字段的值。<ul>
+<li><strong>this 引用逃逸</strong> 是指在构造函数返回之前其他线程就持有该对象的引用。调用尚未构造完全的对象的方法可能引发令人疑惑的错误, 因此应该避免 this 逃逸的发生。this 逃逸经常发生在构造函数中启动线程或注册监听器时</li>
+</ul>
+</li>
+</ul>
+<h4 id="有序性"><a href="#有序性" class="headerlink" title="有序性"></a>有序性</h4><p>如果在本线程内观察，所有的操作都是有序的；如果在一个线程中观察另一个线程，所有的操作都是无序的。前半句是指「线程内表现为串行的语义」(Within-Thread  As-If-Serial Semantics)，后半句是指「指令重排序」现象和「工作内存与主内存同步延迟」现象。</p>
+<h3 id="先行发生原则"><a href="#先行发生原则" class="headerlink" title="先行发生原则"></a>先行发生原则</h3><p><strong>先行发生原则是判断数据是否存在竞争、线程是否安全的主要依据</strong>。</p>
+<p>先行发生是 Java 内存模型中定义的两项操作之间的偏序关系，如果说操作 A 先行发生于操作 B，其实就是说在发生操作 B 之前，<strong>操作 A 产生的影响能被操作 B 观察到</strong>。「<strong>影响</strong>」包括修改了内存中共享变量的值、发送了消息、调用了方法等。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//以下操作在线程 A 中执行</span></div><div class="line">i=<span class="number">1</span>；</div><div class="line"><span class="comment">//以下操作在线程 B 中执行</span></div><div class="line">j=i；</div><div class="line"><span class="comment">//以下操作在线程 C 中执行</span></div><div class="line">i=<span class="number">2</span>；</div></pre></td></tr></table></figure>
+<p>这些先行发生关系无须任何同步器协助就已经存在，可以在编码中直接使用。<strong>如果两个操作之间的关系不在此列，并且无法从下列规则推导出来的话，它们就没有顺序性保障，虚拟机可以对它们随意地进行重排序</strong>。</p>
+<ul>
+<li><strong>程序次序规则</strong>(Program Order Rule)：在一个线程内，按照程序代码顺序，书写在前面的操作先行发生于书写在后面的操作。准确地说，应该是控制流顺序而不是程序代码顺序，因为要考虑分支、循环等结构。</li>
+<li><strong>管程锁定规则</strong>(Monitor Lock Rule)：一个 unlock 操作先行发生于后面对同一个锁的 lock<br>操作。这里必须强调的是同一个锁，而「后面」是指时间上的先后顺序。<br>volatile 变量规则(Volatile Variable Rule)：对一个 volatile 变量的写操作先行发生于后面<br>对这个变量的读操作，这里的「后面」同样是指时间上的先后顺序。</li>
+<li><strong>线程启动规则</strong>(Thread Start Rule)：Thread 对象的 start()方法先行发生于此线程的每<br>一个动作。</li>
+<li><strong>线程终止规则</strong>(Thread Termination Rule)：线程中的所有操作都先行发生于对此线程的终止检测，我们可以通过 Thread.join()方法结束、Thread.isAlive()的返回值等手段检测<br>到线程已经终止执行。</li>
+<li><strong>线程中断规则</strong>(Thread Interruption Rule)：对线程 interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生，可以通过 Thread.interrupted()方法检测到是否有中断发生。</li>
+<li><strong>对象终结规则</strong>(Finalizer Rule)：一个对象的初始化完成(构造函数执行结束)先行发生于它的 finalize()方法的开始。</li>
+<li><strong>传递性</strong>(Transitivity)：如果操作 A 先行发生于操作 B，操作 B 先行发生于操作 C，那就可以得出操作 A 先行发生于操作 C 的结论。</li>
+</ul>
+<p>Java 无需任何同步手段就能成立的先行发生规则就以上 8 点</p>
+<p>==时间先后顺序与先行发生原则之间基本没有太大的关系==，所以我们衡量并发安全问题的时候==不要受到时间顺序的干扰，一切必须以先行发生原则为准==。</p>
+<h2 id="Java-与线程"><a href="#Java-与线程" class="headerlink" title="Java 与线程"></a>Java 与线程</h2><h3 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h3><p>(广义)<br>实现线程主要有 3 种方式：使用内核线程实现、使用用户线程实现和使用用户线程加轻量级进程混合实现。</p>
+<p>Thread 类与大部分的 Java API 有显著的差别，它的所有关键方法都是声明为 Native 的。在 Java API 中，一个 Native 方法往往意味着这个方法没有使用或无法使用平台无关的手段来实现(当然也可能是为了执行效率而使用 Native 方法，不过，通常最高效率的手段也就是平台相关的手段)。</p>
+<h4 id="1-内核线程实现"><a href="#1-内核线程实现" class="headerlink" title="1.内核线程实现"></a>1.内核线程实现</h4><p>内核线程(Kernel-Level Thread,KLT)就是<strong>直接由操作系统内核</strong>(Kernel，下称内核)<strong>支持的线程</strong>，这种线程由内核来完成线程切换，内核通过操纵调度器(Scheduler)对线程进行调度，并负责将线程的任务映射到各个处理器上。</p>
+<p>程序一般不会直接去使用内核线程，而是去使用内核线程的一种高级接口——<strong>轻量级进程</strong>(Light Weight Process,LWP)，<strong>轻量级进程就是我们通常意义上所讲的线程</strong>，由于每个轻量级进程都由一个内核线程支持，因此只有先支持内核线程，才能有轻量级进程。</p>
+<p><strong>系统调用的代价</strong>相对较高，需要在<strong>用户态(User Mode)和内核态(Kernel Mode)中来回切换</strong>。其次，每个轻量级进程都需要有一个内核线程的支持，因此轻量级进程要消耗一定的内核资源(如内核线程的栈空间)，因此一个系统支持轻量级进程的数量是有限的。</p>
+<p>1:1</p>
+<h4 id="2-使用用户线程实现"><a href="#2-使用用户线程实现" class="headerlink" title="2.使用用户线程实现"></a>2.使用用户线程实现</h4><p>从广义上来讲，一个线程只要不是内核线程，就可以认为是用户线程(User Thread,UT)，因此，从这个定义上来讲，轻量级进程也属于用户线程，但轻量级进程的实现始终是建立在内核之上的，许多操作都要进行系统调用，效率会受到限制。<br><strong>狭义上的用户线程指的是完全建立在用户空间的线程库上，系统内核不能感知用户线程存在的实现</strong>。</p>
+<p>现在使用用户线程的程序越来越少了，Java、Ruby 等语言都曾经使用过用户线程，最终又都放弃使用它。</p>
+<h4 id="3-使用用户线程加轻量级进程混合实现"><a href="#3-使用用户线程加轻量级进程混合实现" class="headerlink" title="3.使用用户线程加轻量级进程混合实现"></a>3.使用用户线程加轻量级进程混合实现</h4><p>线程除了依赖内核线程实现和完全由用户程序自己实现之外，还有一种将内核线程与用户线程一起使用的实现方式。在这种混合实现下，既存在用户线程，也存在轻量级进程。用户线程还是完全建立在用户空间中在这种混合模式中，用户线程与轻量级进程的数量比是不定的，即为 N：M 的关系</p>
+<h3 id="线程调度"><a href="#线程调度" class="headerlink" title="线程调度"></a>线程调度</h3><p>主要调度方式有两种，分别是<strong>协同式线程调度</strong>(Cooperative  Threads-Scheduling)和<strong>抢占式线程调度</strong>(Preemptive  Threads-Scheduling)。</p>
+<p>如果使用协同式调度的多线程系统，<strong>线程的执行时间由线程本身来控制</strong>，线程把自己的工作执行完了之后，要主动通知系统切换到另外一个线程上。</p>
+<ul>
+<li>优点：实现简单，不用考虑同步问题。</li>
+<li>缺点：不稳定，前面一个线程执行出现问题，那么后面的线程都会受到影响。</li>
+</ul>
+<p>如果使用抢占式调度的多线程系统，那么每个线程将<strong>由系统来分配执行时间</strong>，线程的切换不由线程本身来决定。</p>
+<ul>
+<li>优点：相对于协同式调度而言，较为稳定。</li>
+<li>缺点：可控性不是很高，因为线程的优先级不是很靠谱；虽然 Thread.yield()可以让出执行时间，但是要获取执行时间的话，线程本身是没有什么办法。</li>
+</ul>
+<p>目前 Java 使用的线程调度方式就是抢占式调度。JDK 后续版本中有可能会提供协程(Coroutines)方式来进行多任务处理</p>
+<p>为什么说线程优先级并不是太靠谱？因为 Java 的线程是通过映射到系统的原生线程上来实现的，所以线程调度最终还是取决于操作系统，虽然现在很多操作系统都提供线程优先级的概念，但是并不见得能与 Java 线程的优先级一一对应。</p>
+<h3 id="线程的状态转换"><a href="#线程的状态转换" class="headerlink" title="线程的状态转换"></a>线程的状态转换</h3><p>图片参考自<a href="http://uule.iteye.com/blog/1100799" target="_blank" rel="external">这篇文章</a></p>
+<p><img src="https://user-images.githubusercontent.com/16668676/30508637-9ff0e262-9ace-11e7-8a3a-608482184f5d.jpg" alt="thread state"></p>
+<ul>
+<li>创建 (New)</li>
+<li>运行，两种子状态<ul>
+<li>Running 正在执行</li>
+<li>Ready 等待着 CPU 给它分配执行时间。</li>
+</ul>
+</li>
+<li>等待 (Waiting)<ul>
+<li>无限期等待<ul>
+<li>没有设置 Timeout 参数的 Object.wait()方法。</li>
+<li>没有设置 Timeout 参数的 Thread.join()方法。</li>
+<li>LockSupport.park()方法。</li>
+</ul>
+</li>
+<li>有限期等待 (Timed Waiting)<ul>
+<li>Thread.sleep()方法。</li>
+<li>设置了 Timeout 参数的 Object.wait()方法。</li>
+<li>设置了 Timeout 参数的 Thread.join()方法。</li>
+<li>LockSupport.parkNanos()方法。</li>
+<li>LockSupport.parkUntil()方法。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>阻塞 (Blocked)<ul>
+<li>「<strong>阻塞状态」与「等待状态」的区别</strong>是：「阻塞状态」在<strong>等待着获取到一个互斥锁(排它锁)</strong>，这个事件将在另外一个线程放弃这个锁的时候发生；而「等待状态」则是在<strong>等待一段时间</strong>，或者唤醒动作的发生。在程序等待进入同步区域的时候，线程将进入这种状态。</li>
+</ul>
+</li>
+<li>结束 (Terminated)</li>
+</ul>
+<h4 id="相关方法介绍"><a href="#相关方法介绍" class="headerlink" title="相关方法介绍"></a>相关方法介绍</h4><p>调用 sleep、join 时，不会释放所占用的资源，会<strong>进入阻塞状态</strong>；<br>调用 wait 时，会释放所占用的资源，会<strong>进入等待队列</strong>。</p>
+<h4 id="sleep-方法"><a href="#sleep-方法" class="headerlink" title="sleep 方法"></a>sleep 方法</h4><p><strong>线程睡眠到期自动苏醒，并返回到<em>可运行状态</em>，不是运行状态</strong> 。sleep() 中指定的时间是线程不会运行的最短时间。因此，<strong>sleep() 方法不能保证该线程睡眠到期后就开始执行</strong>。</p>
+<p><strong>sleep()是静态方法</strong>，只能控制当前正在运行的线程。</p>
+<h4 id="wait-方法"><a href="#wait-方法" class="headerlink" title="wait 方法"></a>wait 方法</h4><p>因为 wait() 方法会释放锁，所以必须要在 synchronized 块中调用（也就是要先拿到锁，不然就没有锁可以是释放了）。</p>
+<h4 id="join-方法"><a href="#join-方法" class="headerlink" title="join 方法"></a>join 方法</h4><p>join() 导致线程栈发生了变化，当然这些变化都是瞬时的。</p>
+<p>join() 方法有<strong>带超时限制的重载版本</strong>。 例如 <code>t.join(5000);</code>则让线程等待 5000 毫秒，如果超过这个时间，则停止等待，变为可运行状态。</p>
+<h4 id="yield-方法"><a href="#yield-方法" class="headerlink" title="yield 方法"></a>yield 方法</h4><p>yield() 方法会停止当前线程（使之进入可运行状态），让同等优先权的线程运行。如果没有同等优先权的线程，那么 yield() 方法将不会起作用。 实际中无法保证 yield() 达到让步目的，因为<strong>让步的线程(回到可执行状态)还有可能被线程调度程序再次选中</strong>。</p>
+<h2 id="简记："><a href="#简记：" class="headerlink" title="简记："></a>简记：</h2><h3 id="硬件效率与一致性"><a href="#硬件效率与一致性" class="headerlink" title="硬件效率与一致性"></a>硬件效率与一致性</h3><p>因为处理器需要读取和返回数据，所以需要存储器。而存储器的速度与处理器的运算速度相差几个数量级。所以引入了缓存，引入缓存的同时也引入了主存与缓存中的数据一致性问题。</p>
+<p>为了充分利用处理器的运算能力，除了引入缓存以外，处理器可能还会对输入的代码进行来乱序执行(不影响结果)。JVM 的即时编译器中也有类似于指令重排的优化。</p>
+<h3 id="工作内存与主内存"><a href="#工作内存与主内存" class="headerlink" title="工作内存与主内存"></a>工作内存与主内存</h3><p>每条线程有自己的工作内存，工作内存是线程私有的，如果要交换必须通过主内存。<br>若要把二者与 Java 中的内存区域对应起来，则工作内存像对应虚拟机栈中的部分区域，主内存对应于堆中的对象实例数据部分。</p>
+<p>虚拟机可能会让<strong>工作内存</strong>优先存储在寄存器或者高速缓存中，因为<strong>程序运行时主要访问读写的是工作内存</strong> 。</p>
+<h3 id="内存间的交互操作"><a href="#内存间的交互操作" class="headerlink" title="内存间的交互操作"></a>内存间的交互操作</h3><p>(lock)read load use assign store write(unlock)</p>
+<ul>
+<li>一个变量在同一时刻只能被某<strong>一个</strong>线程 lock。但是该线程可以对这个变量 lock 多次。</li>
+<li>某些操作必须成对出现，比如 read 与 load 、store 与 write。</li>
+<li>对某个变量执行了 assign 操作，必须把它同步回主内存。</li>
+</ul>
+<h3 id="volatile-关键字"><a href="#volatile-关键字" class="headerlink" title="volatile 关键字"></a>volatile 关键字</h3><p>保证可见性、禁止指令重排。</p>
+<p>无法保证一致性。以多线程修改变量自增为例，当线程 A 读取了该变量(此时变量的值是正确的)但是还未进行 +1 操作，此变量的值被线程 B 执行了 +1 操作(更新后会通知所有线程，但是由于 线程 A 已经读取过该值了但是由还没有进行赋值操作，所以不会得到最新的值)，但是之后线程 A 会对旧值进行自增操作，导致结果错误。</p>
+<ul>
+<li>注：i++ 由 4 条字节码指令构成。从字节码层面解释：当 getStatic 指令把 race 的值(进行自增操作的变量)读取到操作栈顶时，volatile 保证 race 的值在此时是正确的，但是在执行 iconst_1、add 这些指令时，其他线程可能已经把  race 的值加大了，而在操作栈顶的值就变成了过期的数据，所以 putStatic 指令执行后就可能把较小的 race 值同步回主内存中。</li>
+</ul>
+<p>在<strong>不符合</strong>以下两条规则的运算场景中，<strong>仍然要通过加锁</strong>来保证原子性。</p>
+<ul>
+<li>运算结果不依赖变量当前的值 or 只要单一的线程修改变量的值</li>
+<li>变量不需要与其他的状态变量共同参与不变约束。</li>
+</ul>
+<p>普通变量只保证「结果正确」，volitale 变量还保证「程序正确」</p>
+<ul>
+<li>「程序正确」指的是按照顺序执行</li>
+</ul>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li>《深入理解 Java 虚拟机》 </li>
+<li><a href="https://tech.meituan.com/java-memory-reordering.html" target="_blank" rel="external">Java 内存访问重排序的研究</a></li>
+<li><a href="http://uule.iteye.com/blog/1100799" target="_blank" rel="external">线程状态的转换</a></li>
+</ul>
+<p>若本文中有不正确的结论、说法，请大家指出，共同探讨，共同进步，谢谢!</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/java/" rel="tag"># Java</a>
+          
+            <a href="/blog/tags/原理解析/" rel="tag"># 原理解析</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/09/11/Java 线程安全与锁优化/" rel="next" title="Java 线程安全与锁优化">
+                <i class="fa fa-chevron-left"></i> Java 线程安全与锁优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2017/09/19/JVM 之类加载机制/" rel="prev" title="虚拟机类加载机制">
+                虚拟机类加载机制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/ivanljt" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#硬件的效率与一致性"><span class="nav-number">1.</span> <span class="nav-text">硬件的效率与一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-内存模型"><span class="nav-number">2.</span> <span class="nav-text">Java 内存模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主内存与工作内存"><span class="nav-number">2.1.</span> <span class="nav-text">主内存与工作内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存间交互操作"><span class="nav-number">2.2.</span> <span class="nav-text">内存间交互操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对于-volatile-型变量的特殊规则"><span class="nav-number">2.3.</span> <span class="nav-text">对于 volatile 型变量的特殊规则</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#性能"><span class="nav-number">2.3.1.</span> <span class="nav-text">性能</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存屏障"><span class="nav-number">2.4.</span> <span class="nav-text">内存屏障</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对于-long-和-double-型变量的特殊规则"><span class="nav-number">2.5.</span> <span class="nav-text">对于 long 和 double 型变量的特殊规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原子性、可见性与有序性"><span class="nav-number">2.6.</span> <span class="nav-text">原子性、可见性与有序性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#原子性"><span class="nav-number">2.6.1.</span> <span class="nav-text">原子性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可见性"><span class="nav-number">2.6.2.</span> <span class="nav-text">可见性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#有序性"><span class="nav-number">2.6.3.</span> <span class="nav-text">有序性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#先行发生原则"><span class="nav-number">2.7.</span> <span class="nav-text">先行发生原则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-与线程"><span class="nav-number">3.</span> <span class="nav-text">Java 与线程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#线程的实现"><span class="nav-number">3.1.</span> <span class="nav-text">线程的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-内核线程实现"><span class="nav-number">3.1.1.</span> <span class="nav-text">1.内核线程实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-使用用户线程实现"><span class="nav-number">3.1.2.</span> <span class="nav-text">2.使用用户线程实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-使用用户线程加轻量级进程混合实现"><span class="nav-number">3.1.3.</span> <span class="nav-text">3.使用用户线程加轻量级进程混合实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程调度"><span class="nav-number">3.2.</span> <span class="nav-text">线程调度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程的状态转换"><span class="nav-number">3.3.</span> <span class="nav-text">线程的状态转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#相关方法介绍"><span class="nav-number">3.3.1.</span> <span class="nav-text">相关方法介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sleep-方法"><span class="nav-number">3.3.2.</span> <span class="nav-text">sleep 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#wait-方法"><span class="nav-number">3.3.3.</span> <span class="nav-text">wait 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#join-方法"><span class="nav-number">3.3.4.</span> <span class="nav-text">join 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#yield-方法"><span class="nav-number">3.3.5.</span> <span class="nav-text">yield 方法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简记："><span class="nav-number">4.</span> <span class="nav-text">简记：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#硬件效率与一致性"><span class="nav-number">4.1.</span> <span class="nav-text">硬件效率与一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工作内存与主内存"><span class="nav-number">4.2.</span> <span class="nav-text">工作内存与主内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存间的交互操作"><span class="nav-number">4.3.</span> <span class="nav-text">内存间的交互操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#volatile-关键字"><span class="nav-number">4.4.</span> <span class="nav-text">volatile 关键字</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">5.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>
