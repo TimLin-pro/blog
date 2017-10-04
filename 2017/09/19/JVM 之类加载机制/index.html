@@ -103,7 +103,7 @@
 优点：为 Java 应用程序提供高度的灵活性，Java 里天生可以">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28912625-9333eabc-7867-11e7-9b7f-6a2d4aa3f7a8.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28991885-d64d2c7c-79c1-11e7-9a8f-865a69fc24a2.png">
-<meta property="og:updated_time" content="2017-09-26T09:04:28.517Z">
+<meta property="og:updated_time" content="2017-10-03T02:37:20.610Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="虚拟机类加载机制">
 <meta name="twitter:description" content="概述虚拟机的类加载机制：虚拟机把描述类的数据从 Class 文件加载到内存，并对数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。
@@ -468,6 +468,7 @@
 <li>第一，在实际情况中，后文中直接<strong>对「类」的描述都包括了类和接口的可能性</strong>，而对于类和接口需要分开描述的场景会特别指明；</li>
 <li>第二，「Class 文件」并非特指某个存在于具体磁盘中的文件，这里<strong>所说的「Class 文件」应当是一串二进制的字节流，无论以何种形式存在都可以</strong>。</li>
 </ul>
+<a id="more"></a>
 <h2 id="类加载的时机"><a href="#类加载的时机" class="headerlink" title="类加载的时机"></a>类加载的时机</h2><p>七个阶段：如下所示<br><img src="https://user-images.githubusercontent.com/16668676/28912625-9333eabc-7867-11e7-9b7f-6a2d4aa3f7a8.png" alt="default"></p>
 <p>上图中，<strong>加载、验证、准备、初始化和卸载</strong>这 5 个阶段的顺序是确定的，类的加载过程必须按照这种顺序按部就班地<strong>开始</strong>，而==解析阶段则不一定==：它在某些情况下<strong>可以在初始化阶段之后再开始</strong>，这是为了支持 Java 语言的运行时绑定（也称为<strong>动态绑定或晚期绑定</strong>）。注意，这里说的是按部就班地「开始」，这些阶段通常都是<strong>互相交叉地混合式进行的</strong>，通常会<strong>在一个阶段执行的过程中调用</strong>、激活另外一个阶段。也就是说可能有些阶段未完成，下一个阶段就开始了。</p>
 <p>什么情况下需要会开始加载一个类？Java 虚拟机规范中并没有进行强制约束。<br>但是对于初始化阶段，虚拟机规范严格规定了<strong>有且只有 5 种情况必须立即对类进行「<em>初始化</em></strong>」（而加载、验证、准备自然需要在此之前开始）：</p>
