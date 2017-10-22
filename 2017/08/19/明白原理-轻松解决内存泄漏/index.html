@@ -101,7 +101,7 @@
 而对于 java 而言，就是存放在堆上的">
 <meta property="og:image" content="http://gityuan.com/images/jvm/jvm_memory_1.png">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727790-afde094317e73842.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:updated_time" content="2017-08-19T11:43:56.622Z">
+<meta property="og:updated_time" content="2017-10-20T09:23:09.798Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="明白原理,轻松解决内存泄漏">
 <meta name="twitter:description" content="相信「内存泄漏」 问题，是一个挺让开发者头疼的事情，笔者在回顾以为代码时，惊讶发现：初学 Android 时，许多不修边幅的代码习惯，导致了许多内存泄漏问题，借此分析其原因，把自己挖过的坑补一下，也希望奔跑在 Android 开发道路上的你能够优雅避免。
@@ -405,7 +405,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  3,266
+                  3,753
                 </span>
               
 
@@ -421,7 +421,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  12
+                  14
                 </span>
               
             </div>
@@ -446,7 +446,7 @@
 <li>而对于 java 而言，就是存放在堆上的 Object 无法被 GC 正常回收；</li>
 </ul>
 <a id="more"></a>
-<p>分析之前我们先来看看两个基础知识点。</p>
+<p>分析之前我们先来看看三个基础知识点。</p>
 <h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="java-的内存分配简述"><a href="#java-的内存分配简述" class="headerlink" title="java 的内存分配简述"></a>java 的内存分配简述</h3><p>运行时数据区域内存模型图<br><img src="http://gityuan.com/images/jvm/jvm_memory_1.png" alt=""></p>
 <ul>
 <li>方法区（non-heap）：编译时就分配好，在程序<strong>整个运行期间都存在</strong>。它主要存放静态数据和常量；</li>
@@ -461,6 +461,26 @@
 <li>虚引用（Phantom Reference）：任何时候都可以被 GC 回收，当垃圾回收器准备回收一个对象时，如果发现它还有虚引用，就会在回收对象的内存之前，把这个虚引用加入到与之关联的引用队列中。程序可以通过判断引用队列中是否存在该对象的虚引用，来了解这个对象是否将要被回收。可以用来作为 GC 回收 Object 的标志。 </li>
 </ul>
 <p>与 Android 中的差异：<strong>在 2.3 以后版本中，即使内存够用，Android 系统会优先将 SoftReference 的对象提前回收掉</strong>, 其他和 Java 中是一样的。<br>因此谷歌官方建议用 LruCache(least recentlly use 最少最近使用算法)。会将内存控制在一定的大小内, 超出最大值时会自动回收, 这个最大值开发者自己定。</p>
+<h3 id="可达性分析算法"><a href="#可达性分析算法" class="headerlink" title="可达性分析算法"></a>可达性分析算法</h3><p>内存泄漏是因为内存无法被正常回收引起。为什么无法被回收？我们前面是这么说的——「因为它的强/软引用被长生命周期的对象持有」。可为什么引用被长生命周期的对象持有就不能进行释放呢？这就涉及到了<a href="https://ivanljt.github.io/blog/2017/09/08/JVM%20%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8%E4%B8%8E%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5/">垃圾回收机制</a>。</p>
+<p>进行垃圾回收的第一个问题是如何确定哪些对象是可以被回收的垃圾。通常有两种判断方法，一种是引用计数方法，另一种是可达性分析算法。主流的商用程序语言的主流实现中，都是通过<strong>可达性分析</strong>来判断对象是否存活的。</p>
+<p>可达性分析算法的基本思路是这样的：</p>
+<ul>
+<li>通过一系列的称为 GC Root 的对象作为起始点，从这些节点开始向下搜索，搜索走过的路径称为『引用链』（Reference Chain）</li>
+<li><strong>当一个对象到 GC Root 没有任何引用链相连时，则证明此对象是不可用的</strong>。</li>
+</ul>
+<p>问题来了，到底什么是 GC Root 呢？</p>
+<p>R 大在知乎中这样答道：所谓“GC roots”，或者说tracing GC的“根集合”，<strong>一组必须活跃的==引用==</strong></p>
+<blockquote>
+<ul>
+<li>所有Java线程当前活跃的栈帧里指向GC堆里的对象的引用；换句话说，当前<strong>所有正在被调用的方法的引用类型的参数/局部变量/临时值</strong>。</li>
+<li>VM的一些<strong>静态数据结构里指向GC堆里的对象的引用</strong>，例如说HotSpot VM里的Universe里有很多这样的引用。</li>
+<li>JNI handles，包括global handles和local handles</li>
+<li>（看情况）所有当前被加载的Java类</li>
+<li>（看情况）Java类的<strong>运行时常量池里的引用类型常量</strong>（String或Class类型）</li>
+<li>（看情况）<strong>String常量池</strong>（StringTable）里的引用</li>
+</ul>
+</blockquote>
+<p>关于 GC 回收机制，可以参考下<a href="https://ivanljt.github.io/blog/2017/09/08/JVM%20%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8%E4%B8%8E%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5/">这篇文章</a></p>
 <h2 id="内存泄漏的危害"><a href="#内存泄漏的危害" class="headerlink" title="内存泄漏的危害"></a>内存泄漏的危害</h2><p>内存泄露是内存溢出(OOM)的重要原因之一，会导致 Crash。<br>如果应用程序在消耗光了所有的可用堆空间，那么再试图在堆上分配新对象时就会引起 OOM(Out Of Memory Error)异常，此时应用程序就会崩溃退出。</p>
 <h2 id="内存泄漏的典型案例"><a href="#内存泄漏的典型案例" class="headerlink" title="内存泄漏的典型案例"></a>内存泄漏的典型案例</h2><p>要想避免内存泄漏，首先要知道导致内存泄漏的原因。<br><strong>内存泄漏本质原因</strong>:==长生命周期的对象持有短生命周期对象的强/软引用。导致本应该被回收的短生命周期的对象无法被正常回收==。</p>
 <p>这么讲可能比较抽象。举个常见的栗子：单例模式中，我们常常在获取单例对象时需要传一个 Context 。单例对象是一个长生命周期的对象（应用程序结束时才终结），而如果我们传递的是某一个 Activity 作为 context,那么这个 Activity 就会因为引用被持有而无法销毁，从而导致内存泄漏。</p>
@@ -792,7 +812,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是内存泄漏"><span class="nav-number">1.</span> <span class="nav-text">什么是内存泄漏</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#java-的内存分配简述"><span class="nav-number">2.1.</span> <span class="nav-text">java 的内存分配简述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四种不同类型的引用"><span class="nav-number">2.2.</span> <span class="nav-text">四种不同类型的引用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存泄漏的危害"><span class="nav-number">3.</span> <span class="nav-text">内存泄漏的危害</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存泄漏的典型案例"><span class="nav-number">4.</span> <span class="nav-text">内存泄漏的典型案例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#永远的-Singleton"><span class="nav-number">4.1.</span> <span class="nav-text">永远的 Singleton</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决"><span class="nav-number">4.1.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Handler-引发的内存泄漏"><span class="nav-number">4.2.</span> <span class="nav-text">Handler 引发的内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#慎用-static-成员变量"><span class="nav-number">4.3.</span> <span class="nav-text">慎用 static 成员变量</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决-2"><span class="nav-number">4.3.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#远离非静态内部类和匿名类，有需要时请使用静态内部类"><span class="nav-number">4.4.</span> <span class="nav-text">远离非静态内部类和匿名类，有需要时请使用静态内部类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决-3"><span class="nav-number">4.4.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集合引发的内存泄漏"><span class="nav-number">4.5.</span> <span class="nav-text">集合引发的内存泄漏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WebView-引发的内存泄漏"><span class="nav-number">4.6.</span> <span class="nav-text">WebView 引发的内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决-4"><span class="nav-number">4.6.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他常见的引起内存泄漏原因"><span class="nav-number">4.7.</span> <span class="nav-text">其他常见的引起内存泄漏原因</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存泄漏的检测工具"><span class="nav-number">5.</span> <span class="nav-text">内存泄漏的检测工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">6.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是内存泄漏"><span class="nav-number">1.</span> <span class="nav-text">什么是内存泄漏</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#java-的内存分配简述"><span class="nav-number">2.1.</span> <span class="nav-text">java 的内存分配简述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四种不同类型的引用"><span class="nav-number">2.2.</span> <span class="nav-text">四种不同类型的引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#可达性分析算法"><span class="nav-number">2.3.</span> <span class="nav-text">可达性分析算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存泄漏的危害"><span class="nav-number">3.</span> <span class="nav-text">内存泄漏的危害</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存泄漏的典型案例"><span class="nav-number">4.</span> <span class="nav-text">内存泄漏的典型案例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#永远的-Singleton"><span class="nav-number">4.1.</span> <span class="nav-text">永远的 Singleton</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决"><span class="nav-number">4.1.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Handler-引发的内存泄漏"><span class="nav-number">4.2.</span> <span class="nav-text">Handler 引发的内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#慎用-static-成员变量"><span class="nav-number">4.3.</span> <span class="nav-text">慎用 static 成员变量</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决-2"><span class="nav-number">4.3.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#远离非静态内部类和匿名类，有需要时请使用静态内部类"><span class="nav-number">4.4.</span> <span class="nav-text">远离非静态内部类和匿名类，有需要时请使用静态内部类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决-3"><span class="nav-number">4.4.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集合引发的内存泄漏"><span class="nav-number">4.5.</span> <span class="nav-text">集合引发的内存泄漏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WebView-引发的内存泄漏"><span class="nav-number">4.6.</span> <span class="nav-text">WebView 引发的内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决-4"><span class="nav-number">4.6.1.</span> <span class="nav-text">解决</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他常见的引起内存泄漏原因"><span class="nav-number">4.7.</span> <span class="nav-text">其他常见的引起内存泄漏原因</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存泄漏的检测工具"><span class="nav-number">5.</span> <span class="nav-text">内存泄漏的检测工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">6.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
             
 
           </div>
