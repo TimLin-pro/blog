@@ -107,7 +107,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28902291-989d0c04-7830-11e7-8c0f-68559b75a4d4.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28902476-a8394528-7831-11e7-8fae-73813a57bc06.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28903495-d71fceb0-7837-11e7-8e8e-6f26da762c22.png">
-<meta property="og:updated_time" content="2017-10-20T09:22:31.070Z">
+<meta property="og:updated_time" content="2017-10-26T01:52:47.977Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JVM 垃圾收集器与内存分配策略">
 <meta name="twitter:description" content="确定回收的对象「死去」的对象即不可能再被任何途径使用的对象。
@@ -410,7 +410,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  10,328
+                  10,598
                 </span>
               
 
@@ -426,7 +426,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  36
+                  37
                 </span>
               
             </div>
@@ -467,13 +467,17 @@
 <blockquote>
 <p>  A garbage collection root is an object that is accessible from outside the heap</p>
 </blockquote>
-<p>也就是说 GC Roots 是可以从堆外访问的对象。</p>
-<p>GC Roots 对象包含以下几种：</p>
+<p>也就是说 GC Roots 是可以从堆外访问的对象。由 Java 运行时数据区可以知道，堆外的空间有虚拟机栈、本地方法栈以及方法区。而java 1.8 将整个方法区被移到一个叫元空间的地方（使用本地内存存储）</p>
+<p>所以GC Roots 对象包含以下几种：</p>
 <ul>
 <li>虚拟机栈(栈帧中的本地变量表)中引用的对象，也就是局部变量引用的对象。</li>
-<li>本地方法栈中 JNI 引用的对象</li>
-<li>方法区中<strong>类静态属性</strong>引用的对象</li>
-<li>方法区中<strong>常量引用</strong>的对象</li>
+<li>本地方法栈中 JNI 引用的对象，包括<ul>
+<li>本地方法栈中的局部变量或者参数</li>
+<li>JNI全局引用</li>
+</ul>
+</li>
+<li>方法区中<strong>类静态属性引用的对象</strong>。<strong>由 Java 虚拟机自带的类加载器所加载的类，在虚拟机的生命周期中，始终不会被卸载</strong>。它们可以通过静态属性的方式持有对象的引用。注意，一般情况下由自定义的类加载器加载的类不能成为GC Roots</li>
+<li>方法区中<strong>常量引用的对象</strong></li>
 </ul>
 <h3 id="引用分类"><a href="#引用分类" class="headerlink" title="引用分类"></a>引用分类</h3><p>JDK 1.2 之后对，Java 对引用的概念进行了扩充（不再是仅有被引用或者没有被引用两种）：</p>
 <p>共有四种：</p>
@@ -530,6 +534,7 @@
 <li><strong>加载该类的 ClassLoader 已经被回收</strong>。</li>
 <li>该类<strong>对应的 java.lang.Class 对象没有在任何地方被引用</strong>，无法在任何地方通过反射访问该类的方法。</li>
 </ol>
+<p>虚拟机<strong>可以</strong>对满足上述3个条件的无用类进行回收，这里说的仅仅是“可以”，而并不是和对象一样，不使用了就必然会回收。 而且因为由 Java 虚拟机自带的类加载器所加载的类，在虚拟机的生命周期中，始终不会被卸载。所以正常情况下回收无用类收效甚微。</p>
 <h2 id="垃圾收集算法"><a href="#垃圾收集算法" class="headerlink" title="垃圾收集算法"></a>垃圾收集算法</h2><h3 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h3><p><strong>标记-清除</strong> (Mark-Sweep) 算法是<strong>最基础的收集算法</strong>，分为标记和清除两个阶段：</p>
 <ul>
 <li>首先标记出所有需要回收的对象，</li>
