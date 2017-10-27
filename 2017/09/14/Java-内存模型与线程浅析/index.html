@@ -100,7 +100,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30509011-80b17200-9ad7-11e7-9244-2081c271c752.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/32106891-945e0bb2-bb5f-11e7-8d9e-be0b72d75ff2.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30508637-9ff0e262-9ace-11e7-8a3a-608482184f5d.jpg">
-<meta property="og:updated_time" content="2017-10-27T13:49:17.948Z">
+<meta property="og:updated_time" content="2017-10-27T14:26:40.500Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 内存模型与线程浅析">
 <meta name="twitter:description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  7,516
+                  7,961
                 </span>
               
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  26
+                  28
                 </span>
               
             </div>
@@ -580,6 +580,13 @@
 </ul>
 <p>Java 无需任何同步手段就能成立的先行发生规则就以上 8 点。看上去有些抽象，想要进一步了解的同学可以参考下这篇文章 <a href="https://segmentfault.com/a/1190000011458941" target="_blank" rel="external">从Java多线程可见性谈Happens-Before原则</a></p>
 <p>==时间先后顺序与先行发生原则之间基本没有太大的关系==，所以我们衡量并发安全问题的时候==不要受到时间顺序的干扰，一切必须以先行发生原则为准==。</p>
+<p>这句话应该如何理解呢？</p>
+<p>考虑这样一个场景：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">int</span> value = <span class="number">0</span>;</div><div class="line"><span class="comment">//线程 A 先（时间上）调用了 getValue 方法</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getValue</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> value;</div><div class="line">&#125;</div><div class="line"><span class="comment">//之后（时间上）线程 B 调用了 setValue(2) 方法</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setValue</span><span class="params">(<span class="keyword">int</span> value)</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>.value = value;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>但是线程 A 的 getValue 获取的结果是什么呢？可能是 0 ，也可能是 2。也就是说，没有进行同步处理的情况下，不同线程对在时间上先后对调用对某个共享变量的操作，并不能保证但是它们的结果是根据它们在时间上调用顺序确定的。换句话说，在不同线程之间，「时间上的先调用」并不代表「先行发生」。要解决这个问题，可以给 getValue 和 setValue 方法都定义为 synchronized 的，因为这样就可以套用「管程锁定原则」了。或者将 value 定义了 volatile 变量，因为 setValue 方法对 value 的修改不依赖 value 的原值，满足 volatile 关键字使用场景，这样就可以套用 volatile 变量规则来实现先行发生规则了。</p>
+<p>通过上面的讨论，我们可以得出结论：一个操作「时间上的先发生」不代表这个操作会会是「先行发生」。那么一个操作「先行发生」是否能推导出这个操作必定是「时间上先发生」呢？这个推论也是不成立的，一个典型的栗子就是「指令重排序」</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> i = <span class="number">2</span>;</div><div class="line"><span class="keyword">int</span> j = <span class="number">1</span>;</div></pre></td></tr></table></figure>
+<p>按照程序次序规则，<code>int i = 2;</code> 的操作先行发生与 <code>int j = 1;</code>,但是 <code>int j = 1;</code> 完全可能先执行，这并不影响先行发生原则的正确性，因为在同一条线程中无法感知到这点。</p>
 <h3 id="先行发生原则的真正意义"><a href="#先行发生原则的真正意义" class="headerlink" title="先行发生原则的真正意义"></a>先行发生原则的真正意义</h3><p>该段内容参考自<a href="https://segmentfault.com/a/1190000011458941" target="_blank" rel="external">从Java多线程可见性谈Happens-Before原则</a></p>
 <blockquote>
 <p>  从上面的分析中我们可以看出，Happens-Before原则致力于<strong>解决变量间可见性问题</strong>。但是它是如何解决的呢？</p>
