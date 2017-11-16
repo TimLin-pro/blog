@@ -100,7 +100,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29449202-6aed8b00-842c-11e7-8e3f-362ead423f2d.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29449446-6771e5ce-842d-11e7-935f-d1e5685d43af.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29453380-021cc0ea-843c-11e7-901d-a7490d12f9ea.jpg">
-<meta property="og:updated_time" content="2017-08-18T09:49:27.180Z">
+<meta property="og:updated_time" content="2017-10-28T08:47:58.309Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android源码中的代理模式">
 <meta name="twitter:description" content="代理模式的定义代理模式也称为委托模式，为其他对象提供一种代理以控制对这个对象的访问。
@@ -403,7 +403,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  2,063
+                  2,107
                 </span>
               
 
@@ -419,7 +419,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  8
+                  9
                 </span>
               
             </div>
@@ -471,10 +471,10 @@
 <h3 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h3><p>静态代理和动态代理是从 code 方面来区分代理模式的。</p>
 <p>也可以<strong>从其使用范围来区分</strong>不同类型的代理实现：</p>
 <ul>
-<li><strong>远程代理</strong>（Remote Proxy）为某个对象<strong>在不同的内存地址空间</strong>提供局部代理。</li>
+<li><strong>远程代理</strong>（Remote Proxy）为某个对象<strong>在不同的内存地址空间</strong>提供局部代理。使系统可以将 Server 部分的实现隐藏，以便 Client 可以不考虑 Server 的存在。</li>
 <li><strong>虚拟代理</strong>（Virtual Proxy）使用一个代理对象<strong>表示一个十分耗资源的对象并在真正需要时才创建</strong>。</li>
 <li><strong>保护代理</strong>(Protection Proxy)：使用代理<strong>控制对原始对象的访问</strong>。该类型的代理常被<strong>用于原始对象具有不同访问权限</strong>的情况。</li>
-<li>智能引用(Smart Reference)：在访问原始对象时执行一些自己的<strong>附加操作并对指向原始对象的引用计数</strong>。</li>
+<li><strong>智能引用</strong>(Smart Reference)：在访问原始对象时执行一些自己的<strong>附加操作并对指向原始对象的引用计数</strong>。</li>
 </ul>
 <p>静动态代理都可以应用于上述 4 种情形。</p>
 <h2 id="Android源码中的代理模式实现"><a href="#Android源码中的代理模式实现" class="headerlink" title="Android源码中的代理模式实现"></a>Android源码中的代理模式实现</h2><p>以 ActivityManager 为例。</p>
@@ -494,7 +494,7 @@
 <li>ActivityManagerProxy 运行于自己所处的进程空间中（也就是说，与 ActivityManagerService 运行在不同的进程中）</li>
 <li>所以此处源码所实现的代理实质为==远程代理==。</li>
 </ul>
-<p>ActivityManagerProxy 在实际的逻辑处理并<strong>没有过多地被外部类</strong>使用，Android 中管理与维护 Activity 相关信息的类是另一个叫做 ActivityManager 的类。不过实质上 ActivityManager 大多数逻辑还是由 ActivityManagerProxy 承担。</p>
+<p>ActivityManagerProxy 在实际的逻辑处理并<strong>没有过多地被外部类</strong>使用，Android 中管理与维护 Activity 相关信息的类是另一个叫做 ActivityManager 的类。不过实质上 ActivityManager 大多数逻辑还是由 ActivityManagerProxy 承担。（注意：ActivityManager 并没有实现 <strong>I</strong>ActivityManager 接口，它直接继承自 Object）</p>
 <p>以 ActivityManager 的 getAppTasks() 方法为例<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> List&lt;ActivityManager.AppTask&gt; getAppTasks() &#123;</div><div class="line">    ArrayList&lt;AppTask&gt; tasks = <span class="keyword">new</span> ArrayList&lt;AppTask&gt;();</div><div class="line">    List&lt;IAppTask&gt; appTasks;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        appTasks = ActivityManagerNative.getDefault().getAppTasks(mContext.getPackageName());</div><div class="line">    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</div><div class="line">        <span class="keyword">throw</span> e.rethrowFromSystemServer();</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">int</span> numAppTasks = appTasks.size();</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numAppTasks; i++) &#123;</div><div class="line">        tasks.add(<span class="keyword">new</span> AppTask(appTasks.get(i)));</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> tasks;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p><code>ActivityManagerNative.getDefault();</code>方法 返回一个 <code>IActivityManager</code> 类型的对象，通过该对象调用其 getAppTasks 方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">public</span> IActivityManager <span class="title">getDefault</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> gDefault.get();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>gDefault 到底是什么？<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton&lt;IActivityManager&gt; gDefault = <span class="keyword">new</span> Singleton&lt;IActivityManager&gt;() &#123;</div><div class="line">    <span class="function"><span class="keyword">protected</span> IActivityManager <span class="title">create</span><span class="params">()</span> </span>&#123;</div><div class="line">        IBinder b = ServiceManager.getService(<span class="string">"activity"</span>);<span class="comment">//获取 AMS</span></div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        IActivityManager am = asInterface(b);<span class="comment">//完成创建一个 AMS 的客户端端代理对象—— ActivityManagerProxy</span></div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        <span class="keyword">return</span> am;</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
@@ -735,7 +735,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -746,7 +746,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">18</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -757,7 +757,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">13</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
