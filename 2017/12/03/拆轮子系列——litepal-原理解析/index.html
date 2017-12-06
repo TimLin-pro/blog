@@ -1,0 +1,1246 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="源码分析,拆轮子," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="LitePal 解决了什么问题？
+  LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。
+  但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较">
+<meta property="og:type" content="article">
+<meta property="og:title" content="拆轮子系列——litepal 原理解析">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2017/12/03/拆轮子系列——litepal-原理解析/index.html">
+<meta property="og:site_name" content="Tim's Track">
+<meta property="og:description" content="LitePal 解决了什么问题？
+  LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。
+  但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/33593102-d1bd9cb6-d9c8-11e7-94fe-38117ed0ee50.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/33612586-0077ccc2-da0d-11e7-80a5-5e093b7e79ba.png">
+<meta property="og:updated_time" content="2017-12-06T02:23:37.611Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="拆轮子系列——litepal 原理解析">
+<meta name="twitter:description" content="LitePal 解决了什么问题？
+  LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。
+  但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/33593102-d1bd9cb6-d9c8-11e7-94fe-38117ed0ee50.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/12/03/拆轮子系列——litepal-原理解析/"/>
+
+
+
+
+
+  <title> 拆轮子系列——litepal 原理解析 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/12/03/拆轮子系列——litepal-原理解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                拆轮子系列——litepal 原理解析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-03T10:36:11+08:00">
+                2017-12-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/源码分析/" itemprop="url" rel="index">
+                    <span itemprop="name">源码分析</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/源码分析/拆轮子/" itemprop="url" rel="index">
+                    <span itemprop="name">拆轮子</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2017/12/03/拆轮子系列——litepal-原理解析/" class="leancloud_visitors" data-flag-title="拆轮子系列——litepal 原理解析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  4,755
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  20
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="LitePal-解决了什么问题？"><a href="#LitePal-解决了什么问题？" class="headerlink" title="LitePal 解决了什么问题？"></a>LitePal 解决了什么问题？</h2><blockquote>
+<p>  LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。</p>
+<p>  但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较精通关系型数据库。而且数据库的 SQL 语言晦涩难懂，就算你很精通它，恐怕也不喜欢经常在代码中去写它吧？而对象关系映射模式则很好地解决了这个问题，它允许我们使用面向对象的方式来操作数据库，从而可以从晦涩难懂的 SQL 语言中解脱出来。</p>
+</blockquote>
+<a id="more"></a>
+<p>Android 已经为我们提供了 SQLiteOpenHelper 以帮助我们完成数据库的创建、表的创建、以及数据的 CRUD 操作。但是使用起来还是不够方便。建立数据库需要继承 SQLiteOpenHelper 重写相应的方法，同时为了方便后续的操作，我们每创建一张表，都要一个相应的 DAO 类，完成相应表的 CRUD 操作。加在一起工作量真的不小。</p>
+<p>如果使用 LitePal，只需要建立一个 xml 配置文件，在其中指定数据库名称、版本号，以及需要进行映射的类名，然后让 App 的 Application 类继承 LitePalApplication 进行初始化，就可以完成数据库、表的创建工作。同时，数据的 CRUD 操作只需要通过 DataSupport 的相应方法就能完成。这样工作量是不是少了很多。</p>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>文档中建议通过将在 Manifest 文件中指定 application 为 LitePalApplication  或者通过继承 LitePalApplication 来实现初始化。初始化的目的为了方便获取 Context 对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LitePalApplication</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</div><div class="line">  </div><div class="line">   <span class="keyword">static</span> Context sContext;</div><div class="line">  </div><div class="line">   <span class="function"><span class="keyword">public</span> <span class="title">LitePalApplication</span><span class="params">()</span> </span>&#123;<span class="comment">//默认的构造方法，初始化 Context 静态变量</span></div><div class="line">      sContext = <span class="keyword">this</span>;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="数据库的创建"><a href="#数据库的创建" class="headerlink" title="数据库的创建"></a>数据库的创建</h2><p>查看文档说明，我们发现 table 的创建和修改都是自动实现的。对外公开的主要是对数据的操作，所以我们就顺着对数据的操作来分析。而进行操作的前提是表中有数据，我们就从插入操作（对应 save 方法）看起。</p>
+<p><code>DataSupport#save()</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">boolean</span> <span class="title">save</span><span class="params">()</span> </span>&#123;</div><div class="line">  	  <span class="comment">//代码省略</span></div><div class="line">      saveThrows();    </div><div class="line">  	  <span class="comment">//代码省略</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>save 会调用 saveThrows 方法，</p>
+<p><code>DataSupport#saveThrows</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">saveThrows</span><span class="params">()</span> </span>&#123;</div><div class="line">   SQLiteDatabase db = Connector.getDatabase();<span class="comment">//获取数据库</span></div><div class="line"><span class="comment">//代码省略</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>saveThrows 方法中首先调用了 Connector.getDatabase() 获取数据库。</p>
+<h3 id="Connector-getDatabase"><a href="#Connector-getDatabase" class="headerlink" title="Connector#getDatabase()"></a>Connector#getDatabase()</h3><p><code>Connector#getDatabase</code>主要调用流程如下</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">Connector#getDatabase	</div><div class="line">	 --&gt; getWritableDatabase</div><div class="line">	 	--&gt; buildConnection //获取 LitePalOpenHelper （实际上是一个 SQLiteOpenHelper）</div><div class="line">	 		 --&gt; LitePalAttr.getInstance();//获取单例对象</div><div class="line">	 		 	 --&gt; LitePalAttr = new LitePalAttr();//创建 LitePalAttr</div><div class="line">                  --&gt; loadLitePalXMLConfiguration();//加载 liepal.xml 配置文件中的数据</div><div class="line">                  	 --&gt; LitePalParser.parseLitePalConfiguration() //首先进行解析</div><div class="line">                  	 --&gt; //将解析到的数据（ 数据库名、数据库版本号、需要映射为表的类名、是否大小写敏感、存储路径 ）赋值给 LitePalAttr 中的字段</div><div class="line">			 --&gt; LitePalAttr.checkSelfValid();//参数合法性检查</div><div class="line">			 --&gt; //构造存储路径	</div><div class="line">			 --&gt; //创建 LitePalOpenHelper</div><div class="line">	 	--&gt; SQLiteOpenHelper#getWritableDatabase</div></pre></td></tr></table></figure>
+<p>虽然 LitePal 号称零配置，但是基础的准备工作还是需要做的。按照官方教程，在使用 LitePal 之前，需要在 res 目录下面创建一个 xml 目录，然后在该目录中创建一个名为 LitePal 的 xml 文件。举个栗子：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">LitePal</span>&gt;</span></div><div class="line">    <span class="comment">&lt;!--数据库名--&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">dbname</span> <span class="attr">value</span>=<span class="string">"library"</span>/&gt;</span></div><div class="line">    <span class="comment">&lt;!--版本号--&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">version</span> <span class="attr">value</span>=<span class="string">"1"</span>/&gt;</span></div><div class="line">    <span class="comment">&lt;!--映射表--&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">list</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">mapping</span> <span class="attr">class</span>=<span class="string">"com.android.rdc.librarysystem.bean.Book"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">mapping</span> <span class="attr">class</span>=<span class="string">"com.android.rdc.librarysystem.bean.BookType"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">mapping</span> <span class="attr">class</span>=<span class="string">"com.android.rdc.librarysystem.bean.Borrow"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">list</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">LitePal</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>其中的 <code>dbname</code> 标签就是用于指定数据库名的。</p>
+<p><code>Connector#buildConnection</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> LitePalOpenHelper <span class="title">buildConnection</span><span class="params">()</span> </span>&#123;</div><div class="line">   LitePalAttr LitePalAttr = LitePalAttr.getInstance(); <span class="comment">//获取单例对象——LitePalAttr </span></div><div class="line">   LitePalAttr.checkSelfValid();<span class="comment">//参数合法性检查</span></div><div class="line">   <span class="keyword">if</span> (mLitePalHelper == <span class="keyword">null</span>) &#123;</div><div class="line">      String dbName = LitePalAttr.getDbName();<span class="comment">//</span></div><div class="line">    		   <span class="comment">//……省略路径处理代码</span></div><div class="line">               dbName = dbPath + <span class="string">"/"</span> + dbName;</div><div class="line">           </div><div class="line">      mLitePalHelper = <span class="keyword">new</span> LitePalOpenHelper(dbName, LitePalAttr.getVersion());<span class="comment">//</span></div><div class="line">   &#125;</div><div class="line">   <span class="keyword">return</span> mLitePalHelper;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>首次连接数据库时，LitePal 会通过 <code>LitePalParser#parseLitePalConfiguration();</code>方法对 xml 配置文件进行解析。大体流程就是使用 <code>XmlPullParser</code> 对 xml 文件的解析，解析完成之后，就将结果保存在 <code>LitePalConfig</code>类中。 LitePalConfig 类字段如下所示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LitePalConfig</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> version;<span class="comment">//数据库版本号</span></div><div class="line">    <span class="keyword">private</span> String dbName;<span class="comment">//数据库名</span></div><div class="line">    <span class="keyword">private</span> String cases;<span class="comment">//数据库大小写敏感性</span></div><div class="line">    <span class="keyword">private</span> String storage;<span class="comment">//数据库文件的存储路径，可选择内部存储或者外部存储</span></div><div class="line">    <span class="keyword">private</span> List&lt;String&gt; classNames;<span class="comment">//需要进行映射的模型类，每一个类名都需要给全名（包括包名）</span></div><div class="line"> 	<span class="comment">//代码省略</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="注：大小写敏感"><a href="#注：大小写敏感" class="headerlink" title="注：大小写敏感"></a>注：大小写敏感</h4><p>SQLite 是大小写敏感的，具体：</p>
+<ol>
+<li>创建表、列的时候，SQL 语句里是什么大小写，表名、列名就是什么大小写；</li>
+<li>SQL 语句执行的时候：==表名、列名大小写不敏感，都能识别==；</li>
+<li>SQL 语句里面，“=”还是 LIKE 都是大小写敏感；</li>
+</ol>
+<h3 id="buildConnection"><a href="#buildConnection" class="headerlink" title="buildConnection"></a>buildConnection</h3><p><code>buildConnection</code> 方法首先会去获取 LitePalAttr 单例对象（首次调用会触发解析 LitePal.xml 文件），然后检查参数合法性，并根据解析得到的 LitePalAttr  中的字段创建一个 LitePalOpenHelper。</p>
+<p>到这里，数据库已经创建完成了。那么数据库中的<strong>表是什么时候创建的</strong>呢？回到前面的 saveThrows 方法，该方法在获取数据库之后就开始做保存工作了（表创建工作不应该放在 保存工作过程中，因为这样不合理）。因此，表很可能就是在数据库创建过程中顺便创建的。实际上也确实如此。</p>
+<h3 id="LitePalOpenHelper-onCreate-调用链"><a href="#LitePalOpenHelper-onCreate-调用链" class="headerlink" title="LitePalOpenHelper#onCreate 调用链"></a><code>LitePalOpenHelper#onCreate</code> 调用链</h3><p>主要流程如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">LitePalOpenHelper#onCreate//数据库 onCreate 回调方法</div><div class="line">   --&gt; Generator#create()</div><div class="line">  	 	--&gt; create(db, true);</div><div class="line">			 --&gt; new Creator();</div><div class="line">			 --&gt; creator.createOrUpgradeTable(db, force);		</div><div class="line">				 --&gt; 迭代调用 createOrUpgradeTable(tableModel, db, force);</div><div class="line">						--&gt; getCreateTableSQLs(tableModel, db, force) //拼接建表 sql 语句，存储在 ArrayList 中</div><div class="line">						--&gt; execute();	</div><div class="line">							 --&gt; 迭代调用 db.execSQL() 执行 SQL 语句</div><div class="line">						--&gt; AssociationCreator#giveTableSchemaACopy</div><div class="line">	 	--&gt; addAssociation(db, true);</div></pre></td></tr></table></figure>
+<p>上述过程中，我们看下 getCreateTableSQLs 方法，该方法会先生成删除表的语句 sql，然后再生成创建表的语句，并将它们按序存在 ArrayList 中。也就是说，每次建表之前先尝试删除同名的表（如果有的话）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> List&lt;String&gt; <span class="title">getCreateTableSQLs</span><span class="params">(TableModel tableModel, SQLiteDatabase db, <span class="keyword">boolean</span> force)</span> </span>&#123;</div><div class="line">       List&lt;String&gt; sqls = <span class="keyword">new</span> ArrayList&lt;String&gt;();</div><div class="line">   <span class="keyword">if</span> (force) &#123;</div><div class="line">           sqls.add(generateDropTableSQL(tableModel));</div><div class="line">           sqls.add(generateCreateTableSQL(tableModel));</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">      <span class="keyword">if</span> (DBUtility.isTableExists(tableModel.getTableName(), db)) &#123;</div><div class="line">         <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">      &#125; <span class="keyword">else</span> &#123;</div><div class="line">               sqls.add(generateCreateTableSQL(tableModel));</div><div class="line">      &#125;</div><div class="line">   &#125;</div><div class="line">       <span class="keyword">return</span> sqls;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>至此数据库和表创建完毕。</p>
+<h2 id="dataSupport-save-的背后"><a href="#dataSupport-save-的背后" class="headerlink" title="dataSupport#save() 的背后"></a>dataSupport#save() 的背后</h2><p>先看下整体的调用流程</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">datasupport#save</div><div class="line"> --&gt; saveThrows</div><div class="line"> 	 --&gt; 创建 SaveHanlder </div><div class="line">	 --&gt; 调用 SaveHanlder#onSave</div><div class="line">	 	 --&gt; getSupportedFields//获取支持域</div><div class="line">		 --&gt; getSupportedGenericFields//获取支持的泛型域</div><div class="line">		 --&gt; getAssociationInfo//获取关联关系</div><div class="line">	 	 --&gt; if(baseObjId &gt; 0)  doUpdateAction//执行更新操作</div><div class="line">	 	 --&gt; else doSaveAction</div><div class="line">	 	 	 --&gt; values.clear();//清空 ContentValue</div><div class="line">	 	 	 --&gt; beforeSave();//存放值（对象本身的值与外键）</div><div class="line">	 	 	 --&gt; long id = saving();</div><div class="line">				 --&gt; SQLiteDatabase#insert()// 将记录插入数据库</div><div class="line">                   	 --&gt; SQLiteDatabase#insertWithOnConflict()//拼接 sql 语句 </div><div class="line">			 --&gt; afterSave() 	 	 </div><div class="line"> 	 --&gt; clearAssociatedData();//清除所有的关联数据</div><div class="line">	 --&gt; SQLiteDatabase#setTransactionSuccessful();//设置事务成功</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">boolean</span> <span class="title">save</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">try</span> &#123;</div><div class="line">      saveThrows();</div><div class="line">      <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">   &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">      e.printStackTrace();</div><div class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>LitePal 文档中对 save 方法的说明如下:</p>
+<blockquote>
+<p>  如果是一条新记录，则插入一个新的行。如果保存过程中出错，整个操作取消，相应的修改会回滚。如果数据类中含有名为 id 或者 _id 并且类型为 int / long 的字段，那么在该对象被保存之后它们会被赋予相应的  id 值。（与 DataSupport 类中的 baseObjId 相同）</p>
+</blockquote>
+<p>从 synchronized 可以看出 save 是一个同步方法，保证线程安全。它在内部调用了 saveThrows 方法。如果捕获到异常就 return false；否则 return true 表示保存成功。</p>
+<h3 id="saveThrows"><a href="#saveThrows" class="headerlink" title="saveThrows"></a>saveThrows</h3><p><code>DataSupport#saveThrows</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">saveThrows</span><span class="params">()</span> </span>&#123;</div><div class="line">   SQLiteDatabase db = Connector.getDatabase();<span class="comment">//获取数据库</span></div><div class="line">   db.beginTransaction();<span class="comment">//开始事务</span></div><div class="line">   <span class="keyword">try</span> &#123;</div><div class="line">      SaveHandler saveHandler = <span class="keyword">new</span> SaveHandler(db);<span class="comment">//创建 SaveHandler，构造方法会创建一个 ContentValues </span></div><div class="line">      saveHandler.onSave(<span class="keyword">this</span>);<span class="comment">//保存</span></div><div class="line">      clearAssociatedData();<span class="comment">//清除关联数据</span></div><div class="line">      db.setTransactionSuccessful();<span class="comment">//事务成功</span></div><div class="line">   &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> DataSupportException(e.getMessage(), e);</div><div class="line">   &#125; <span class="keyword">finally</span> &#123;</div><div class="line">      db.endTransaction();<span class="comment">//结束事务</span></div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>saveThrows 方法中使用了事务保证了数据的原子性。不过它没有做具体的保存工作，而是创建一个 SaveHandler 然后将自身的引用传递给 onSave 方法。</p>
+<h3 id="SaveHandler"><a href="#SaveHandler" class="headerlink" title="SaveHandler"></a>SaveHandler</h3><p>继承结构如下：</p>
+<p><img src="https://user-images.githubusercontent.com/16668676/33593102-d1bd9cb6-d9c8-11e7-94fe-38117ed0ee50.png" alt="image"></p>
+<p><strong>DataHandler</strong> 是 CRUD 组件的基类。里面定义了一些 CRUD 操作所需要通用方法。DataHandler 中又继承自<strong>LitePalBase</strong>。LitePalBase 是所有 的 LitePal 组件的基类。主要是给有如下需求的组件提供解决方案：①需要与其他组件进行交互的组件②有通用的逻辑代码的组件。</p>
+<p><strong>SaveHandler</strong> 继承自 DataHandler。从继承关系图中可以看到所有的 CRUD 操作都有相应的 Handler 。而且他们都继承自 DataHandler。是 DataSupport 下面的一个组件。SaveHandler 处理保存的工作。所有的实现基于所有的实现都基于 java 反射 API 和 Android SQLiteDatabase API。它如果关联模型已经存储了，它会自动在当前模型与关联模型之间建立关系。</p>
+<p><code>SaveHandler#onSave</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">onSave</span><span class="params">(DataSupport baseObj)</span> <span class="keyword">throws</span> SecurityException, IllegalArgumentException,</span></div><div class="line">      NoSuchMethodException, IllegalAccessException, InvocationTargetException &#123;</div><div class="line">   String className = baseObj.getClassName();<span class="comment">//获取要保存对象的类名</span></div><div class="line">   List&lt;Field&gt; supportedFields = getSupportedFields(className);<span class="comment">//获取支持的字段</span></div><div class="line">       List&lt;Field&gt; supportedGenericFields = getSupportedGenericFields(className);<span class="comment">//获取支持的泛型信息</span></div><div class="line">   Collection&lt;AssociationsInfo&gt; associationInfos = getAssociationInfo(className);<span class="comment">//获取关联信息</span></div><div class="line">   <span class="keyword">if</span> (!baseObj.isSaved()) &#123;</div><div class="line">           <span class="keyword">if</span> (!ignoreAssociations) &#123;</div><div class="line">               analyzeAssociatedModels(baseObj, associationInfos);</div><div class="line">           &#125;</div><div class="line">      doSaveAction(baseObj, supportedFields, supportedGenericFields);<span class="comment">//对 id 值&lt;=0 对象执行保存操作</span></div><div class="line">           <span class="keyword">if</span> (!ignoreAssociations) &#123;</div><div class="line">               analyzeAssociatedModels(baseObj, associationInfos);</div><div class="line">           &#125;</div><div class="line">   &#125; <span class="keyword">else</span> &#123;</div><div class="line">           <span class="keyword">if</span> (!ignoreAssociations) &#123;</div><div class="line">               analyzeAssociatedModels(baseObj, associationInfos);</div><div class="line">           &#125;</div><div class="line">      doUpdateAction(baseObj, supportedFields, supportedGenericFields);<span class="comment">//对象本身存在数据库中，执行更新操作</span></div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p> onSave 方法会先去收集 LitePal 支持的类型和基础类型的 Filed 并将它们分别存在两个 List 中，同时也会获取关联信息。然后通过判断对象的 baseObjid &gt; 0 是否成立，不成立，说明对象是一个未保存的对象，执行 doSaveAction 方法；否则调用 doUpdateAction 方法。</p>
+<p><code>LitePalBase#getSupportedFields</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> List&lt;Field&gt; <span class="title">getSupportedFields</span><span class="params">(String className)</span> </span>&#123;</div><div class="line">       List&lt;Field&gt; fieldList = classFieldsMap.get(className);<span class="comment">//尝试从缓存中获取</span></div><div class="line">       <span class="keyword">if</span> (fieldList == <span class="keyword">null</span>) &#123;<span class="comment">//</span></div><div class="line">           List&lt;Field&gt; supportedFields = <span class="keyword">new</span> ArrayList&lt;Field&gt;();</div><div class="line">           Class&lt;?&gt; clazz;</div><div class="line">           <span class="keyword">try</span> &#123;</div><div class="line">               clazz = Class.forName(className);<span class="comment">//获取类名</span></div><div class="line">           &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</div><div class="line">               <span class="keyword">throw</span> <span class="keyword">new</span> DatabaseGenerateException(DatabaseGenerateException.CLASS_NOT_FOUND + className);</div><div class="line">           &#125;</div><div class="line">           recursiveSupportedFields(clazz, supportedFields);<span class="comment">//递归类型</span></div><div class="line">           classFieldsMap.put(className, supportedFields);<span class="comment">//缓存到 hashMap 中</span></div><div class="line">           <span class="keyword">return</span> supportedFields;<span class="comment">//返回</span></div><div class="line">       &#125;</div><div class="line">       <span class="keyword">return</span> fieldList;<span class="comment">//缓存命中</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">recursiveSupportedFields</span><span class="params">(Class&lt;?&gt; clazz, List&lt;Field&gt; supportedFields)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (clazz == DataSupport.class || clazz == Object.class) &#123;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line">    Field[] fields = clazz.getDeclaredFields();</div><div class="line">    <span class="keyword">if</span> (fields != <span class="keyword">null</span> &amp;&amp; fields.length &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">for</span> (Field field : fields) &#123;</div><div class="line">            Column annotation = field.getAnnotation(Column.class);</div><div class="line">            <span class="keyword">if</span> (annotation != <span class="keyword">null</span> &amp;&amp; annotation.ignore()) &#123;<span class="comment">//有注解，但是注解设置为忽略</span></div><div class="line">                <span class="keyword">continue</span>;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">int</span> modifiers = field.getModifiers();<span class="comment">//获取修饰符</span></div><div class="line">            <span class="keyword">if</span> (!Modifier.isStatic(modifiers)) &#123;<span class="comment">//不是静态的 </span></div><div class="line">                Class&lt;?&gt; fieldTypeClass = field.getType();<span class="comment">//获取字段域类型</span></div><div class="line">                String fieldType = fieldTypeClass.getName();<span class="comment">//字段类型的名称</span></div><div class="line">                <span class="keyword">if</span> (BaseUtility.isFieldTypeSupported(fieldType)) &#123;</div><div class="line">                    supportedFields.add(field);<span class="comment">//非静态、并且受支持的字段添加到 List&lt;Filed&gt; 中</span></div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    recursiveSupportedFields(clazz.getSuperclass(), supportedFields);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>递归调用，直到是 DataSupport 或者 Object 为止，通过反射取得所有的 fields，当不需要忽略时，不是静态，一些基本支持的数据类型时会直接加入到这个 fieldList 里边。</p>
+<p>getSupportedGenericFields() 方法与上面的类似，只不过处理的是泛型。</p>
+<h3 id="LitePalBase-getAssociationInfo"><a href="#LitePalBase-getAssociationInfo" class="headerlink" title="LitePalBase#getAssociationInfo"></a>LitePalBase#getAssociationInfo</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> Collection&lt;AssociationsInfo&gt; mAssociationInfos;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">protected</span> Collection&lt;AssociationsInfo&gt; <span class="title">getAssociationInfo</span><span class="params">(String className)</span> </span>&#123;</div><div class="line">   <span class="keyword">if</span> (mAssociationInfos == <span class="keyword">null</span>) &#123;</div><div class="line">      mAssociationInfos = <span class="keyword">new</span> HashSet&lt;AssociationsInfo&gt;();</div><div class="line">   &#125;</div><div class="line">   mAssociationInfos.clear();<span class="comment">//清理关系集</span></div><div class="line">   analyzeClassFields(className, GET_ASSOCIATION_INFO_ACTION);<span class="comment">//分析类的字段域</span></div><div class="line">   <span class="keyword">return</span> mAssociationInfos;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>分析类字段以找出关联关系</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">analyzeClassFields</span><span class="params">(String className, <span class="keyword">int</span> action)</span> </span>&#123;</div><div class="line">   <span class="keyword">try</span> &#123;</div><div class="line">      Class&lt;?&gt; dynamicClass = Class.forName(className);<span class="comment">//加载类</span></div><div class="line">      Field[] fields = dynamicClass.getDeclaredFields();<span class="comment">//</span></div><div class="line">      <span class="keyword">for</span> (Field field : fields) &#123;</div><div class="line">         <span class="keyword">if</span> (isNonPrimitive(field)) &#123;<span class="comment">//不是原生类型</span></div><div class="line">            Column annotation = field.getAnnotation(Column.class);<span class="comment">//获取注解</span></div><div class="line">            <span class="keyword">if</span> (annotation != <span class="keyword">null</span> &amp;&amp; annotation.ignore()) &#123;</div><div class="line">            	<span class="keyword">continue</span>;</div><div class="line">			&#125;</div><div class="line">            oneToAnyConditions(className, field, action);<span class="comment">//一对？关系</span></div><div class="line">            manyToAnyConditions(className, field, action);<span class="comment">//多对？关系</span></div><div class="line">         &#125;</div><div class="line">      &#125;</div><div class="line">   &#125; <span class="keyword">catch</span> (ClassNotFoundException ex) &#123;</div><div class="line">		<span class="comment">//代码省略</span></div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="LitePalBase-oneToAnyConditions"><a href="#LitePalBase-oneToAnyConditions" class="headerlink" title="LitePalBase#oneToAnyConditions"></a>LitePalBase#oneToAnyConditions</h4><p>首先我们要明确，oneToAnyConditions  是在遍历处理类的所有字段的过程中调用的。并且只有当字段类型是非原生类型时才会进入该方法。</p>
+<p>设有 A 和 B 两个类。现在对 A 中存在类型为 B 的字段。首先判断 B 是否在配置文件里边配置的。如果是，就找到这个类的所有字段。找到一个和 A 相同的字段，这代表 A 里边有一个 B，B 里边有一个 A，是一对一关系；如果 B 找到的和 A 相同的字段是一个集合，代表 A 里边有一个 B，B 里边有多个 A，是多对一关系。</p>
+<p>最后统一把关系加入到一个集合里边来管理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">oneToAnyConditions</span><span class="params">(String className, Field field, <span class="keyword">int</span> action)</span> <span class="keyword">throws</span> ClassNotFoundException </span>&#123;</div><div class="line">   Class&lt;?&gt; fieldTypeClass = field.getType();<span class="comment">//获取字段的类型</span></div><div class="line"></div><div class="line">  <span class="comment">//字段的类型包含在 LitePal 配置文件映射的列表中</span></div><div class="line">   <span class="keyword">if</span> (LitePalAttr.getInstance().getClassNames().contains(fieldTypeClass.getName())) &#123;</div><div class="line">      Class&lt;?&gt; reverseDynamicClass = Class.forName(fieldTypeClass.getName());<span class="comment">//通过类名加载字段的类（简称为 B）</span></div><div class="line">      Field[] reverseFields = reverseDynamicClass.getDeclaredFields();</div><div class="line">      <span class="keyword">boolean</span> reverseAssociations = <span class="keyword">false</span>;</div><div class="line">      <span class="comment">//  开始检查类 B 中的属性</span></div><div class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; reverseFields.length; i++) &#123;</div><div class="line">         Field reverseField = reverseFields[i];<span class="comment">//</span></div><div class="line">         <span class="keyword">if</span> (!Modifier.isStatic(reverseField.getModifiers())) &#123;</div><div class="line">            Class&lt;?&gt; reverseFieldTypeClass = reverseField.getType();</div><div class="line">            <span class="comment">// B 中也有 A 的引用。因此是一对一的双向关系</span></div><div class="line">            <span class="keyword">if</span> (className.equals(reverseFieldTypeClass.getName())) &#123;</div><div class="line">               <span class="keyword">if</span> (action == GET_ASSOCIATIONS_ACTION) &#123;</div><div class="line">                  addIntoAssociationModelCollection(className, fieldTypeClass.getName(),</div><div class="line">                        fieldTypeClass.getName(), Const.Model.ONE_TO_ONE);</div><div class="line">               &#125; <span class="keyword">else</span> <span class="keyword">if</span> (action == GET_ASSOCIATION_INFO_ACTION) &#123;</div><div class="line">                  addIntoAssociationInfoCollection(className, fieldTypeClass.getName(),</div><div class="line">                        fieldTypeClass.getName(), field, reverseField, Const.Model.ONE_TO_ONE);</div><div class="line">               &#125;</div><div class="line">               reverseAssociations = <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line">            <span class="comment">// B 类中有字段： List&lt;A&gt; 说明是多对一关系</span></div><div class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (isCollection(reverseFieldTypeClass)) &#123;</div><div class="line">               String genericTypeName = getGenericTypeName(reverseField);</div><div class="line">               <span class="keyword">if</span> (className.equals(genericTypeName)) &#123;</div><div class="line">                  <span class="keyword">if</span> (action == GET_ASSOCIATIONS_ACTION) &#123;</div><div class="line">                     addIntoAssociationModelCollection(className, fieldTypeClass.getName(),</div><div class="line">                           className, Const.Model.MANY_TO_ONE);</div><div class="line">                  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (action == GET_ASSOCIATION_INFO_ACTION) &#123;</div><div class="line">                     addIntoAssociationInfoCollection(className, fieldTypeClass.getName(),</div><div class="line">                           className, field, reverseField, Const.Model.MANY_TO_ONE);</div><div class="line">                  &#125;</div><div class="line">                  reverseAssociations = <span class="keyword">true</span>;</div><div class="line">               &#125;</div><div class="line">            &#125;</div><div class="line">         &#125;</div><div class="line">      &#125;</div><div class="line">     	  <span class="comment">// B 中没有 A 的引用，AB 是单向的一对一关系</span></div><div class="line">           <span class="keyword">if</span> (!reverseAssociations) &#123;</div><div class="line">               <span class="keyword">if</span> (action == GET_ASSOCIATIONS_ACTION) &#123;</div><div class="line">                   addIntoAssociationModelCollection(className, fieldTypeClass.getName(),</div><div class="line">                           fieldTypeClass.getName(), Const.Model.ONE_TO_ONE);</div><div class="line">               &#125; <span class="keyword">else</span> <span class="keyword">if</span> (action == GET_ASSOCIATION_INFO_ACTION) &#123;</div><div class="line">                   addIntoAssociationInfoCollection(className, fieldTypeClass.getName(),</div><div class="line">                           fieldTypeClass.getName(), field, <span class="keyword">null</span>, Const.Model.ONE_TO_ONE);</div><div class="line">               &#125;</div><div class="line">           &#125;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>manyToAnyConditions 也是通过类似的逻辑进行分析处理。</p>
+<p>回到 saveThrows 方法，可以看到后续会调用 doSaveAction。</p>
+<h3 id="doSaveAction"><a href="#doSaveAction" class="headerlink" title="doSaveAction"></a>doSaveAction</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSaveAction</span><span class="params">(DataSupport baseObj, List&lt;Field&gt; supportedFields, List&lt;Field&gt; supportedGenericFields)</span></span></div><div class="line">      <span class="keyword">throws</span> SecurityException, IllegalArgumentException, NoSuchMethodException,</div><div class="line">      IllegalAccessException, InvocationTargetException &#123;</div><div class="line">   values.clear();<span class="comment">//先清除 contentValue 中的值</span></div><div class="line">   beforeSave(baseObj, supportedFields, values);</div><div class="line">   <span class="keyword">long</span> id = saving(baseObj, values);<span class="comment">//保存</span></div><div class="line">   afterSave(baseObj, supportedFields, supportedGenericFields, id);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>doSaveAction 方法中依次调用了 beforeSave  saving afterSave 三个方法。</p>
+<ul>
+<li>beforeSave 方法会将相应的字段列与值以键值对的形式存放到 values 中， values 将作为后面 saving 方法的参数。</li>
+<li>saving 方法内部会调用 调用 <code>SQLiteDatabase#insert</code> 方法对数据进行保存。</li>
+<li>afterSave 所做的工作是获取刚刚保存的那条记录的 id ，然后以反射的形式将它赋给对象的 baseObjId 字段，同时还会更新关联表的数据</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">long</span> <span class="title">saving</span><span class="params">(DataSupport baseObj, ContentValues values)</span> </span>&#123;</div><div class="line">       <span class="keyword">if</span> (values.size() == <span class="number">0</span>) &#123;<span class="comment">//如果 contentValue 中的大小为 0，那就存储一个仅有 id 的空行</span></div><div class="line">           values.putNull(<span class="string">"id"</span>);</div><div class="line">       &#125;</div><div class="line">   <span class="keyword">return</span> mDatabase.insert(baseObj.getTableName(), <span class="keyword">null</span>, values);<span class="comment">//终于看到了 SqlLite 的保存操作</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="SQLiteDatabase-insert"><a href="#SQLiteDatabase-insert" class="headerlink" title="SQLiteDatabase#insert"></a>SQLiteDatabase#insert</h3><p>insert 方法内部会调用 SQLiteDatabase#insertWithOnConflict 方法。</p>
+<p>可以看到该方法的实现是将相应的数据结构拼接为一个 SQL 插入语句</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String[] CONFLICT_VALUES = <span class="keyword">new</span> String[]</div><div class="line">        &#123;<span class="string">""</span>, <span class="string">" OR ROLLBACK "</span>, <span class="string">" OR ABORT "</span>, <span class="string">" OR FAIL "</span>, <span class="string">" OR IGNORE "</span>, <span class="string">" OR REPLACE "</span>&#125;;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">insertWithOnConflict</span><span class="params">(String table, String nullColumnHack,</span></span></div><div class="line">        ContentValues initialValues, <span class="keyword">int</span> conflictAlgorithm) &#123;</div><div class="line">    acquireReference();</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        StringBuilder sql = <span class="keyword">new</span> StringBuilder();</div><div class="line">        sql.append(<span class="string">"INSERT"</span>);</div><div class="line">        sql.append(CONFLICT_VALUES[conflictAlgorithm]);</div><div class="line">        sql.append(<span class="string">" INTO "</span>);</div><div class="line">        sql.append(table);<span class="comment">//表名</span></div><div class="line">        sql.append(<span class="string">'('</span>);</div><div class="line"></div><div class="line">        Object[] bindArgs = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">int</span> size = (initialValues != <span class="keyword">null</span> &amp;&amp; !initialValues.isEmpty())</div><div class="line">                ? initialValues.size() : <span class="number">0</span>;</div><div class="line">        <span class="keyword">if</span> (size &gt; <span class="number">0</span>) &#123;</div><div class="line">            bindArgs = <span class="keyword">new</span> Object[size];</div><div class="line">            <span class="keyword">int</span> i = <span class="number">0</span>;</div><div class="line">            <span class="keyword">for</span> (String colName : initialValues.keySet()) &#123;</div><div class="line">                sql.append((i &gt; <span class="number">0</span>) ? <span class="string">","</span> : <span class="string">""</span>);</div><div class="line">                sql.append(colName);<span class="comment">//添加名称</span></div><div class="line">                bindArgs[i++] = initialValues.get(colName);<span class="comment">//列名对应的值，将其存在数组中</span></div><div class="line">            &#125;</div><div class="line">            sql.append(<span class="string">')'</span>);</div><div class="line">            sql.append(<span class="string">" VALUES ("</span>);</div><div class="line">            <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; size; i++) &#123;</div><div class="line">                sql.append((i &gt; <span class="number">0</span>) ? <span class="string">",?"</span> : <span class="string">"?"</span>);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            sql.append(nullColumnHack + <span class="string">") VALUES (NULL"</span>);<span class="comment">//空行</span></div><div class="line">        &#125;</div><div class="line">        sql.append(<span class="string">')'</span>);</div><div class="line"></div><div class="line">        SQLiteStatement statement = <span class="keyword">new</span> SQLiteStatement(<span class="keyword">this</span>, sql.toString(), bindArgs);<span class="comment">// 利用表名，以及需要更新的列名，还有相应的列参数「bindArgs」 创建一个 SQLiteStatement</span></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">return</span> statement.executeInsert();<span class="comment">//执行插入操作</span></div><div class="line">        &#125; <span class="keyword">finally</span> &#123;</div><div class="line">            statement.close();</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        releaseReference();<span class="comment">//释放引用</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>至此，save 过程分析完成。</p>
+<h2 id="find-过程浅析"><a href="#find-过程浅析" class="headerlink" title="find 过程浅析"></a>find 过程浅析</h2><p>DataSupport#find 大体流程：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">find()</div><div class="line">  --&gt; find(modelClass, id, false);</div><div class="line">       --&gt; 创建 QueryHandler </div><div class="line">       --&gt; queryHandler#onFind</div><div class="line">           --&gt; query  //获取符合条件的 list</div><div class="line">             --&gt; DataHandler#query</div><div class="line">                     --&gt; getSupportedFields //获取支持的字段</div><div class="line">                     --&gt; //调用相关方法。做一些铺垫工作</div><div class="line">                    --&gt; SQLiteDatabase#query  //调用 SQLiteDataBase#query （该方法最终会调用 buildQueryString 拼接出字符串）。然后通过 cursor 逐行取出数据</div><div class="line">                         --&gt; //省略一些转发方法</div><div class="line">                           --&gt; SQLiteDatabase#queryWithFactory</div><div class="line">                           		--&gt; SQLiteQueryBuilder#buildQueryString//拼接 sql 语句</div></pre></td></tr></table></figure>
+<h3 id="SQLiteQueryBuilder-buildQueryString"><a href="#SQLiteQueryBuilder-buildQueryString" class="headerlink" title="SQLiteQueryBuilder#buildQueryString"></a>SQLiteQueryBuilder#buildQueryString</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">buildQueryString</span><span class="params">(</span></span></div><div class="line">        <span class="keyword">boolean</span> distinct, String tables, String[] columns, String where,</div><div class="line">        String groupBy, String having, String orderBy, String limit) &#123;</div><div class="line">    <span class="keyword">if</span> (TextUtils.isEmpty(groupBy) &amp;&amp; !TextUtils.isEmpty(having)) &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</div><div class="line">                <span class="string">"HAVING clauses are only permitted when using a groupBy clause"</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (!TextUtils.isEmpty(limit) &amp;&amp; !sLimitPattern.matcher(limit).matches()) &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"invalid LIMIT clauses:"</span> + limit);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    StringBuilder query = <span class="keyword">new</span> StringBuilder(<span class="number">120</span>);</div><div class="line"></div><div class="line">    query.append(<span class="string">"SELECT "</span>);</div><div class="line">    <span class="keyword">if</span> (distinct) &#123;</div><div class="line">        query.append(<span class="string">"DISTINCT "</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (columns != <span class="keyword">null</span> &amp;&amp; columns.length != <span class="number">0</span>) &#123;</div><div class="line">        appendColumns(query, columns);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        query.append(<span class="string">"* "</span>);</div><div class="line">    &#125;</div><div class="line">    query.append(<span class="string">"FROM "</span>);</div><div class="line">    query.append(tables);</div><div class="line">    appendClause(query, <span class="string">" WHERE "</span>, where);</div><div class="line">    appendClause(query, <span class="string">" GROUP BY "</span>, groupBy);</div><div class="line">    appendClause(query, <span class="string">" HAVING "</span>, having);</div><div class="line">    appendClause(query, <span class="string">" ORDER BY "</span>, orderBy);</div><div class="line">    appendClause(query, <span class="string">" LIMIT "</span>, limit);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> query.toString();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>小结：find 就是通过相应的查询条件拼接为 SQL 查询语句，然后将查询结果返回。</p>
+<h2 id="问题："><a href="#问题：" class="headerlink" title="问题："></a>问题：</h2><h3 id="同步-异步"><a href="#同步-异步" class="headerlink" title="同步/异步"></a>同步/异步</h3><p>对于每一个 CRUD 操作，LitePal 都有同步以及相对应的异步方法。</p>
+<h4 id="以异步-save-为例"><a href="#以异步-save-为例" class="headerlink" title="以异步 save 为例"></a>以异步 save 为例</h4><p>异步更新只是新开一条线程来执行 save 方法，并在主线程进行结果回调</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> SaveExecutor <span class="title">saveAsync</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">final</span> SaveExecutor executor = <span class="keyword">new</span> SaveExecutor();<span class="comment">//参加一个 SaveExecutor</span></div><div class="line">    Runnable runnable = <span class="keyword">new</span> Runnable() &#123;<span class="comment">//创建一个 Runnable 匿名内部子类，</span></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">synchronized</span> (DataSupport.class) &#123;</div><div class="line">                <span class="keyword">final</span> <span class="keyword">boolean</span> success = save();<span class="comment">//调用保存方法</span></div><div class="line">                <span class="keyword">if</span> (executor.getListener() != <span class="keyword">null</span>) &#123;</div><div class="line">                    LitePal.getHandler().post(<span class="keyword">new</span> Runnable() &#123;<span class="comment">//切换到主线程中回调</span></div><div class="line">                        <span class="meta">@Override</span></div><div class="line">                        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                            executor.getListener().onFinish(success);<span class="comment">//回调</span></div><div class="line">                        &#125;</div><div class="line">                    &#125;);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line">    executor.submit(runnable);</div><div class="line">    <span class="keyword">return</span> executor;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SaveExecutor</span> <span class="keyword">extends</span> <span class="title">AsyncExecutor</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> SaveCallback cb;<span class="comment">//回调接口</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 注册回调接口之后，马上执行异步任务</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">listen</span><span class="params">(SaveCallback callback)</span> </span>&#123;<span class="comment">//注册回调</span></div><div class="line">        cb = callback;</div><div class="line">        execute();<span class="comment">//执行异步任务</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> SaveCallback <span class="title">getListener</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span>  cb;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>SaveExecutor 继承自 AsyncExecutor。特别之处在于它是通过 listen 方法来触发异步任务执行的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AsyncExecutor</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> Runnable pendingTask;<span class="comment">//延时任务</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 提交任务</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">submit</span><span class="params">(Runnable task)</span> </span>&#123;</div><div class="line">        pendingTask = task;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 后台执行延时任务</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (pendingTask != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">new</span> Thread(pendingTask).start();<span class="comment">//新建线程执行任务</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>AsyncExecutor 一个简单的异步执行器，在后台线程中运行任务。它是所有的异步操作执行器的基类。</p>
+<p><img src="https://user-images.githubusercontent.com/16668676/33612586-0077ccc2-da0d-11e7-80a5-5e093b7e79ba.png" alt="image"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>LitePal 需要在 Application 中进行初始化。首次获取数据库的时会触发数据库以及表的创建。后续的 CRUD 操作都是通过<strong>反射机制和 Android SQLite API</strong> 来实现的。它会自动分析表与表之间的关联关系，并帮助创建表、自动管理表。</p>
+<h3 id="优点："><a href="#优点：" class="headerlink" title="优点："></a>优点：</h3><p><strong>配置简单，操作方便，业务对象清晰，LitePal 很「轻」，jar 包只有 100k 不到</strong>。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li>反射影响性能。</li>
+<li>无法直接进行关联查询。</li>
+</ol>
+<h3 id="与同类框架（GreenDAO）对比："><a href="#与同类框架（GreenDAO）对比：" class="headerlink" title="与同类框架（GreenDAO）对比："></a>与同类框架（GreenDAO）对比：</h3><p>GreetDao 一开始就人工生成业务需要的 Model 和 DAO 文件，业务中可以直接调用相应的 DAO 文件进行数据库的增删改查操作，从而避免了因反射带来的性能损耗和效率低。因此大批量的插入、更新、查询等操作，greenDAO 用时短，执行快更适合。但是 greenDAO 使用不方便，学习成本较高。</p>
+<p>如果应用对性能要求不是特别苛刻并且数据量也不大的情况下，轻量级的 LitePal，基本能满足我们的需求了。</p>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li><p><a href="http://www.jianshu.com/p/35c704701638" target="_blank" rel="external">数据库 ORM 之 LitePal</a></p>
+</li>
+<li><h4 id="Android-数据库高手秘籍"><a href="#Android-数据库高手秘籍" class="headerlink" title="Android 数据库高手秘籍"></a><a href="http://blog.csdn.net/column/details/android-database-pro.html" target="_blank" rel="external">Android 数据库高手秘籍</a></h4></li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源，谢谢！</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/源码分析/" rel="tag"># 源码分析</a>
+          
+            <a href="/blog/tags/拆轮子/" rel="tag"># 拆轮子</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/10/07/拆轮子系列——ButterKnife工作原理/" rel="next" title="拆轮子系列——ButterKnife工作原理">
+                <i class="fa fa-chevron-left"></i> 拆轮子系列——ButterKnife工作原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/ivanljt" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#LitePal-解决了什么问题？"><span class="nav-number">1.</span> <span class="nav-text">LitePal 解决了什么问题？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化"><span class="nav-number">2.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库的创建"><span class="nav-number">3.</span> <span class="nav-text">数据库的创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Connector-getDatabase"><span class="nav-number">3.1.</span> <span class="nav-text">Connector#getDatabase()</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#注：大小写敏感"><span class="nav-number">3.1.1.</span> <span class="nav-text">注：大小写敏感</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#buildConnection"><span class="nav-number">3.2.</span> <span class="nav-text">buildConnection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LitePalOpenHelper-onCreate-调用链"><span class="nav-number">3.3.</span> <span class="nav-text">LitePalOpenHelper#onCreate 调用链</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dataSupport-save-的背后"><span class="nav-number">4.</span> <span class="nav-text">dataSupport#save() 的背后</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#saveThrows"><span class="nav-number">4.1.</span> <span class="nav-text">saveThrows</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SaveHandler"><span class="nav-number">4.2.</span> <span class="nav-text">SaveHandler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LitePalBase-getAssociationInfo"><span class="nav-number">4.3.</span> <span class="nav-text">LitePalBase#getAssociationInfo</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#LitePalBase-oneToAnyConditions"><span class="nav-number">4.3.1.</span> <span class="nav-text">LitePalBase#oneToAnyConditions</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#doSaveAction"><span class="nav-number">4.4.</span> <span class="nav-text">doSaveAction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQLiteDatabase-insert"><span class="nav-number">4.5.</span> <span class="nav-text">SQLiteDatabase#insert</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#find-过程浅析"><span class="nav-number">5.</span> <span class="nav-text">find 过程浅析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SQLiteQueryBuilder-buildQueryString"><span class="nav-number">5.1.</span> <span class="nav-text">SQLiteQueryBuilder#buildQueryString</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题："><span class="nav-number">6.</span> <span class="nav-text">问题：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#同步-异步"><span class="nav-number">6.1.</span> <span class="nav-text">同步/异步</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#以异步-save-为例"><span class="nav-number">6.1.1.</span> <span class="nav-text">以异步 save 为例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#优点："><span class="nav-number">7.1.</span> <span class="nav-text">优点：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺点"><span class="nav-number">7.2.</span> <span class="nav-text">缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#与同类框架（GreenDAO）对比："><span class="nav-number">7.3.</span> <span class="nav-text">与同类框架（GreenDAO）对比：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">8.</span> <span class="nav-text">参考资料与学习资源推荐</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Android-数据库高手秘籍"><span class="nav-number">8.0.1.</span> <span class="nav-text">Android 数据库高手秘籍</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>
