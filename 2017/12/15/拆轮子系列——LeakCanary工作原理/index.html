@@ -1,0 +1,1220 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="源码分析,拆轮子," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。
+什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。
+哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
+<meta property="og:type" content="article">
+<meta property="og:title" content="拆轮子系列——LeakCanary工作原理">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2017/12/15/拆轮子系列——LeakCanary工作原理/index.html">
+<meta property="og:site_name" content="Tim's Track">
+<meta property="og:description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。
+什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。
+哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/737949-cff06b0079bf09c4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2">
+<meta property="og:updated_time" content="2017-12-15T06:19:21.738Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="拆轮子系列——LeakCanary工作原理">
+<meta name="twitter:description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。
+什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。
+哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/737949-cff06b0079bf09c4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/12/15/拆轮子系列——LeakCanary工作原理/"/>
+
+
+
+
+
+  <title> 拆轮子系列——LeakCanary工作原理 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/12/15/拆轮子系列——LeakCanary工作原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                拆轮子系列——LeakCanary工作原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-15T13:28:02+08:00">
+                2017-12-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/源码分析/" itemprop="url" rel="index">
+                    <span itemprop="name">源码分析</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/源码分析/拆轮子/" itemprop="url" rel="index">
+                    <span itemprop="name">拆轮子</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2017/12/15/拆轮子系列——LeakCanary工作原理/" class="leancloud_visitors" data-flag-title="拆轮子系列——LeakCanary工作原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  3,204
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  13
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>LeakCanary 是一个内存泄漏的自动化监测工具。</p>
+<h3 id="什么是内存泄漏？"><a href="#什么是内存泄漏？" class="headerlink" title="什么是内存泄漏？"></a>什么是内存泄漏？</h3><p>内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。</p>
+<h3 id="哪些对象应该被回收？"><a href="#哪些对象应该被回收？" class="headerlink" title="哪些对象应该被回收？"></a>哪些对象应该被回收？</h3><p>首先要找出哪些对象是<strong>应该被回收</strong>的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 <strong>onDestroy 执行的时候，就可以把它们列为 「应该被回收的对象</strong>」，可在 onDestory  方法中建立<strong>检测点</strong>。</p>
+<a id="more"></a>
+<p>注：</p>
+<ol>
+<li><code>Application#dispatchActivityDestroyed</code> 是在 <code>Activity#onDestroy</code> 方法的结尾回调的。</li>
+</ol>
+<h3 id="如何知道对象是否被回收了？"><a href="#如何知道对象是否被回收了？" class="headerlink" title="如何知道对象是否被回收了？"></a>如何知道对象是否被回收了？</h3><p>手动 GC +ReferenceQueue+WeakReference</p>
+<blockquote>
+<p>  WeakReference 创建时，传入一个 ReferenceQueue 对象。当被 WeakReference 引用的对象的生命周期结束，一旦被 GC 检查到，GC 将会把该对象添加到 ReferenceQueue 中，待 ReferenceQueue 处理。当 GC 过后对象一直不被加入 ReferenceQueue，它可能存在内存泄漏。</p>
+</blockquote>
+<p>这里的其实有一个默认的前提就是，当一个对象存在强引用的时候，这个对象是不会被回收的，所以 GC 前后，可达性并不会发生变化，也就不会被加入到 referenceQueue 中。而如果一个对象只含有弱引用的时候，GC 前后可达性会发生改变？是的。GC 之前弱可达，GC 之后变为弱可达。</p>
+<h3 id="未被回收-内存泄漏？"><a href="#未被回收-内存泄漏？" class="headerlink" title="未被回收==内存泄漏？"></a>未被回收==内存泄漏？</h3><h4 id="没被回收的原因：被持有强引用了吗？"><a href="#没被回收的原因：被持有强引用了吗？" class="headerlink" title="没被回收的原因：被持有强引用了吗？"></a>没被回收的原因：被持有强引用了吗？</h4><p>未被回收的对象，是否被其他对象引用？找出<strong>其最短引用链</strong>。<code>VMDebug</code> + <code>HAHA</code> 完成需求。</p>
+<p>VMDebug、HAHA。</p>
+<blockquote>
+<p>  VM 会有堆内各个对象的引用情况，并能以<code>hprof</code>文件导出。HAHA 是一个由 square 开源的 Android 堆分析库，分析 <code>hprof</code> 文件生成<code>Snapshot</code>对象。<code>Snapshot</code>用以查询对象的最短引用链。</p>
+</blockquote>
+<p>找到最短引用链后，定位问题，排查代码将会事半功倍。</p>
+<p>下面是一个总体流程图：（流程图参考自<a href="http://www.jianshu.com/p/3f1a1cc1e964" target="_blank" rel="external">这篇文章</a>）</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/737949-cff06b0079bf09c4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2" alt=""></p>
+<p>如果读者还没看过 LeakCanary 的源码，建议照着上面的调用流程图过一遍，这样效果会好很多。why？<a href="https://juejin.im/post/5a137248f265da43333e0418" target="_blank" rel="external">为什么源码分析味同嚼蜡？浅析技术写作中的思维误区</a></p>
+<h2 id="具体流程"><a href="#具体流程" class="headerlink" title="具体流程"></a>具体流程</h2><p>前面讲了大体流程，接下来我们看看内部的实现。</p>
+<p>通常会在 Applcation#onCreate 中对 LeakCanary 进行初始化,也就是调用下面的 setupLeakCanary 方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> RefWatcher <span class="title">setupLeakCanary</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (LeakCanary.isInAnalyzerProcess(<span class="keyword">this</span>)) &#123;</div><div class="line">        <span class="keyword">return</span> RefWatcher.DISABLED;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> LeakCanary.install(<span class="keyword">this</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="LeakCanary-install-调用流程"><a href="#LeakCanary-install-调用流程" class="headerlink" title="LeakCanary#install 调用流程"></a>LeakCanary#install 调用流程</h3><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">--&gt; LeakCanary#install</div><div class="line">	--&gt; refWatcher</div><div class="line">		--&gt; AndroidRefWatcherBuilder#listenerServiceClass	//监听服务类</div><div class="line">			--&gt; AndroidExcludedRefs#createAppDefaults//创建默认的忽略列表</div><div class="line">				--&gt; ExcludedRefs.Builder#build</div><div class="line">			--&gt; RefWatcherBuilder#excludedRefs//排除一些引用</div><div class="line">			--&gt; AndroidRefWatcherBuilder#buildAndInstall//构造一个 RefWatcher </div><div class="line">				--&gt; RefWatcherBuilder#build</div><div class="line">				--&gt; ActivityRefWatcher#install</div><div class="line">					--&gt; new ActivityRefWatcher</div><div class="line">						--&gt; ActivityRefWatcher#watchActivities</div><div class="line">						--&gt; stopWatchingActivities();//防止装载两次，</div><div class="line">							--&gt; Application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks);//解注册</div><div class="line">						--&gt;     </div><div class="line">              Application#registerActivityLifecycleCallbacks(lifecycleCallbacks);//注册生命周期回调</div><div class="line">							--&gt; mActivityLifecycleCallbacks.add(callback);//添加到监听者列表中</div></pre></td></tr></table></figure>
+<p>注：监听回调进行仅仅实现了 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onActivityDestroyed</span><span class="params">(Activity activity)</span> </span>&#123;</div><div class="line">  ActivityRefWatcher.<span class="keyword">this</span>.onActivityDestroyed(activity);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>从上面可以看出在默认情况下只监听 Activity 的 <code>onDestory</code> 方法，也就是说只是检测 Activity 是否存在内存泄漏。</p>
+<h4 id="如果要检测-Fragment-的内存泄漏，应该如何实现？"><a href="#如果要检测-Fragment-的内存泄漏，应该如何实现？" class="headerlink" title="如果要检测 Fragment 的内存泄漏，应该如何实现？"></a>如果要检测 Fragment 的内存泄漏，应该如何实现？</h4><p>因为 Android 中只提供了 Activity 的生命周期方法的回调，而没有提供 Fragment 生命周期回调的监听。 如果要对 Fragment 的内存泄漏进行检测，那么需要自己在 <code>Fragment#onDestroy</code> 方法中手动创建一个 RefWatcher ，然后调用 <code>refWatcher#watch(this)</code>，最好是定义一个 Fragment 基类，在其中的 onDestroy 方法中定义相应的操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseFragment</span> <span class="keyword">extends</span> <span class="title">Fragment</span> </span>&#123;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDestroy</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onDestroy();</div><div class="line">    RefWatcher refWatcher = ExampleApplication.getRefWatcher(getActivity());</div><div class="line">    refWatcher.watch(<span class="keyword">this</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="当监听事件发生时，切换到后台执行"><a href="#当监听事件发生时，切换到后台执行" class="headerlink" title="当监听事件发生时，切换到后台执行"></a>当监听事件发生时，切换到后台执行</h3><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">--&gt;  ActivityLifecycleCallbacks#onActivityDestroyed</div><div class="line">	--&gt; ActivityRefWatcher#onActivityDestroyed</div><div class="line">		--&gt; RefWatcher#watch(Object)</div><div class="line">			--&gt; RefWatcher#watch(Object, String)    内部有一个 ReferenceQueue&lt;Object&gt; queue;</div><div class="line">				--&gt; new KeyedWeakReference(watchedReference, key, referenceName, queue)//创建 KeyedWeakReference</div><div class="line">  					//两个 Handler,mainHandler 、backgroundHandler</div><div class="line">  				--&gt; RefWatcher#ensureGoneAsync</div><div class="line">  					--&gt; WatchExecutor#execute </div><div class="line"> 						if 当前线程为主线程</div><div class="line"> 							==&gt; AndroidWatchExecutor#waitForIdle// 等待 MainLooper 空闲时发送</div><div class="line"> 							</div><div class="line">								--&gt; MessageQueue#addIdleHandler//当 Looper 即将闲置时发送</div><div class="line">									--&gt; AndroidWatchExecutor#postToBackgroundWithDelay</div><div class="line">										--&gt; backgroundHandler#postDelayed//工作线程 Handler 延迟发送</div><div class="line">											--&gt; Retryable</div><div class="line">											--&gt; if (result == RETRY) </div><div class="line">         										 postWaitForIdle(retryable, failedAttempts + 1);</div><div class="line"> 						else 当前线程是工作线程，需要先切换到主线程，再从主线程切换到 HandlerThread 线程</div><div class="line">  							--&gt; AndroidWatchExecutor#postWaitForIdle</div><div class="line">                          	   		--&gt; mainHandler#post//通过主线程 Handler 切换到主线程执行	</div><div class="line">                          	   			==&gt; AndroidWatchExecutor#waitForIdle//等待空闲时发送</div></pre></td></tr></table></figure>
+<p>可以看到 <code>Retryable#run</code> 在工作线程执行。<code>AndroidWatchExecutor</code> 内创建了一个 HandlerThread ，通过它创建了一个 Handler。如果当前线程是主线程，直接调用主线程的  <code>Message#addIdleHandler</code> 进行处理，给工作线程发送延时任务。否则，需要先调用 <code>mainHandler#post</code> 方法， 切换到主线程，然后再调用 <code>AndroidWatchExecutor#waitForIdle</code>。之所以要切换到主线程，主要是为了使用主线程的 <code>MessageQueue#addIdleHandler</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">HandlerThread handlerThread = <span class="keyword">new</span> HandlerThread(LEAK_CANARY_THREAD_NAME);</div><div class="line">handlerThread.start();</div><div class="line">backgroundHandler = <span class="keyword">new</span> Handler(handlerThread.getLooper());</div></pre></td></tr></table></figure>
+<p>前面所谈都是执行线程的切换，下面开始内存分析任务具体是如何进行的。</p>
+<h3 id="内存泄漏分析"><a href="#内存泄漏分析" class="headerlink" title="内存泄漏分析"></a>内存泄漏分析</h3><h4 id="工作机制"><a href="#工作机制" class="headerlink" title="工作机制"></a>工作机制</h4><ol>
+<li>在后台线程检查引用是否被清除，如果没有，调用 GC。</li>
+<li>如果引用还是未被清除，把 heap 内存 dump 到 APP 对应的文件系统中的一个 <code>.hprof</code> 文件中。</li>
+<li>在另外一个进程中的 <code>HeapAnalyzerService</code> 有一个 <code>HeapAnalyzer</code> 使用<a href="https://github.com/square/haha" target="_blank" rel="external">HAHA</a> 解析这个文件。</li>
+<li>得益于唯一的 reference key, <code>HeapAnalyzer</code> 找到 <code>KeyedWeakReference</code>，定位内存泄漏。</li>
+<li><code>HeapAnalyzer</code> 计算 <em>到 GC roots 的最短强引用路径</em>，并确定是否是泄漏。如果是的话，建立导致泄漏的引用链。</li>
+<li>引用链传递到 APP 进程中的 <code>DisplayLeakService</code>， 并以通知的形式展示出来。</li>
+</ol>
+<h4 id="RefWatcher-ensureGone"><a href="#RefWatcher-ensureGone" class="headerlink" title="RefWatcher#ensureGone"></a>RefWatcher#ensureGone</h4><p>在前面的线程切换到目标工作线程之后就调用该方法。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">RefWatcher#ensureGone</div><div class="line">	--&gt; ① RefWatcher#removeWeaklyReachableReferences//移除所有「弱可达引用」</div><div class="line">	if (debuggerControl.isDebuggerAttached())</div><div class="line">      	--&gt; return RETRY;//调试模式控制</div><div class="line">	if (gone(reference)) //判断类名是否不在 Set&lt;String&gt; retainedKeys 中，若不在，说明内存分析完毕</div><div class="line">    	  return DONE; </div><div class="line">    --&gt; gcTrigger.runGc();//触发 gc，调用的是  Runtime.getRuntime().gc();</div><div class="line">	--&gt; ② RefWatcher#removeWeaklyReachableReferences//再次移除所有「弱可达引用」</div><div class="line">	if !gone(reference)//如果该引用对应的键仍然在 retainKeys 中，说明可能存在内存泄漏，进行 dump 然后分析</div><div class="line">      	--&gt; File heapDumpFile = heapDumper.dumpHeap();// dump 堆内存，会触发 stop the world</div><div class="line">	    if heapDumpFile == RETRY_LATER //现在无法触发 gc ，先返回。稍候重试</div><div class="line">            --&gt; return RETRY;</div><div class="line">        --&gt; new HeapDump</div><div class="line">        --&gt; ServiceHeapDumpListener#analyze</div><div class="line">        	--&gt; HeapAnalyzerService#runAnalysis</div><div class="line">        		--&gt; startService //开启 HeapAnalyzerService 服务，需要 HeapDump 以及接收分析结果的回调类的类名</div></pre></td></tr></table></figure>
+<h4 id="RefWatcher-removeWeaklyReachableReferences"><a href="#RefWatcher-removeWeaklyReachableReferences" class="headerlink" title="RefWatcher#removeWeaklyReachableReferences"></a>RefWatcher#removeWeaklyReachableReferences</h4><p>移除在 retainedKeys 中的所有弱可达的对象对应的 key。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> Set&lt;String&gt; retainedKeys;</div><div class="line">ReferenceQueue&lt;Object&gt; queue;</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">removeWeaklyReachableReferences</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="comment">// 对象一旦只存在弱引用，马上就会被加入 ReferenceQueue 中，这发生在 finalization 或者 gc 之前</span></div><div class="line">  KeyedWeakReference ref;</div><div class="line">  <span class="keyword">while</span> ((ref = (KeyedWeakReference) queue.poll()) != <span class="keyword">null</span>) &#123;</div><div class="line">    retainedKeys.remove(ref.key);<span class="comment">//移除弱引用对应的 key</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="KeyedWeakReference"><a href="#KeyedWeakReference" class="headerlink" title="KeyedWeakReference"></a>KeyedWeakReference</h4><p>上面使用到了一个 KeyedWeakReference 类型的对象，KeyedWeakReference 意为「带键的弱引用」。具体实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">KeyedWeakReference</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">Object</span>&gt; </span>&#123;</div><div class="line">  <span class="keyword">public</span> <span class="keyword">final</span> String key;</div><div class="line">  <span class="keyword">public</span> <span class="keyword">final</span> String name;</div><div class="line"></div><div class="line">  KeyedWeakReference(Object referent, String key, String name,</div><div class="line">      ReferenceQueue&lt;Object&gt; referenceQueue) &#123;</div><div class="line">    <span class="keyword">super</span>(checkNotNull(referent, <span class="string">"referent"</span>), checkNotNull(referenceQueue, <span class="string">"referenceQueue"</span>));</div><div class="line">    <span class="keyword">this</span>.key = checkNotNull(key, <span class="string">"key"</span>);</div><div class="line">    <span class="keyword">this</span>.name = checkNotNull(name, <span class="string">"name"</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>唯一创建了 KeyedReference 的地方：</p>
+<p><code>RefWatcher#watch(Object, String)</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">watch</span><span class="params">(Object watchedReference, String referenceName)</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (<span class="keyword">this</span> == DISABLED) &#123;</div><div class="line">    <span class="keyword">return</span>;</div><div class="line">  &#125;</div><div class="line">  checkNotNull(watchedReference, <span class="string">"watchedReference"</span>);</div><div class="line">  checkNotNull(referenceName, <span class="string">"referenceName"</span>);</div><div class="line">  <span class="keyword">final</span> <span class="keyword">long</span> watchStartNanoTime = System.nanoTime();</div><div class="line">  String key = UUID.randomUUID().toString();<span class="comment">//创建一个独一无二 key</span></div><div class="line">  retainedKeys.add(key);<span class="comment">//添加到 retainedKeys 中 </span></div><div class="line">  <span class="keyword">final</span> KeyedWeakReference reference =</div><div class="line">      <span class="keyword">new</span> KeyedWeakReference(watchedReference, key, referenceName, queue);<span class="comment">//创建一个 「带键的弱引用」</span></div><div class="line"></div><div class="line">  ensureGoneAsync(watchStartNanoTime, reference);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="retainedKeys"><a href="#retainedKeys" class="headerlink" title="retainedKeys"></a>retainedKeys</h4><p><code>retainedKeys</code> 类型为一个 <code>Set&lt;String&gt;</code>，主要用于判断对象是否被回收。</p>
+<p>retainedKeys 的添加与删除</p>
+<h5 id="添加："><a href="#添加：" class="headerlink" title="添加："></a>添加：</h5><p>一个带键的弱引用（KeyedWeakReference）被创建的时候，其中的键会被加入 retainedKeys 中。</p>
+<h5 id="删除："><a href="#删除：" class="headerlink" title="删除："></a>删除：</h5><p>通过 RefWatcher#removeWeaklyReachableReferences 方法 可以删除 retainedKeys 中那些仅含有弱引用的 KeyedWeakReference 对应的 key。</p>
+<p>如果不在 retainedKeys 中说明该对象已经被回收了。</p>
+<h4 id="HeapAnalyzerService"><a href="#HeapAnalyzerService" class="headerlink" title="HeapAnalyzerService"></a>HeapAnalyzerService</h4><p>HeapAnalyzerService 是一个 IntentService，它会在  onHandleIntent 方法中对堆进行分析。</p>
+<p>HeapAnalyzerService#onHandleIntent</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span> <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onHandleIntent</span><span class="params">(Intent intent)</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (intent == <span class="keyword">null</span>) &#123;<span class="comment">// intent 为空直接返回</span></div><div class="line">    CanaryLog.d(<span class="string">"HeapAnalyzerService received a null intent, ignoring."</span>);</div><div class="line">    <span class="keyword">return</span>;</div><div class="line">  &#125;</div><div class="line">  String listenerClassName = intent.getStringExtra(LISTENER_CLASS_EXTRA);<span class="comment">//获取回调类的类名</span></div><div class="line">  HeapDump heapDump = (HeapDump) intent.getSerializableExtra(HEAPDUMP_EXTRA);<span class="comment">//获取 HeapDump </span></div><div class="line"></div><div class="line">  HeapAnalyzer heapAnalyzer = <span class="keyword">new</span> HeapAnalyzer(heapDump.excludedRefs);<span class="comment">//创建 HeapAnalyzer</span></div><div class="line"></div><div class="line">  AnalysisResult result = heapAnalyzer.checkForLeak(heapDump.heapDumpFile, heapDump.referenceKey);<span class="comment">//检查泄漏（通过 HAHA 来完成），并获取结果</span></div><div class="line">  AbstractAnalysisResultService.sendResultToListener(<span class="keyword">this</span>, listenerClassName, heapDump, result);<span class="comment">//将分析结果发送给监听器</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到，onHandleIntent 方法中，会从 Intent 中获取 HeapDump 以及 listenerClassName（监听器类名），然后将相应的数据交给 HAHA 库中的 HeapAnalyzer 进行分析，最后将结果发回给监听器</p>
+<p>注：在创建对分析器的时候 会使用到 heapDump.excludedRefs，excludedRefs  实际类型为 AndroidExcludedRefs ，它是一个枚举类，其中设置了一些由于特定制造商的实现引起内存泄漏的类。如果内存泄漏是由该枚举类含有的类锁引起，那么内存泄漏问题会被忽略。</p>
+<p>对于大部分应用开发者而言都应该使用 createAppDefaults 方法，不过也可以自己创建一个 EnumSet ，在其中指定自己要忽略的内存泄漏类，并通过 <code>AndroidExcludedRefs#createBuilder(EnumSet)</code>方法进行设置。</p>
+<h4 id="HeapAnalyzer-checkForLeak-检测内存泄漏"><a href="#HeapAnalyzer-checkForLeak-检测内存泄漏" class="headerlink" title="HeapAnalyzer#checkForLeak 检测内存泄漏"></a>HeapAnalyzer#checkForLeak 检测内存泄漏</h4><p>限于篇幅，仅对 HAHA 进行简单介绍</p>
+<p>HAHA 是一个 Java 库，可以自动完成对 Android 堆转储文件的分析。</p>
+<p>这个项目实际上是对其他人的工作的重新打包，以使其成为一个小型的 Maven 依赖项。</p>
+<p>HAHA  可达性分析算法 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> AnalysisResult <span class="title">checkForLeak</span><span class="params">(File heapDumpFile, String referenceKey)</span> </span>&#123;</div><div class="line">  <span class="keyword">long</span> analysisStartNanoTime = System.nanoTime();</div><div class="line"></div><div class="line">  <span class="keyword">if</span> (!heapDumpFile.exists()) &#123;</div><div class="line">    Exception exception = <span class="keyword">new</span> IllegalArgumentException(<span class="string">"File does not exist: "</span> + heapDumpFile);</div><div class="line">    <span class="keyword">return</span> failure(exception, since(analysisStartNanoTime));</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">try</span> &#123;</div><div class="line">    HprofBuffer buffer = <span class="keyword">new</span> MemoryMappedFileBuffer(heapDumpFile);<span class="comment">//通过堆转储文件构造一个 MemoryMappedFileBuffer</span></div><div class="line">    HprofParser parser = <span class="keyword">new</span> HprofParser(buffer);<span class="comment">//创建一个 Hprof 文件解析器</span></div><div class="line">    Snapshot snapshot = parser.parse();<span class="comment">//解析，将结果赋给 Snapshot </span></div><div class="line">    deduplicateGcRoots(snapshot);<span class="comment">//删除重复的 GC Root </span></div><div class="line"></div><div class="line">    Instance leakingRef = findLeakingReference(referenceKey, snapshot);<span class="comment">//利用 referenceKey 和  snapshot 寻找发生泄漏的引用</span></div><div class="line"></div><div class="line">    <span class="comment">// False alarm, weak reference was cleared in between key check and heap dump.</span></div><div class="line">    <span class="keyword">if</span> (leakingRef == <span class="keyword">null</span>) &#123;</div><div class="line">      <span class="keyword">return</span> noLeak(since(analysisStartNanoTime));<span class="comment">//没有发生内存泄漏</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> findLeakTrace(analysisStartNanoTime, snapshot, leakingRef);<span class="comment">//发现内存泄漏</span></div><div class="line">  &#125; <span class="keyword">catch</span> (Throwable e) &#123;</div><div class="line">    <span class="keyword">return</span> failure(e, since(analysisStartNanoTime));<span class="comment">//</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>得益于唯一的 reference key, <code>HeapAnalyzer</code> 找到 <code>KeyedWeakReference</code>，定位内存泄漏。</li>
+<li><code>HeapAnalyzer</code> 计算 <em>到 GC roots 的最短强引用路径</em>，并确定是否是泄漏。如果是的话，建立导致泄漏的引用链。</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>内存泄漏的本质是长生命周期的对象持有短生命周期对象的强引用，导致短生命周期对象使用完了之后无法被回收。也就是应该被回收的对象没有被回收。<br>那么问题就变成了什么对象是应该被回收的对象呢？对于 Activity 而言，执行完 onDestroy 方法之后，就是应该被回收了。因此可以将 Activity#ondestroy 方法作为一个检测点。Application 中提供了各个 Activity 的生命周期回调方法的监听，LeakCanary 就是通过注册  <code>ActivityLifecycleCallbacks</code> ，监听生命周期方法的回调，作为整个内存泄漏分析的入口。</p>
+<p>每次 <code>onActivityDestroyed(Activity activity)</code> 方法被回调之后,都会创建一个 KeyedWeakReference 对相应 Activity 的状态进行跟踪。后台线程（HandlerThread ）检查引用是否被清除，如果没有就手动调用一次 gc，如果这时还是没有被清除，把 heap 内存 dump 到 APP 对应的文件系统中的一个 <code>.hprof</code> 文件中。在另一个进程中的 <code>`HeapAnalyzerService</code>  中，  HeapAnalyzer 会通过 haha 开源库对文件进行分析。    得益于唯一的 reference key,  <code>HeapAnalyzer</code>  找到 <code>KeyedWeakReference</code>，定位内存泄漏。<code>HeapAnalyzer</code> 计算 <em>到 GC roots 的最短强引用路径</em>，并确定是否是泄漏。如果是的话，建立导致泄漏的引用链。引用链传递到 APP 进程中的 <code>DisplayLeakService</code>， 并以通知的形式展示出来。</p>
+<h3 id="进阶使用："><a href="#进阶使用：" class="headerlink" title="进阶使用："></a>进阶使用：</h3><p>了解 LeakCanary 的原理之后，发现其实它就是在对象不可用的时候去判断对象是否被回收了，但 leakcanary 只检查了 Activity，我们是否可以检查其他对象呢，毕竟 Activity 泄漏只是内存泄漏的一种，答案当然是可以的，我们只要需要进行如下操作:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">LeakCanary.install(app).watch(object)</div></pre></td></tr></table></figure>
+<p>但调用这个方法有个前提就是，我们在调用这个方法的时候<strong>确定了这个 object 已经不需要了</strong>，可以被回收了才能调用这个方法，通过这种方式我们就可以<strong>对任何对象都进行检测</strong>了。</p>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li><a href="www.jianshu.com/p/3f1a1cc1e964">LeakCanary 原理浅析</a></li>
+<li><a href="https://www.liaohuqiu.net/cn/posts/leak-canary-read-me/" target="_blank" rel="external">LeakCanary 中文使用说明</a></li>
+<li><a href="https://hongjiang.info/java-referencequeue/" target="_blank" rel="external">话说 ReferenceQueue</a></li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源。谢谢！</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/源码分析/" rel="tag"># 源码分析</a>
+          
+            <a href="/blog/tags/拆轮子/" rel="tag"># 拆轮子</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/12/03/拆轮子系列——litepal-原理解析/" rel="next" title="拆轮子系列——litepal 原理解析">
+                <i class="fa fa-chevron-left"></i> 拆轮子系列——litepal 原理解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/ivanljt" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是内存泄漏？"><span class="nav-number">1.1.</span> <span class="nav-text">什么是内存泄漏？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#哪些对象应该被回收？"><span class="nav-number">1.2.</span> <span class="nav-text">哪些对象应该被回收？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何知道对象是否被回收了？"><span class="nav-number">1.3.</span> <span class="nav-text">如何知道对象是否被回收了？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#未被回收-内存泄漏？"><span class="nav-number">1.4.</span> <span class="nav-text">未被回收==内存泄漏？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#没被回收的原因：被持有强引用了吗？"><span class="nav-number">1.4.1.</span> <span class="nav-text">没被回收的原因：被持有强引用了吗？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#具体流程"><span class="nav-number">2.</span> <span class="nav-text">具体流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LeakCanary-install-调用流程"><span class="nav-number">2.1.</span> <span class="nav-text">LeakCanary#install 调用流程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#如果要检测-Fragment-的内存泄漏，应该如何实现？"><span class="nav-number">2.1.1.</span> <span class="nav-text">如果要检测 Fragment 的内存泄漏，应该如何实现？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#当监听事件发生时，切换到后台执行"><span class="nav-number">2.2.</span> <span class="nav-text">当监听事件发生时，切换到后台执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存泄漏分析"><span class="nav-number">2.3.</span> <span class="nav-text">内存泄漏分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#工作机制"><span class="nav-number">2.3.1.</span> <span class="nav-text">工作机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RefWatcher-ensureGone"><span class="nav-number">2.3.2.</span> <span class="nav-text">RefWatcher#ensureGone</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RefWatcher-removeWeaklyReachableReferences"><span class="nav-number">2.3.3.</span> <span class="nav-text">RefWatcher#removeWeaklyReachableReferences</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KeyedWeakReference"><span class="nav-number">2.3.4.</span> <span class="nav-text">KeyedWeakReference</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#retainedKeys"><span class="nav-number">2.3.5.</span> <span class="nav-text">retainedKeys</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#添加："><span class="nav-number">2.3.5.1.</span> <span class="nav-text">添加：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#删除："><span class="nav-number">2.3.5.2.</span> <span class="nav-text">删除：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HeapAnalyzerService"><span class="nav-number">2.3.6.</span> <span class="nav-text">HeapAnalyzerService</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HeapAnalyzer-checkForLeak-检测内存泄漏"><span class="nav-number">2.3.7.</span> <span class="nav-text">HeapAnalyzer#checkForLeak 检测内存泄漏</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#进阶使用："><span class="nav-number">3.1.</span> <span class="nav-text">进阶使用：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">4.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>
