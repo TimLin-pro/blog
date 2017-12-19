@@ -98,7 +98,7 @@
 什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。
 哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/737949-cff06b0079bf09c4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2">
-<meta property="og:updated_time" content="2017-12-15T06:19:21.738Z">
+<meta property="og:updated_time" content="2017-12-19T01:53:23.061Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="拆轮子系列——LeakCanary工作原理">
 <meta name="twitter:description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。
@@ -412,7 +412,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  3,204
+                  3,185
                 </span>
               
 
@@ -521,9 +521,9 @@
 </ol>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>内存泄漏的本质是长生命周期的对象持有短生命周期对象的强引用，导致短生命周期对象使用完了之后无法被回收。也就是应该被回收的对象没有被回收。<br>那么问题就变成了什么对象是应该被回收的对象呢？对于 Activity 而言，执行完 onDestroy 方法之后，就是应该被回收了。因此可以将 Activity#ondestroy 方法作为一个检测点。Application 中提供了各个 Activity 的生命周期回调方法的监听，LeakCanary 就是通过注册  <code>ActivityLifecycleCallbacks</code> ，监听生命周期方法的回调，作为整个内存泄漏分析的入口。</p>
 <p>每次 <code>onActivityDestroyed(Activity activity)</code> 方法被回调之后,都会创建一个 KeyedWeakReference 对相应 Activity 的状态进行跟踪。后台线程（HandlerThread ）检查引用是否被清除，如果没有就手动调用一次 gc，如果这时还是没有被清除，把 heap 内存 dump 到 APP 对应的文件系统中的一个 <code>.hprof</code> 文件中。在另一个进程中的 <code>`HeapAnalyzerService</code>  中，  HeapAnalyzer 会通过 haha 开源库对文件进行分析。    得益于唯一的 reference key,  <code>HeapAnalyzer</code>  找到 <code>KeyedWeakReference</code>，定位内存泄漏。<code>HeapAnalyzer</code> 计算 <em>到 GC roots 的最短强引用路径</em>，并确定是否是泄漏。如果是的话，建立导致泄漏的引用链。引用链传递到 APP 进程中的 <code>DisplayLeakService</code>， 并以通知的形式展示出来。</p>
-<h3 id="进阶使用："><a href="#进阶使用：" class="headerlink" title="进阶使用："></a>进阶使用：</h3><p>了解 LeakCanary 的原理之后，发现其实它就是在对象不可用的时候去判断对象是否被回收了，但 leakcanary 只检查了 Activity，我们是否可以检查其他对象呢，毕竟 Activity 泄漏只是内存泄漏的一种，答案当然是可以的，我们只要需要进行如下操作:</p>
+<h3 id="进阶使用："><a href="#进阶使用：" class="headerlink" title="进阶使用："></a>进阶使用：</h3><p>了解 LeakCanary 的原理之后，发现其实它就是在对象不可用的时候去判断对象是否被回收了，但 LeakCanary 只检查了 Activity，我们是否可以检查其他对象呢，毕竟 Activity 泄漏只是内存泄漏的一种，答案当然是可以的，我们只要需要进行如下操作:</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">LeakCanary.install(app).watch(object)</div></pre></td></tr></table></figure>
-<p>但调用这个方法有个前提就是，我们在调用这个方法的时候<strong>确定了这个 object 已经不需要了</strong>，可以被回收了才能调用这个方法，通过这种方式我们就可以<strong>对任何对象都进行检测</strong>了。</p>
+<p>但我们在调用这个方法的时候<strong>需要确定这个 object 已经不需要了，可以被回收了</strong>。通过这种方式我们就可以<strong>对任何对象都进行检测</strong>了。</p>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
 <li><a href="www.jianshu.com/p/3f1a1cc1e964">LeakCanary 原理浅析</a></li>
 <li><a href="https://www.liaohuqiu.net/cn/posts/leak-canary-read-me/" target="_blank" rel="external">LeakCanary 中文使用说明</a></li>
