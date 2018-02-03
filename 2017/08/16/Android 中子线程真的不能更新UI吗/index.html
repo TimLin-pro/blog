@@ -88,11 +88,13 @@
 
 
 <meta name="description" content="Android 中子线程真的不能更新 UI 吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。">
+<meta name="keywords" content="原理分析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 中子线程真的不能更新 UI 吗？">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/16/Android 中子线程真的不能更新UI吗/index.html">
-<meta property="og:site_name" content="Tim's Track">
+<meta property="og:site_name" content="Tim&#39;s Track">
 <meta property="og:description" content="Android 中子线程真的不能更新 UI 吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2017-12-09T09:02:19.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 中子线程真的不能更新 UI 吗？">
@@ -460,10 +462,10 @@
 <p>  子线程可以更新 UI，但是需要创建子线程的根视图（ViewRoot），并添加到 WindowManager，还要创建子线程的 Looper。以上条件都满足时，它可以修改它自己创建的根视图中的 UI。</p>
 </blockquote>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
-<li><a href="http://blog.csdn.net/xyh269/article/details/52728861" target="_blank" rel="external">Android 中子线程真的不能更新 UI 吗？</a></li>
-<li><a href="http://blog.csdn.net/u010198148/article/details/51779567" target="_blank" rel="external">多线程学习之–真的不能在子线程里更新 UI 吗？</a></li>
-<li><a href="https://www.zybuluo.com/natsumi/note/736165" target="_blank" rel="external">互联网笔记 Android 中子线程真的不能更新 UI 吗？</a></li>
-<li><a href="https://www.zhihu.com/question/24764972/answer/36053366" target="_blank" rel="external">Android 只在 UI 主线程修改 UI，是个谎言吗？ 为什么这段代码能完美运行？</a></li>
+<li><a href="http://blog.csdn.net/xyh269/article/details/52728861" target="_blank" rel="noopener">Android 中子线程真的不能更新 UI 吗？</a></li>
+<li><a href="http://blog.csdn.net/u010198148/article/details/51779567" target="_blank" rel="noopener">多线程学习之–真的不能在子线程里更新 UI 吗？</a></li>
+<li><a href="https://www.zybuluo.com/natsumi/note/736165" target="_blank" rel="noopener">互联网笔记 Android 中子线程真的不能更新 UI 吗？</a></li>
+<li><a href="https://www.zhihu.com/question/24764972/answer/36053366" target="_blank" rel="noopener">Android 只在 UI 主线程修改 UI，是个谎言吗？ 为什么这段代码能完美运行？</a></li>
 </ul>
 <p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源。谢谢！</p>
 
@@ -666,7 +668,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -677,7 +679,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -688,7 +690,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

@@ -87,21 +87,20 @@
 
 
 
-<meta name="description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。
-通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
+<meta name="description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。 通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
+<meta name="keywords" content="原理分析,设计模式">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 源码中的装饰者模式">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/09/05/Android-源码中的装饰者模式/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。
-通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。 通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30046081-a4423c2c-923a-11e7-9dad-170e000c5ece.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30047048-b4aeb6e2-9241-11e7-9a04-b11bb1acdc44.png">
 <meta property="og:updated_time" content="2017-09-05T12:43:42.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 源码中的装饰者模式">
-<meta name="twitter:description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。
-通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
+<meta name="twitter:description" content="装饰者模式的定义装饰模式（Decorator Pattern） 也称包装模式（Wrapper Pattern），是结构型设计模式之一，使用一种对客户端透明的方式来动态地拓展对象的功能，同时它也是继承关系的一种替代方案之一。 通过装饰者模式可以动态地给一个对象添加一些额外的职责。就增加功能而言，装饰模式相比生成子类更灵活。因为它装饰者持有一个被装饰者的引用，因此可以方便地调用具体被装饰者对象中的方法">
 <meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/30046081-a4423c2c-923a-11e7-9dad-170e000c5ece.png">
 
 
@@ -715,7 +714,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -726,7 +725,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -737,7 +736,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

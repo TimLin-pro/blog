@@ -87,14 +87,14 @@
 
 
 
-<meta name="description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。
-缓存虽然解决了速度差，但是也引入了">
+<meta name="description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。 缓存虽然解决了速度差，但是也引入了">
+<meta name="keywords" content="Java,原理解析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java 内存模型与线程浅析">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/09/14/Java-内存模型与线程浅析/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。
-缓存虽然解决了速度差，但是也引入了">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。 缓存虽然解决了速度差，但是也引入了">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28780154-57045378-7638-11e7-8145-c98bc2ab581b.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28780155-570d932a-7638-11e7-90cf-082ba9b59d00.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30509011-80b17200-9ad7-11e7-9244-2081c271c752.png">
@@ -103,8 +103,7 @@
 <meta property="og:updated_time" content="2017-10-27T14:48:52.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 内存模型与线程浅析">
-<meta name="twitter:description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。
-缓存虽然解决了速度差，但是也引入了">
+<meta name="twitter:description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。 缓存虽然解决了速度差，但是也引入了">
 <meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/28780154-57045378-7638-11e7-8145-c98bc2ab581b.png">
 
 
@@ -579,7 +578,7 @@
 <li><strong>对象终结规则</strong>(Finalizer Rule)：一个对象的初始化完成(构造函数执行结束)先行发生于它的 finalize()方法的开始。</li>
 <li><strong>传递性</strong>(Transitivity)：如果操作 A 先行发生于操作 B，操作 B 先行发生于操作 C，那就可以得出操作 A 先行发生于操作 C 的结论。</li>
 </ul>
-<p>Java 无需任何同步手段就能成立的先行发生规则就以上 8 点。看上去有些抽象，想要进一步了解的同学可以参考下这篇文章 <a href="https://segmentfault.com/a/1190000011458941" target="_blank" rel="external">从Java多线程可见性谈Happens-Before原则</a></p>
+<p>Java 无需任何同步手段就能成立的先行发生规则就以上 8 点。看上去有些抽象，想要进一步了解的同学可以参考下这篇文章 <a href="https://segmentfault.com/a/1190000011458941" target="_blank" rel="noopener">从Java多线程可见性谈Happens-Before原则</a></p>
 <p>==时间先后顺序与先行发生原则之间基本没有太大的关系==，所以我们衡量并发安全问题的时候==不要受到时间顺序的干扰，一切必须以先行发生原则为准==。</p>
 <p>这句话应该如何理解呢？</p>
 <p>考虑这样一个场景：</p>
@@ -588,7 +587,7 @@
 <p>通过上面的讨论，我们可以得出结论：一个操作「时间上的先发生」不代表这个操作会会是「先行发生」。那么一个操作「先行发生」是否能推导出这个操作必定是「时间上先发生」呢？这个推论也是不成立的，一个典型的栗子就是「指令重排序」</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> i = <span class="number">2</span>;</div><div class="line"><span class="keyword">int</span> j = <span class="number">1</span>;</div></pre></td></tr></table></figure>
 <p>按照程序次序规则，<code>int i = 2;</code> 的操作先行发生与 <code>int j = 1;</code>,但是 <code>int j = 1;</code> 完全可能先执行，这并不影响先行发生原则的正确性，因为在同一条线程中无法感知到这点。</p>
-<h3 id="先行发生原则的真正意义"><a href="#先行发生原则的真正意义" class="headerlink" title="先行发生原则的真正意义"></a>先行发生原则的真正意义</h3><p>该段内容参考自<a href="https://segmentfault.com/a/1190000011458941" target="_blank" rel="external">从Java多线程可见性谈Happens-Before原则</a></p>
+<h3 id="先行发生原则的真正意义"><a href="#先行发生原则的真正意义" class="headerlink" title="先行发生原则的真正意义"></a>先行发生原则的真正意义</h3><p>该段内容参考自<a href="https://segmentfault.com/a/1190000011458941" target="_blank" rel="noopener">从Java多线程可见性谈Happens-Before原则</a></p>
 <blockquote>
 <p>  从上面的分析中我们可以看出，Happens-Before原则致力于<strong>解决变量间可见性问题</strong>。但是它是如何解决的呢？</p>
 <p>  <strong>导致多线程间变量间可见性问题的根源在于 CPU 缓存以及指令重排序</strong>。那么，要解决这个可见性问题，一个最简单粗暴的方法就是禁止所有的重排序和 CPU 缓存。即关闭所有的编译器、操作系统和处理器的优化，这样所有的指令顺序全部按照程序代码书写的顺序执行。去掉 CPU 高速缓存，让 CPU 每次读写操作都直接与主存交互。</p>
@@ -621,7 +620,7 @@
 </ul>
 <p>目前 Java 使用的线程调度方式就是抢占式调度。JDK 后续版本中有可能会提供协程(Coroutines)方式来进行多任务处理</p>
 <p>为什么说线程优先级并不是太靠谱？因为 Java 的线程是通过映射到系统的原生线程上来实现的，所以线程调度最终还是取决于操作系统，虽然现在很多操作系统都提供线程优先级的概念，但是并不见得能与 Java 线程的优先级一一对应。</p>
-<h3 id="线程的状态转换"><a href="#线程的状态转换" class="headerlink" title="线程的状态转换"></a>线程的状态转换</h3><p>图片参考自<a href="http://uule.iteye.com/blog/1100799" target="_blank" rel="external">这篇文章</a></p>
+<h3 id="线程的状态转换"><a href="#线程的状态转换" class="headerlink" title="线程的状态转换"></a>线程的状态转换</h3><p>图片参考自<a href="http://uule.iteye.com/blog/1100799" target="_blank" rel="noopener">这篇文章</a></p>
 <p><img src="https://user-images.githubusercontent.com/16668676/30508637-9ff0e262-9ace-11e7-8a3a-608482184f5d.jpg" alt="thread state"></p>
 <ul>
 <li>创建 (New)</li>
@@ -686,9 +685,9 @@
 </ul>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
 <li>《深入理解 Java 虚拟机》 </li>
-<li><a href="https://tech.meituan.com/java-memory-reordering.html" target="_blank" rel="external">Java 内存访问重排序的研究</a></li>
-<li><a href="http://uule.iteye.com/blog/1100799" target="_blank" rel="external">线程状态的转换</a></li>
-<li><a href="https://segmentfault.com/a/1190000011458941" target="_blank" rel="external">从Java多线程可见性谈Happens-Before原则</a></li>
+<li><a href="https://tech.meituan.com/java-memory-reordering.html" target="_blank" rel="noopener">Java 内存访问重排序的研究</a></li>
+<li><a href="http://uule.iteye.com/blog/1100799" target="_blank" rel="noopener">线程状态的转换</a></li>
+<li><a href="https://segmentfault.com/a/1190000011458941" target="_blank" rel="noopener">从Java多线程可见性谈Happens-Before原则</a></li>
 </ul>
 <p>若本文中有不正确的结论、说法，请大家指出，共同探讨，共同进步，谢谢!</p>
 
@@ -893,7 +892,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -904,7 +903,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -915,7 +914,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

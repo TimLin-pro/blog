@@ -87,30 +87,20 @@
 
 
 
-<meta name="description" content="概述虚拟机的类加载机制：虚拟机把描述类的数据从 Class 文件加载到内存，并对数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。
-与那些在编译时需要进行连接工作的语言不同，在 Java 语言里面，类型的加载、连接和初始化过程都是在程序运行期间完成的，
-
-缺点：这种策略会令类加载时稍微增加一些性能开销
-优点：为 Java 应用程序提供高度的灵活性，Java 里天生可以">
+<meta name="description" content="概述虚拟机的类加载机制：虚拟机把描述类的数据从 Class 文件加载到内存，并对数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。 与那些在编译时需要进行连接工作的语言不同，在 Java 语言里面，类型的加载、连接和初始化过程都是在程序运行期间完成的，  缺点：这种策略会令类加载时稍微增加一些性能开销 优点：为 Java 应用程序提供高度的灵活性，Java 里天生可以">
+<meta name="keywords" content="原理分析,JVM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="虚拟机类加载机制">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/09/19/JVM 之类加载机制/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="概述虚拟机的类加载机制：虚拟机把描述类的数据从 Class 文件加载到内存，并对数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。
-与那些在编译时需要进行连接工作的语言不同，在 Java 语言里面，类型的加载、连接和初始化过程都是在程序运行期间完成的，
-
-缺点：这种策略会令类加载时稍微增加一些性能开销
-优点：为 Java 应用程序提供高度的灵活性，Java 里天生可以">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="概述虚拟机的类加载机制：虚拟机把描述类的数据从 Class 文件加载到内存，并对数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。 与那些在编译时需要进行连接工作的语言不同，在 Java 语言里面，类型的加载、连接和初始化过程都是在程序运行期间完成的，  缺点：这种策略会令类加载时稍微增加一些性能开销 优点：为 Java 应用程序提供高度的灵活性，Java 里天生可以">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28912625-9333eabc-7867-11e7-9b7f-6a2d4aa3f7a8.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28991885-d64d2c7c-79c1-11e7-9a8f-865a69fc24a2.png">
 <meta property="og:updated_time" content="2017-10-03T02:37:20.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="虚拟机类加载机制">
-<meta name="twitter:description" content="概述虚拟机的类加载机制：虚拟机把描述类的数据从 Class 文件加载到内存，并对数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。
-与那些在编译时需要进行连接工作的语言不同，在 Java 语言里面，类型的加载、连接和初始化过程都是在程序运行期间完成的，
-
-缺点：这种策略会令类加载时稍微增加一些性能开销
-优点：为 Java 应用程序提供高度的灵活性，Java 里天生可以">
+<meta name="twitter:description" content="概述虚拟机的类加载机制：虚拟机把描述类的数据从 Class 文件加载到内存，并对数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。 与那些在编译时需要进行连接工作的语言不同，在 Java 语言里面，类型的加载、连接和初始化过程都是在程序运行期间完成的，  缺点：这种策略会令类加载时稍微增加一些性能开销 优点：为 Java 应用程序提供高度的灵活性，Java 里天生可以">
 <meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/28912625-9333eabc-7867-11e7-9b7f-6a2d4aa3f7a8.png">
 
 
@@ -708,7 +698,7 @@
 </ul>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
 <li>《深入理解 Java 虚拟机》</li>
-<li><a href="https://www.ziwenxie.site/2017/06/07/java-jvm-classloader/" target="_blank" rel="external">JVM 类加载机制详解</a></li>
+<li><a href="https://www.ziwenxie.site/2017/06/07/java-jvm-classloader/" target="_blank" rel="noopener">JVM 类加载机制详解</a></li>
 </ul>
 <p>本文大部分内容参考自《深入理解 Java 虚拟机》，当然也有一些个人理解，若有不正确的结论、说法，请大家指出，共同探讨，共同进步，谢谢!</p>
 
@@ -913,7 +903,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -924,7 +914,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -935,7 +925,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

@@ -87,23 +87,19 @@
 
 
 
-<meta name="description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。
-什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。
-哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
+<meta name="description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。 什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。 哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
+<meta name="keywords" content="源码分析,拆轮子">
 <meta property="og:type" content="article">
 <meta property="og:title" content="拆轮子系列——LeakCanary工作原理">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/12/15/拆轮子系列——LeakCanary工作原理/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。
-什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。
-哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。 什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。 哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/737949-cff06b0079bf09c4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2">
 <meta property="og:updated_time" content="2017-12-19T01:53:23.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="拆轮子系列——LeakCanary工作原理">
-<meta name="twitter:description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。
-什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。
-哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
+<meta name="twitter:description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。 什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。 哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
 <meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/737949-cff06b0079bf09c4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2">
 
 
@@ -466,9 +462,9 @@
 <p>  VM 会有堆内各个对象的引用情况，并能以<code>hprof</code>文件导出。HAHA 是一个由 square 开源的 Android 堆分析库，分析 <code>hprof</code> 文件生成<code>Snapshot</code>对象。<code>Snapshot</code>用以查询对象的最短引用链。</p>
 </blockquote>
 <p>找到最短引用链后，定位问题，排查代码将会事半功倍。</p>
-<p>下面是一个总体流程图：（流程图参考自<a href="http://www.jianshu.com/p/3f1a1cc1e964" target="_blank" rel="external">这篇文章</a>）</p>
+<p>下面是一个总体流程图：（流程图参考自<a href="http://www.jianshu.com/p/3f1a1cc1e964" target="_blank" rel="noopener">这篇文章</a>）</p>
 <p><img src="http://upload-images.jianshu.io/upload_images/737949-cff06b0079bf09c4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2" alt=""></p>
-<p>如果读者还没看过 LeakCanary 的源码，建议照着上面的调用流程图过一遍，这样效果会好很多。why？<a href="https://juejin.im/post/5a137248f265da43333e0418" target="_blank" rel="external">为什么源码分析味同嚼蜡？浅析技术写作中的思维误区</a></p>
+<p>如果读者还没看过 LeakCanary 的源码，建议照着上面的调用流程图过一遍，这样效果会好很多。why？<a href="https://juejin.im/post/5a137248f265da43333e0418" target="_blank" rel="noopener">为什么源码分析味同嚼蜡？浅析技术写作中的思维误区</a></p>
 <h2 id="具体流程"><a href="#具体流程" class="headerlink" title="具体流程"></a>具体流程</h2><p>前面讲了大体流程，接下来我们看看内部的实现。</p>
 <p>通常会在 Applcation#onCreate 中对 LeakCanary 进行初始化,也就是调用下面的 setupLeakCanary 方法。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> RefWatcher <span class="title">setupLeakCanary</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (LeakCanary.isInAnalyzerProcess(<span class="keyword">this</span>)) &#123;</div><div class="line">        <span class="keyword">return</span> RefWatcher.DISABLED;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> LeakCanary.install(<span class="keyword">this</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
@@ -485,7 +481,7 @@
 <h3 id="内存泄漏分析"><a href="#内存泄漏分析" class="headerlink" title="内存泄漏分析"></a>内存泄漏分析</h3><h4 id="工作机制"><a href="#工作机制" class="headerlink" title="工作机制"></a>工作机制</h4><ol>
 <li>在后台线程检查引用是否被清除，如果没有，调用 GC。</li>
 <li>如果引用还是未被清除，把 heap 内存 dump 到 APP 对应的文件系统中的一个 <code>.hprof</code> 文件中。</li>
-<li>在另外一个进程中的 <code>HeapAnalyzerService</code> 有一个 <code>HeapAnalyzer</code> 使用<a href="https://github.com/square/haha" target="_blank" rel="external">HAHA</a> 解析这个文件。</li>
+<li>在另外一个进程中的 <code>HeapAnalyzerService</code> 有一个 <code>HeapAnalyzer</code> 使用<a href="https://github.com/square/haha" target="_blank" rel="noopener">HAHA</a> 解析这个文件。</li>
 <li>得益于唯一的 reference key, <code>HeapAnalyzer</code> 找到 <code>KeyedWeakReference</code>，定位内存泄漏。</li>
 <li><code>HeapAnalyzer</code> 计算 <em>到 GC roots 的最短强引用路径</em>，并确定是否是泄漏。如果是的话，建立导致泄漏的引用链。</li>
 <li>引用链传递到 APP 进程中的 <code>DisplayLeakService</code>， 并以通知的形式展示出来。</li>
@@ -526,8 +522,8 @@
 <p>但我们在调用这个方法的时候<strong>需要确定这个 object 已经不需要了，可以被回收了</strong>。通过这种方式我们就可以<strong>对任何对象都进行检测</strong>了。</p>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
 <li><a href="www.jianshu.com/p/3f1a1cc1e964">LeakCanary 原理浅析</a></li>
-<li><a href="https://www.liaohuqiu.net/cn/posts/leak-canary-read-me/" target="_blank" rel="external">LeakCanary 中文使用说明</a></li>
-<li><a href="https://hongjiang.info/java-referencequeue/" target="_blank" rel="external">话说 ReferenceQueue</a></li>
+<li><a href="https://www.liaohuqiu.net/cn/posts/leak-canary-read-me/" target="_blank" rel="noopener">LeakCanary 中文使用说明</a></li>
+<li><a href="https://hongjiang.info/java-referencequeue/" target="_blank" rel="noopener">话说 ReferenceQueue</a></li>
 </ul>
 <p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源。谢谢！</p>
 
@@ -728,7 +724,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -739,7 +735,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -750,7 +746,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

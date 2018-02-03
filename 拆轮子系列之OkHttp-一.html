@@ -87,39 +87,19 @@
 
 
 
-<meta name="description" content="概述一款优秀的 HTTP 框架（可用于 Java 和 Android），它
-
-支持 get 请求和 post 请求，
-支持基于 Http 的文件上传和下载，
-支持加载图片，
-支持下载文件透明的 GZIP 压缩，
-支持响应缓存避免重复的网络请求，
-支持使用连接池来降低响应延迟问题。">
-<meta name="keywords">
+<meta name="description" content="概述一款优秀的 HTTP 框架（可用于 Java 和 Android），它  支持 get 请求和 post 请求， 支持基于 Http 的文件上传和下载， 支持加载图片， 支持下载文件透明的 GZIP 压缩， 支持响应缓存避免重复的网络请求， 支持使用连接池来降低响应延迟问题。">
+<meta name="keywords" content="源码解析,框架原理">
 <meta property="og:type" content="website">
 <meta property="og:title" content="拆轮子系列之OkHttp(一)">
 <meta property="og:url" content="https://ivanljt.github.io/blog/拆轮子系列之OkHttp-一.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="概述一款优秀的 HTTP 框架（可用于 Java 和 Android），它
-
-支持 get 请求和 post 请求，
-支持基于 Http 的文件上传和下载，
-支持加载图片，
-支持下载文件透明的 GZIP 压缩，
-支持响应缓存避免重复的网络请求，
-支持使用连接池来降低响应延迟问题。">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="概述一款优秀的 HTTP 框架（可用于 Java 和 Android），它  支持 get 请求和 post 请求， 支持基于 Http 的文件上传和下载， 支持加载图片， 支持下载文件透明的 GZIP 压缩， 支持响应缓存避免重复的网络请求， 支持使用连接池来降低响应延迟问题。">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/98641-4bd320d4e34af60a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:updated_time" content="2017-11-16T03:50:01.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="拆轮子系列之OkHttp(一)">
-<meta name="twitter:description" content="概述一款优秀的 HTTP 框架（可用于 Java 和 Android），它
-
-支持 get 请求和 post 请求，
-支持基于 Http 的文件上传和下载，
-支持加载图片，
-支持下载文件透明的 GZIP 压缩，
-支持响应缓存避免重复的网络请求，
-支持使用连接池来降低响应延迟问题。">
+<meta name="twitter:description" content="概述一款优秀的 HTTP 框架（可用于 Java 和 Android），它  支持 get 请求和 post 请求， 支持基于 Http 的文件上传和下载， 支持加载图片， 支持下载文件透明的 GZIP 压缩， 支持响应缓存避免重复的网络请求， 支持使用连接池来降低响应延迟问题。">
 <meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/98641-4bd320d4e34af60a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 
 
@@ -432,7 +412,7 @@
 <p>RealCall#enqueue</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">enqueue</span><span class="params">(Callback responseCallback)</span> </span>&#123;</div><div class="line">  <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</div><div class="line">    <span class="keyword">if</span> (executed)</div><div class="line">      	<span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Already Executed"</span>);</div><div class="line">    executed = <span class="keyword">true</span>;</div><div class="line">  &#125;</div><div class="line">  captureCallStackTrace();</div><div class="line">  eventListener.callStart(<span class="keyword">this</span>);</div><div class="line">  client.dispatcher().enqueue(<span class="keyword">new</span> AsyncCall(responseCallback));<span class="comment">//将回调包装在 AsyncCall 中，并入队列</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>根据<strong>生产者消费者模型</strong>的理论，当入队请求时，如果满足 <code>if (runningAsyncCalls.size() &lt; 64 &amp;&amp; runningCallsForHost(call) &lt; 5)</code>，那么直接把 AsyncCall 添加到 runningAsyncCalls 队列中，并在线程中执行。如果消费者缓存满了，就放入 readyAsyncCalls 进行缓存等待。</p>
-<p>当任务执行完成后,调用<a href="https://github.com/square/okhttp/blob/7826bcb2fb1facb697a4c512776756c05d8c9deb/okhttp/src/main/java/okhttp3/Dispatcher.java#L142-L142" target="_blank" rel="external">finished</a>的<code>promoteCalls()</code>函数，手动移动缓存区也就是 readyAsyncCalls 队列（可以看出这里是主动清理的，因此不会发生死锁 ？？？）</p>
+<p>当任务执行完成后,调用<a href="https://github.com/square/okhttp/blob/7826bcb2fb1facb697a4c512776756c05d8c9deb/okhttp/src/main/java/okhttp3/Dispatcher.java#L142-L142" target="_blank" rel="noopener">finished</a>的<code>promoteCalls()</code>函数，手动移动缓存区也就是 readyAsyncCalls 队列（可以看出这里是主动清理的，因此不会发生死锁 ？？？）</p>
 <p>Dispatcher#enqueue</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">enqueue</span><span class="params">(AsyncCall call)</span> </span>&#123;</div><div class="line">  <span class="comment">//当前请求数</span></div><div class="line">  <span class="keyword">if</span> (runningAsyncCalls.size() &lt; maxRequests &amp;&amp; runningCallsForHost(call) &lt; maxRequestsPerHost) &#123;</div><div class="line">    runningAsyncCalls.add(call);</div><div class="line">    executorService().execute(call);<span class="comment">//执行</span></div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line">    readyAsyncCalls.add(call);<span class="comment">//</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>RealCall.AsyncCall#execute</p>
@@ -507,11 +487,11 @@
 <h2 id="Retrofit"><a href="#Retrofit" class="headerlink" title="Retrofit"></a>Retrofit</h2><p>Retrofit 是一个 RESTful 的 HTTP 网络请求框架的封装。这里并没有说它是网络请求框架，主要原因在于==网络请求的工作并不是 Retrofit 来完成的==。它所做的只是一层封装而已。</p>
 <p>Retrofit 2.0 开始内置 OkHttp，前者专注于接口的封装，后者专注于网络请求的高效。</p>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
-<li><a href="http://www.jianshu.com/p/aad5aacd79bf" target="_blank" rel="external">OkHttp3 源码分析[综述]</a></li>
-<li><a href="http://www.jianshu.com/p/92a61357164b" target="_blank" rel="external">OkHttp3 源码分析[复用连接池]</a></li>
-<li><a href="http://www.jianshu.com/p/9cebbbd0eeab" target="_blank" rel="external">OkHttp3 源码分析[缓存策略]</a></li>
-<li><a href="http://www.jianshu.com/p/23b8aa490a6b" target="_blank" rel="external">OkHttp3 源码分析[DiskLruCache]</a></li>
-<li><a href="http://www.jianshu.com/p/6637369d02e7" target="_blank" rel="external">OkHttp3 源码分析[任务队列]</a></li>
+<li><a href="http://www.jianshu.com/p/aad5aacd79bf" target="_blank" rel="noopener">OkHttp3 源码分析[综述]</a></li>
+<li><a href="http://www.jianshu.com/p/92a61357164b" target="_blank" rel="noopener">OkHttp3 源码分析[复用连接池]</a></li>
+<li><a href="http://www.jianshu.com/p/9cebbbd0eeab" target="_blank" rel="noopener">OkHttp3 源码分析[缓存策略]</a></li>
+<li><a href="http://www.jianshu.com/p/23b8aa490a6b" target="_blank" rel="noopener">OkHttp3 源码分析[DiskLruCache]</a></li>
+<li><a href="http://www.jianshu.com/p/6637369d02e7" target="_blank" rel="noopener">OkHttp3 源码分析[任务队列]</a></li>
 </ul>
 
     
@@ -598,7 +578,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -609,7 +589,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -620,7 +600,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

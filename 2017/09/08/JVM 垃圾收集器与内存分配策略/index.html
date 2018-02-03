@@ -87,16 +87,14 @@
 
 
 
-<meta name="description" content="确定回收的对象「死去」的对象即不可能再被任何途径使用的对象。
-几乎所有对象的实例都存在堆中。（部分 String 对象存在于字符串常量池中，JDK1.7 以前，字符串常量池存放在方法区中）。
-进行回收的第一步就是确定哪些对象还活着，哪些已经死亡。">
+<meta name="description" content="确定回收的对象「死去」的对象即不可能再被任何途径使用的对象。 几乎所有对象的实例都存在堆中。（部分 String 对象存在于字符串常量池中，JDK1.7 以前，字符串常量池存放在方法区中）。 进行回收的第一步就是确定哪些对象还活着，哪些已经死亡。">
+<meta name="keywords" content="JVM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM 垃圾收集器与内存分配策略">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/09/08/JVM 垃圾收集器与内存分配策略/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="确定回收的对象「死去」的对象即不可能再被任何途径使用的对象。
-几乎所有对象的实例都存在堆中。（部分 String 对象存在于字符串常量池中，JDK1.7 以前，字符串常量池存放在方法区中）。
-进行回收的第一步就是确定哪些对象还活着，哪些已经死亡。">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="确定回收的对象「死去」的对象即不可能再被任何途径使用的对象。 几乎所有对象的实例都存在堆中。（部分 String 对象存在于字符串常量池中，JDK1.7 以前，字符串常量池存放在方法区中）。 进行回收的第一步就是确定哪些对象还活着，哪些已经死亡。">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30166872-34869854-9417-11e7-9586-95308fa7820c.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30166943-6af312e6-9417-11e7-8b7a-8a53bb607625.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30166870-34829cb8-9417-11e7-99ae-276d0e6cd96c.png">
@@ -110,9 +108,7 @@
 <meta property="og:updated_time" content="2017-11-24T07:45:09.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JVM 垃圾收集器与内存分配策略">
-<meta name="twitter:description" content="确定回收的对象「死去」的对象即不可能再被任何途径使用的对象。
-几乎所有对象的实例都存在堆中。（部分 String 对象存在于字符串常量池中，JDK1.7 以前，字符串常量池存放在方法区中）。
-进行回收的第一步就是确定哪些对象还活着，哪些已经死亡。">
+<meta name="twitter:description" content="确定回收的对象「死去」的对象即不可能再被任何途径使用的对象。 几乎所有对象的实例都存在堆中。（部分 String 对象存在于字符串常量池中，JDK1.7 以前，字符串常量池存放在方法区中）。 进行回收的第一步就是确定哪些对象还活着，哪些已经死亡。">
 <meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/30166872-34869854-9417-11e7-9586-95308fa7820c.png">
 
 
@@ -461,7 +457,7 @@
 <ul>
 <li>通过一系列的称为 GC Root 的对象作为起始点，从这些节点开始向下搜索，搜索走过的路径称为『引用链』（Reference Chain）</li>
 <li><p><strong>当一个对象到 GC Root 没有任何引用链相连时，则证明此对象是不可用的</strong>。</p>
-<p>GC Root 对象的定义是什么？  <a href="http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.mat.ui.help%2Fconcepts%2Fgcroots.html&amp;cp=37_2_3" target="_blank" rel="external">Help - Eclipse Platform</a> 上给的定义是这样的：</p>
+<p>GC Root 对象的定义是什么？  <a href="http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.mat.ui.help%2Fconcepts%2Fgcroots.html&amp;cp=37_2_3" target="_blank" rel="noopener">Help - Eclipse Platform</a> 上给的定义是这样的：</p>
 </li>
 </ul>
 <blockquote>
@@ -858,8 +854,8 @@
 </ul>
 <p>取平均值进行比较其实仍然是<strong>一种动态概率的手段</strong>，也就是说，如果某次 Minor GC 存活后的对象突增，远远高于平均值的话，依然会导致担保失败（Handle Promotion Failure）。<br>如果出现了 HandlePromotionFailure 失败，那就只好在失败后重新发起一次 Full GC。</p>
 <p>虽然担保失败时绕的圈子是最大的，但<strong>大部分情况下都还是会将 HandlePromotionFailure 开关打开，避免 Full GC 过于频繁</strong>。</p>
-<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="你能不能谈谈，GC-是在什么时候，对什么东西，做了什么事情？"><a href="#你能不能谈谈，GC-是在什么时候，对什么东西，做了什么事情？" class="headerlink" title="你能不能谈谈，GC 是在什么时候，对什么东西，做了什么事情？"></a>你能不能谈谈，GC 是在什么时候，对什么东西，做了什么事情？</h3><p>此问题摘自《深入理解 Java 虚拟机》作者的一篇博文详见 <a href="http://icyfenix.iteye.com/blog/715301" target="_blank" rel="external">一个面试官对面试问题的分析</a></p>
-<h3 id="java的gc为什么要分代？"><a href="#java的gc为什么要分代？" class="headerlink" title="java的gc为什么要分代？"></a>java的gc为什么要分代？</h3><p>答案可参考 R 大的这个<a href="https://www.zhihu.com/question/53613423/answer/135743258" target="_blank" rel="external">回答</a></p>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="你能不能谈谈，GC-是在什么时候，对什么东西，做了什么事情？"><a href="#你能不能谈谈，GC-是在什么时候，对什么东西，做了什么事情？" class="headerlink" title="你能不能谈谈，GC 是在什么时候，对什么东西，做了什么事情？"></a>你能不能谈谈，GC 是在什么时候，对什么东西，做了什么事情？</h3><p>此问题摘自《深入理解 Java 虚拟机》作者的一篇博文详见 <a href="http://icyfenix.iteye.com/blog/715301" target="_blank" rel="noopener">一个面试官对面试问题的分析</a></p>
+<h3 id="java的gc为什么要分代？"><a href="#java的gc为什么要分代？" class="headerlink" title="java的gc为什么要分代？"></a>java的gc为什么要分代？</h3><p>答案可参考 R 大的这个<a href="https://www.zhihu.com/question/53613423/answer/135743258" target="_blank" rel="noopener">回答</a></p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>没有固定收集器、参数组合，也没有最优的调优方法，虚拟机也就没有什么必然的内存回收行为。</p>
 <p>学习虚拟机内存知识，如果要到实践调优阶段，那么必须了解每个具体收集器的行为、优势和劣势、调节参数。</p>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
@@ -1066,7 +1062,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1077,7 +1073,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -1088,7 +1084,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

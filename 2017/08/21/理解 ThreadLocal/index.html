@@ -87,22 +87,21 @@
 
 
 
-<meta name="description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。
-为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
+<meta name="description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。 为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
+<meta name="keywords" content="原理分析,并发">
 <meta property="og:type" content="article">
 <meta property="og:title" content="深入理解 ThreadLocal">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/21/理解 ThreadLocal/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。
-为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。 为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/31853072-84517b72-b6b5-11e7-84f1-0a51baaa05a2.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30096800-004b9f36-930d-11e7-9c27-c7f17619c3a7.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30096799-0047aeee-930d-11e7-8ac5-1927aadeab2d.png">
 <meta property="og:updated_time" content="2017-10-22T02:14:29.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解 ThreadLocal">
-<meta name="twitter:description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。
-为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
+<meta name="twitter:description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。 为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
 <meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/31853072-84517b72-b6b5-11e7-84f1-0a51baaa05a2.png">
 
 
@@ -533,12 +532,12 @@
 <li>然后在当前线程里面，如果要使用~该线程私有变量~，就可以通过 get 方法在 threadLocals 里面查找。</li>
 </ul>
 <h2 id="参考与学习资源推荐"><a href="#参考与学习资源推荐" class="headerlink" title="参考与学习资源推荐"></a>参考与学习资源推荐</h2><ul>
-<li><a href="http://www.iteye.com/topic/103804" target="_blank" rel="external">正确理解 ThreadLocal</a></li>
-<li><a href="http://www.iteye.com/topic/82984" target="_blank" rel="external">ThreadLocal and synchronized 补充</a></li>
-<li><a href="http://droidyue.com/blog/2016/03/13/learning-threadlocal-in-java/index.html" target="_blank" rel="external">ThreadLocal</a></li>
-<li><a href="http://www.cnblogs.com/dolphin0520/p/3920407.html" target="_blank" rel="external">Java并发编程：深入剖析ThreadLocal</a></li>
-<li><a href="http://www.jianshu.com/p/95291228aff7" target="_blank" rel="external">Android关于ThreadLocal的思考和总结</a></li>
-<li><a href="http://vence.github.io/2016/05/28/threadlocal-info/" target="_blank" rel="external">深入理解ThreadLocal</a></li>
+<li><a href="http://www.iteye.com/topic/103804" target="_blank" rel="noopener">正确理解 ThreadLocal</a></li>
+<li><a href="http://www.iteye.com/topic/82984" target="_blank" rel="noopener">ThreadLocal and synchronized 补充</a></li>
+<li><a href="http://droidyue.com/blog/2016/03/13/learning-threadlocal-in-java/index.html" target="_blank" rel="noopener">ThreadLocal</a></li>
+<li><a href="http://www.cnblogs.com/dolphin0520/p/3920407.html" target="_blank" rel="noopener">Java并发编程：深入剖析ThreadLocal</a></li>
+<li><a href="http://www.jianshu.com/p/95291228aff7" target="_blank" rel="noopener">Android关于ThreadLocal的思考和总结</a></li>
+<li><a href="http://vence.github.io/2016/05/28/threadlocal-info/" target="_blank" rel="noopener">深入理解ThreadLocal</a></li>
 </ul>
 <p>如果本文中有不正确的结论、说法，请大家指出，共同探讨，共同进步，谢谢!</p>
 
@@ -743,7 +742,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -754,7 +753,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -765,7 +764,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

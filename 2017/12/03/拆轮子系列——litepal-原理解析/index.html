@@ -87,24 +87,20 @@
 
 
 
-<meta name="description" content="LitePal 解决了什么问题？
-  LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。
-  但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较">
+<meta name="description" content="LitePal 解决了什么问题？   LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。   但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较">
+<meta name="keywords" content="源码分析,拆轮子">
 <meta property="og:type" content="article">
 <meta property="og:title" content="拆轮子系列——LitePal 原理解析">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/12/03/拆轮子系列——litepal-原理解析/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="LitePal 解决了什么问题？
-  LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。
-  但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="LitePal 解决了什么问题？   LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。   但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/33593102-d1bd9cb6-d9c8-11e7-94fe-38117ed0ee50.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/33612586-0077ccc2-da0d-11e7-80a5-5e093b7e79ba.png">
 <meta property="og:updated_time" content="2017-12-17T02:26:10.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="拆轮子系列——LitePal 原理解析">
-<meta name="twitter:description" content="LitePal 解决了什么问题？
-  LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。
-  但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较">
+<meta name="twitter:description" content="LitePal 解决了什么问题？   LitePal 采取的是对象关系映射(ORM)的模式，那么什么是对象关系映射呢？简单点说，我们使用的编程语言是面向对象语言，而我们使用的数据库则是关系型数据库，那么将面向对象的语言和面向关系的数据库之间建立一种映射关系，这就是对象关系映射了。   但是我们为什么要使用对象关系映射模式呢？这主要是因为大多数的程序员都很擅长面向对象编程，但其中只有少部分的人才比较">
 <meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/33593102-d1bd9cb6-d9c8-11e7-94fe-38117ed0ee50.png">
 
 
@@ -551,9 +547,9 @@
 <h3 id="与同类框架（GreenDAO）对比："><a href="#与同类框架（GreenDAO）对比：" class="headerlink" title="与同类框架（GreenDAO）对比："></a>与同类框架（GreenDAO）对比：</h3><p>GreetDao 一开始就人工生成业务需要的 Model 和 DAO 文件，业务中可以直接调用相应的 DAO 文件进行数据库的增删改查操作，从而避免了因反射带来的性能损耗和效率低。因此大批量的插入、更新、查询等操作，greenDAO 用时短，执行快更适合。但是 greenDAO 使用不方便，学习成本较高。</p>
 <p>如果应用对性能要求不是特别苛刻并且数据量也不大的情况下，轻量级的 LitePal，基本能满足我们的需求了。</p>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
-<li><p><a href="http://www.jianshu.com/p/35c704701638" target="_blank" rel="external">数据库 ORM 之 LitePal</a></p>
+<li><p><a href="http://www.jianshu.com/p/35c704701638" target="_blank" rel="noopener">数据库 ORM 之 LitePal</a></p>
 </li>
-<li><p><a href="http://blog.csdn.net/column/details/android-database-pro.html" target="_blank" rel="external">Android 数据库高手秘籍</a></p>
+<li><p><a href="http://blog.csdn.net/column/details/android-database-pro.html" target="_blank" rel="noopener">Android 数据库高手秘籍</a></p>
 </li>
 </ul>
 <p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源，谢谢！</p>
@@ -759,7 +755,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -770,7 +766,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -781,7 +777,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

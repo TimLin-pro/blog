@@ -87,37 +87,18 @@
 
 
 
-<meta name="description" content="概要本篇博客主要包括以下三个部分
-
-日常使用 ButterKnife 的方式以及 ButterKnife 的 bind 方法
-Xxx_ViewBinding 类是如何生成的？
-注解处理器是怎么注册的？
-
-其中的代码基于 ButterKnife 8.6.0
-本文假设你已经对注解有所了解。不了解注解的同学可以先看看这篇文章 ，我们主要关注编译期注解。">
+<meta name="description" content="概要本篇博客主要包括以下三个部分  日常使用 ButterKnife 的方式以及 ButterKnife 的 bind 方法 Xxx_ViewBinding 类是如何生成的？ 注解处理器是怎么注册的？  其中的代码基于 ButterKnife 8.6.0 本文假设你已经对注解有所了解。不了解注解的同学可以先看看这篇文章 ，我们主要关注编译期注解。">
+<meta name="keywords" content="源码分析,拆轮子">
 <meta property="og:type" content="article">
 <meta property="og:title" content="拆轮子系列——ButterKnife工作原理">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/10/07/拆轮子系列——ButterKnife工作原理/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="概要本篇博客主要包括以下三个部分
-
-日常使用 ButterKnife 的方式以及 ButterKnife 的 bind 方法
-Xxx_ViewBinding 类是如何生成的？
-注解处理器是怎么注册的？
-
-其中的代码基于 ButterKnife 8.6.0
-本文假设你已经对注解有所了解。不了解注解的同学可以先看看这篇文章 ，我们主要关注编译期注解。">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="概要本篇博客主要包括以下三个部分  日常使用 ButterKnife 的方式以及 ButterKnife 的 bind 方法 Xxx_ViewBinding 类是如何生成的？ 注解处理器是怎么注册的？  其中的代码基于 ButterKnife 8.6.0 本文假设你已经对注解有所了解。不了解注解的同学可以先看看这篇文章 ，我们主要关注编译期注解。">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2017-12-09T06:25:07.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="拆轮子系列——ButterKnife工作原理">
-<meta name="twitter:description" content="概要本篇博客主要包括以下三个部分
-
-日常使用 ButterKnife 的方式以及 ButterKnife 的 bind 方法
-Xxx_ViewBinding 类是如何生成的？
-注解处理器是怎么注册的？
-
-其中的代码基于 ButterKnife 8.6.0
-本文假设你已经对注解有所了解。不了解注解的同学可以先看看这篇文章 ，我们主要关注编译期注解。">
+<meta name="twitter:description" content="概要本篇博客主要包括以下三个部分  日常使用 ButterKnife 的方式以及 ButterKnife 的 bind 方法 Xxx_ViewBinding 类是如何生成的？ 注解处理器是怎么注册的？  其中的代码基于 ButterKnife 8.6.0 本文假设你已经对注解有所了解。不了解注解的同学可以先看看这篇文章 ，我们主要关注编译期注解。">
 
 
 
@@ -467,7 +448,7 @@ Xxx_ViewBinding 类是如何生成的？
 <li>注解处理器是怎么注册的？</li>
 </ul>
 <p>其中的代码基于 ButterKnife 8.6.0</p>
-<p>本文假设你已经对注解有所了解。不了解注解的同学可以先看看<a href="http://a.codekk.com/detail/Android/Trinea/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20Java%20%E6%B3%A8%E8%A7%A3%20Annotation" target="_blank" rel="external">这篇文章</a> ，我们主要关注编译期注解。</p>
+<p>本文假设你已经对注解有所了解。不了解注解的同学可以先看看<a href="http://a.codekk.com/detail/Android/Trinea/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20Java%20%E6%B3%A8%E8%A7%A3%20Annotation" target="_blank" rel="noopener">这篇文章</a> ，我们主要关注编译期注解。</p>
 <a id="more"></a>
 <h2 id="运行期-ButterKnife-bind"><a href="#运行期-ButterKnife-bind" class="headerlink" title="运行期 ButterKnife#bind"></a>运行期 ButterKnife#bind</h2><p>我们通常都是通过以下方式使用 ButterKnife 的。将要绑定的控件加上 @BindView 注解，在 onCreate 方法    完成 <code>setContentView(R.layout.activity_main);</code> 之后。调用 <code>ButterKnife.bind(this);</code> 对相应的  View 进行初始化。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = <span class="string">"MainActivity"</span>;</div><div class="line"></div><div class="line">    <span class="meta">@BindView</span>(R.id.btn)</div><div class="line">    Button mBtn;</div><div class="line">    <span class="meta">@BindView</span>(R.id.radar_view)</div><div class="line">    RadarView mRadarView;</div><div class="line">  </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        ButterKnife.bind(<span class="keyword">this</span>);<span class="comment">//ButterKnife 的入口</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
@@ -520,7 +501,7 @@ Xxx_ViewBinding 类是如何生成的？
 <p>回到前面的 process 方法，可以看到 <code>JavaFile javaFile = binding.brewJava(sdk);</code> <code>javaFile.writeTo(filer);</code></p>
 <p>BindingSet#brewJava 。该方法通过 Javapoet 生成一个 java 文件</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function">JavaFile <span class="title">brewJava</span><span class="params">(<span class="keyword">int</span> sdk)</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> JavaFile.builder(bindingClassName.packageName(), createType(sdk))</div><div class="line">      .addFileComment(<span class="string">"Generated code from Butter Knife. Do not modify!"</span>)<span class="comment">//添加文件注释</span></div><div class="line">      .build();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>关于 javapoet 的介绍详见<a href="http://www.jianshu.com/p/95f12f72f69a" target="_blank" rel="external">这篇文章</a></p>
+<p>关于 javapoet 的介绍详见<a href="http://www.jianshu.com/p/95f12f72f69a" target="_blank" rel="noopener">这篇文章</a></p>
 <h3 id="注解处理器的注册"><a href="#注解处理器的注册" class="headerlink" title="注解处理器的注册"></a>注解处理器的注册</h3><h4 id="方法-1：使用-google-提供的注册处理器库"><a href="#方法-1：使用-google-提供的注册处理器库" class="headerlink" title="方法 1：使用 google 提供的注册处理器库"></a>方法 1：使用 google 提供的注册处理器库</h4><p>最简单的方式是使用 google 提供的一个注册处理器的库。 <code>compile &#39;com.google.auto.service:auto-service:1.0-rc2&#39;</code></p>
 <p>然后<code>@AutoService(Processor.class)</code>:向 javac 注册我们这个自定义的注解处理器，这样，在 javac 编译时，才会调用到我们这个自定义的注解处理器方法。</p>
 <p>AutoService 这里主要是用来生成<br><code>META-INF/services/javax.annotation.processing.Processor</code>文件的。</p>
@@ -537,10 +518,10 @@ Xxx_ViewBinding 类是如何生成的？
 <li>运行时，onCreate 方法中通常需要 <code>ButterKnife.Bind()</code>方法，从此处进入，通过 反射调用 Xx_ViewBinding 的构造方法对 View 进行初始化。</li>
 </ul>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
-<li><a href="http://a.codekk.com/detail/Android/Trinea/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20Java%20%E6%B3%A8%E8%A7%A3%20Annotation" target="_blank" rel="external">公共技术点之 Java 注解 Annotation</a></li>
-<li><a href="http://www.jianshu.com/p/0f3f4f7ca505" target="_blank" rel="external">ButterKnife 源码分析</a></li>
-<li><a href="http://dev.qq.com/topic/578753c0c9da73584b025875#rd" target="_blank" rel="external">深入理解 ButterKnife，让你的程序学会写代码</a></li>
-<li><a href="http://www.jianshu.com/p/95f12f72f69a" target="_blank" rel="external">javapoet——让你从重复无聊的代码中解放出来</a></li>
+<li><a href="http://a.codekk.com/detail/Android/Trinea/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20Java%20%E6%B3%A8%E8%A7%A3%20Annotation" target="_blank" rel="noopener">公共技术点之 Java 注解 Annotation</a></li>
+<li><a href="http://www.jianshu.com/p/0f3f4f7ca505" target="_blank" rel="noopener">ButterKnife 源码分析</a></li>
+<li><a href="http://dev.qq.com/topic/578753c0c9da73584b025875#rd" target="_blank" rel="noopener">深入理解 ButterKnife，让你的程序学会写代码</a></li>
+<li><a href="http://www.jianshu.com/p/95f12f72f69a" target="_blank" rel="noopener">javapoet——让你从重复无聊的代码中解放出来</a></li>
 </ul>
 <p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源。谢谢！</p>
 
@@ -745,7 +726,7 @@ Xxx_ViewBinding 类是如何生成的？
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -756,7 +737,7 @@ Xxx_ViewBinding 类是如何生成的？
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -767,7 +748,7 @@ Xxx_ViewBinding 类是如何生成的？
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

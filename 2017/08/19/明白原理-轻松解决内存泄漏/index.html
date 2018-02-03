@@ -87,27 +87,20 @@
 
 
 
-<meta name="description" content="相信「内存泄漏」 问题，是一个挺让开发者头疼的事情，笔者在回顾以为代码时，惊讶发现：初学 Android 时，许多不修边幅的代码习惯，导致了许多内存泄漏问题，借此分析其原因，把自己挖过的坑补一下，也希望奔跑在 Android 开发道路上的你能够优雅避免。
-什么是内存泄漏
-对于 C++ 来说，内存泄漏就是 new 出来的对象没有 delete，俗称野指针；
-而对于 java 而言，就是存放在堆上的">
+<meta name="description" content="相信「内存泄漏」 问题，是一个挺让开发者头疼的事情，笔者在回顾以为代码时，惊讶发现：初学 Android 时，许多不修边幅的代码习惯，导致了许多内存泄漏问题，借此分析其原因，把自己挖过的坑补一下，也希望奔跑在 Android 开发道路上的你能够优雅避免。 什么是内存泄漏 对于 C++ 来说，内存泄漏就是 new 出来的对象没有 delete，俗称野指针； 而对于 java 而言，就是存放在堆上的">
+<meta name="keywords" content="原理分析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="明白原理,轻松解决内存泄漏">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/19/明白原理-轻松解决内存泄漏/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="相信「内存泄漏」 问题，是一个挺让开发者头疼的事情，笔者在回顾以为代码时，惊讶发现：初学 Android 时，许多不修边幅的代码习惯，导致了许多内存泄漏问题，借此分析其原因，把自己挖过的坑补一下，也希望奔跑在 Android 开发道路上的你能够优雅避免。
-什么是内存泄漏
-对于 C++ 来说，内存泄漏就是 new 出来的对象没有 delete，俗称野指针；
-而对于 java 而言，就是存放在堆上的">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="相信「内存泄漏」 问题，是一个挺让开发者头疼的事情，笔者在回顾以为代码时，惊讶发现：初学 Android 时，许多不修边幅的代码习惯，导致了许多内存泄漏问题，借此分析其原因，把自己挖过的坑补一下，也希望奔跑在 Android 开发道路上的你能够优雅避免。 什么是内存泄漏 对于 C++ 来说，内存泄漏就是 new 出来的对象没有 delete，俗称野指针； 而对于 java 而言，就是存放在堆上的">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://gityuan.com/images/jvm/jvm_memory_1.png">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/727790-afde094317e73842.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:updated_time" content="2017-11-02T04:29:41.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="明白原理,轻松解决内存泄漏">
-<meta name="twitter:description" content="相信「内存泄漏」 问题，是一个挺让开发者头疼的事情，笔者在回顾以为代码时，惊讶发现：初学 Android 时，许多不修边幅的代码习惯，导致了许多内存泄漏问题，借此分析其原因，把自己挖过的坑补一下，也希望奔跑在 Android 开发道路上的你能够优雅避免。
-什么是内存泄漏
-对于 C++ 来说，内存泄漏就是 new 出来的对象没有 delete，俗称野指针；
-而对于 java 而言，就是存放在堆上的">
+<meta name="twitter:description" content="相信「内存泄漏」 问题，是一个挺让开发者头疼的事情，笔者在回顾以为代码时，惊讶发现：初学 Android 时，许多不修边幅的代码习惯，导致了许多内存泄漏问题，借此分析其原因，把自己挖过的坑补一下，也希望奔跑在 Android 开发道路上的你能够优雅避免。 什么是内存泄漏 对于 C++ 来说，内存泄漏就是 new 出来的对象没有 delete，俗称野指针； 而对于 java 而言，就是存放在堆上的">
 <meta name="twitter:image" content="http://gityuan.com/images/jvm/jvm_memory_1.png">
 
 
@@ -555,14 +548,14 @@
 <li>避免代码设计模式的错误造成内存泄露；譬如循环引用，A 持有 B，B 持有 C，C 持有 A，这样的设计谁都得不到释放。</li>
 </ul>
 <h2 id="内存泄漏的检测工具"><a href="#内存泄漏的检测工具" class="headerlink" title="内存泄漏的检测工具"></a>内存泄漏的检测工具</h2><ul>
-<li>LeakCanary 是 Apache 开源的一个自动检测内存泄漏的框架。具体用法可以参考 <a href="https://mp.weixin.qq.com/s/0bO5BZ4CMYJbRuY_xf_osw" target="_blank" rel="external">LeakCanary——如何检测 Activity 是否泄漏</a></li>
+<li>LeakCanary 是 Apache 开源的一个自动检测内存泄漏的框架。具体用法可以参考 <a href="https://mp.weixin.qq.com/s/0bO5BZ4CMYJbRuY_xf_osw" target="_blank" rel="noopener">LeakCanary——如何检测 Activity 是否泄漏</a></li>
 <li>使用 AS Monitor + MAT 自己分析内存泄漏原因。虽然MAT不会准确告诉你你的代码哪泄漏了，但是它会给你发现哪泄露的数据和线索。</li>
 <li>AS 3.0 中提供了 Profiler 工具，这里简述一下使用流程：手动点击 GC 按钮（图标是一个垃圾桶）—&gt; 选择 Dump 内存（等待20秒左右）—&gt; 下方会弹出分析结果窗口—&gt;  下拉选择 app heap ，下拉选择 Arrange by package—&gt;到包下寻找自己认为可能发生内存泄漏的类，单击选中类 —&gt; 右边弹出 Instance View 窗口，显示该类的所有实例 —&gt; 选中某一个实例 –&gt; 下方会弹出 Reference 窗口（显示该实例的所有引用），然后分析一下到底是谁强引用了该实例，导致内存无法释放。</li>
 </ul>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
-<li><a href="https://mp.weixin.qq.com/s/XILFalxJsbGJjx-ZOEDi7g" target="_blank" rel="external">Android 性能优化 详解内存优化的来龙去脉</a></li>
-<li><a href="http://www.cnblogs.com/liushilin/p/5900089.html" target="_blank" rel="external">内存泄漏全解析，从此拒绝ANR，让OOM远离你的身边，跟内存泄漏say byebye</a></li>
-<li><a href="https://goo-yao.github.io/2017/02/11/Android%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/#more" target="_blank" rel="external">明白原理，轻松应对Android内存泄漏</a></li>
+<li><a href="https://mp.weixin.qq.com/s/XILFalxJsbGJjx-ZOEDi7g" target="_blank" rel="noopener">Android 性能优化 详解内存优化的来龙去脉</a></li>
+<li><a href="http://www.cnblogs.com/liushilin/p/5900089.html" target="_blank" rel="noopener">内存泄漏全解析，从此拒绝ANR，让OOM远离你的身边，跟内存泄漏say byebye</a></li>
+<li><a href="https://goo-yao.github.io/2017/02/11/Android%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/#more" target="_blank" rel="noopener">明白原理，轻松应对Android内存泄漏</a></li>
 </ul>
 <p>如果本文中有不正确的结论、说法，请大家提出和我讨论，共同进步，谢谢！</p>
 
@@ -765,7 +758,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -776,7 +769,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -787,7 +780,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

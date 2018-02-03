@@ -87,30 +87,20 @@
 
 
 
-<meta name="description" content="介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。
-享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提升性能，避免内存移除等。
-享元模式中的部分状态是可以共享的，
-
-可以共享的状态称为内部状态。内部状态">
+<meta name="description" content="介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。 享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提升性能，避免内存移除等。 享元模式中的部分状态是可以共享的，  可以共享的状态称为内部状态。内部状态">
+<meta name="keywords" content="原理分析,设计模式">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 源码中的享元模式——Message 复用原理">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/index.html">
-<meta property="og:site_name" content="Tim's Track">
-<meta property="og:description" content="介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。
-享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提升性能，避免内存移除等。
-享元模式中的部分状态是可以共享的，
-
-可以共享的状态称为内部状态。内部状态">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。 享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提升性能，避免内存移除等。 享元模式中的部分状态是可以共享的，  可以共享的状态称为内部状态。内部状态">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29702859-ac3f4f5c-89a5-11e7-92cd-2c26051b399f.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29739978-6c03d780-8a7e-11e7-8aad-3da3590c2ea1.png">
 <meta property="og:updated_time" content="2017-08-26T09:24:54.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 源码中的享元模式——Message 复用原理">
-<meta name="twitter:description" content="介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。
-享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提升性能，避免内存移除等。
-享元模式中的部分状态是可以共享的，
-
-可以共享的状态称为内部状态。内部状态">
+<meta name="twitter:description" content="介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。 享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提升性能，避免内存移除等。 享元模式中的部分状态是可以共享的，  可以共享的状态称为内部状态。内部状态">
 <meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/29702859-ac3f4f5c-89a5-11e7-92cd-2c26051b399f.png">
 
 
@@ -500,7 +490,7 @@
 <li>享元模式将状态外部化，而读取外部状态使得<strong>运行时间稍微变长</strong></li>
 </ul>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
-<li><a href="http://www.cnblogs.com/java-my-life/archive/2012/04/26/2468499.html" target="_blank" rel="external">《JAVA 与模式》之享元模式</a></li>
+<li><a href="http://www.cnblogs.com/java-my-life/archive/2012/04/26/2468499.html" target="_blank" rel="noopener">《JAVA 与模式》之享元模式</a></li>
 <li>《Android 源码设计模式解析与实战》</li>
 <li><a href="https://ivanljt.github.io/blog/2017/04/28/Android-%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/">Android 消息机制解析</a></li>
 </ul>
@@ -707,7 +697,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -718,7 +708,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">17</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -729,7 +719,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
