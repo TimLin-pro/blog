@@ -1,0 +1,1481 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Adnroid进阶," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="Android IPC简介IPC 是 Inter-Process Communication 的缩写，含义为 进程间通信或者跨进程通信，是指两个进程之间进行数据交换的过程。aIPC 不是 Android 所独有的，任何一个操作系统都需要有相应的 IPC 机制。 在 Android 中最有特色的进程间通信方式就是 Binder 了， 通过 Binder 可以轻松实现进程间通信。 除了 Binder">
+<meta name="keywords" content="Adnroid进阶">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IPC 机制">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2017/05/04/Android IPC-机制/index.html">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="Android IPC简介IPC 是 Inter-Process Communication 的缩写，含义为 进程间通信或者跨进程通信，是指两个进程之间进行数据交换的过程。aIPC 不是 Android 所独有的，任何一个操作系统都需要有相应的 IPC 机制。 在 Android 中最有特色的进程间通信方式就是 Binder 了， 通过 Binder 可以轻松实现进程间通信。 除了 Binder">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/944365-62fdab905e7d2706.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/944365-2f530e964ffab8d7.png?imageMogr2/auto-orient/strip%7CimageView2/2">
+<meta property="og:updated_time" content="2018-02-04T13:28:49.522Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IPC 机制">
+<meta name="twitter:description" content="Android IPC简介IPC 是 Inter-Process Communication 的缩写，含义为 进程间通信或者跨进程通信，是指两个进程之间进行数据交换的过程。aIPC 不是 Android 所独有的，任何一个操作系统都需要有相应的 IPC 机制。 在 Android 中最有特色的进程间通信方式就是 Binder 了， 通过 Binder 可以轻松实现进程间通信。 除了 Binder">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/944365-62fdab905e7d2706.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/05/04/Android IPC-机制/"/>
+
+
+
+
+
+  <title> IPC 机制 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/05/04/Android IPC-机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                IPC 机制
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-04T00:14:59+08:00">
+                2017-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Android进阶/" itemprop="url" rel="index">
+                    <span itemprop="name">Android进阶</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2017/05/04/Android IPC-机制/" class="leancloud_visitors" data-flag-title="IPC 机制">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  5,868
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  23
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Android-IPC简介"><a href="#Android-IPC简介" class="headerlink" title="Android IPC简介"></a>Android IPC简介</h2><p>IPC 是 Inter-Process Communication 的缩写，含义为 进程间通信或者跨进程通信，是指两个进程之间进行数据交换的过程。<br>a<br>IPC 不是 Android 所独有的，任何一个操作系统都需要有相应的 IPC 机制。</p>
+<p>在 Android 中最有特色的进程间通信方式就是 Binder 了， <strong>通过 Binder 可以轻松实现进程间通信</strong>。</p>
+<p>除了 Binder ，Android 还支持 Socket， 通过 Socket 也可以实现任意<strong>两个终端之间</strong>的通信，当然一个设备的两个进程之间的也可以通过 Socket 进行通信。</p>
+<p>多进程的情况分两种：</p>
+<ol>
+<li>一个应用因为某些原因自身需要采用多进程模式来实现<ul>
+<li>可能的原因如下：<ul>
+<li>有些模块需要运行在单独的进程中</li>
+<li>加大一个应用可使用的内存</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>当前应用需要向其他应用获取数据。</li>
+</ol>
+<a id="more"></a>
+<h2 id="2-Android中的多进程模式"><a href="#2-Android中的多进程模式" class="headerlink" title="2 Android中的多进程模式"></a>2 Android中的多进程模式</h2><p>通过给四大组件指定 <code>android:process</code>属性，可以轻易地开启多线程模式。</p>
+<h3 id="1-开启多进程模式"><a href="#1-开启多进程模式" class="headerlink" title="1 开启多进程模式"></a>1 开启多进程模式</h3><p>一般地，在 Android 中<strong>多进程</strong>是指一个应用中存在多个进程的情况（此处不讨论两个应用之间的多进程情况）</p>
+<p>首先，在 Android 中使用多进程只有一种方法， 在 manifest 文件中，给四大组件 指定 <code>android:process</code> 属性。</p>
+<ul>
+<li>其实还有一种非常规的多进程方法—— 通过 JNI 在 native 层去 fork 一个新的进程。</li>
+</ul>
+<p>根据 process 的属性值不同，创建不同的进程。</p>
+<h4 id="问题：使用-「：xxx」与-使用-「xxx-xxx-xxx」两种方式有区别吗？"><a href="#问题：使用-「：xxx」与-使用-「xxx-xxx-xxx」两种方式有区别吗？" class="headerlink" title="问题：使用 「：xxx」与 使用 「xxx.xxx.xxx」两种方式有区别吗？"></a>问题：使用 「：xxx」与 使用 「xxx.xxx.xxx」两种方式有区别吗？</h4><ol>
+<li>「：」的含义是指在当前的进程名前面附上当前的包名，即 这是一种简写的方法</li>
+<li>进程名以「：」开头的进程属于<strong>当前应用的私有进程</strong>，其他应用的组件不可以和它跑在同一个进程中，<ul>
+<li>而进程名不以「：」开头的进程属于<strong>全局进程</strong>，其他应用通过 ShareUID 方式可以和它跑在同一个进程中。</li>
+</ul>
+</li>
+</ol>
+<p>Android 系统会为每个应用分配一个 唯一的 UID，具有相同 UID 的应用才能共享数据。</p>
+<ul>
+<li>两个应用跑在同一个进程中 需要 <ul>
+<li>这两个应用有 <strong>相同的 shareUID</strong></li>
+<li>并且 <strong>签名相同</strong>。</li>
+</ul>
+</li>
+<li>这种情况下，可以互相访问对方的私有目录，如 data 目录。</li>
+</ul>
+<h3 id="2-多进程模式的运行机制"><a href="#2-多进程模式的运行机制" class="headerlink" title="2 多进程模式的运行机制"></a>2 多进程模式的运行机制</h3><p>==一个进程 = 一个 虚拟机==</p>
+<p>Android 为每个应用分配了一个独立的虚拟机，或者说为每个进程分配一个独立的虚拟机，<br>不同虚拟机在内存分配上有不同的地址空间，这就导致了不同虚拟机范文同一个类的对象会产生多份副本。</p>
+<p>一般来说，使用<strong>多进程</strong>会造成以下几方面问题</p>
+<ol>
+<li>静态成员和单例模式完全失效</li>
+<li>线程同步机制完全失效</li>
+<li>SharePreferences 的可靠性下降，好像有多进程模式？有，但是不稳定，所以系统已经不推荐使用了。</li>
+<li>Application 会多次创建</li>
+</ol>
+<p>可以这样理解同一个应用间的多进程：</p>
+<ul>
+<li>它就相当于两个不同的应用采用了 ShareUID 的模式，这样能够更加直接地理解<strong>多进程模式的本质</strong>。</li>
+</ul>
+<h2 id="3-IPC基础概念介绍"><a href="#3-IPC基础概念介绍" class="headerlink" title="3 IPC基础概念介绍"></a>3 IPC基础概念介绍</h2><h3 id="3-1-Serializable接口"><a href="#3-1-Serializable接口" class="headerlink" title="3.1 Serializable接口"></a>3.1 Serializable接口</h3><p><strong>Serializable接口</strong> ：Java 所提供的一个序列化接口，它是一个空接口，为对象提供标准的序列化和反序列化操作。</p>
+<h4 id="使用："><a href="#使用：" class="headerlink" title="使用："></a>使用：</h4><pre><code>- 只要在类的声明中指明一个类似下面的标识即可自动实现 *默认的* 序列化过程（可以自定义）。
+- `private static final long serialVersionUID = 87138828109787189L;`
+</code></pre><p>这个 <code>serialVersionUID</code> 可以没有，但是这样会对反序列化过程产生影响。</p>
+<ul>
+<li><code>serialVersionUID</code> 是用来辅助序列化过程的，原则上序列化后的数据中的 <code>serialVersionUID</code> 只有和当前类的 <code>serialVersionUID</code> 相同才能正常地被反序列化。</li>
+</ul>
+<h5 id="serialVersionUID-的详细工作机制："><a href="#serialVersionUID-的详细工作机制：" class="headerlink" title="serialVersionUID 的详细工作机制："></a><strong><code>serialVersionUID</code> 的详细工作机制</strong>：</h5><ul>
+<li>序列化是把当前类的 <code>serialVersionUID</code> 写入序列化的文件中（也可能是其他中介）当反序列化时会去检测文件中的<code>serialVersionUID</code>，看它是否和当前类的<code>serialVersionUID</code>一致，如果一致就说明序列化的版本与当前类的版本是相同的，这时可以成功反序列化。</li>
+<li>否则说明当前类和序列化的类相比发生了 某些变化，例如：成员变量的数量、类型可能发生了改变，这时无法正常序列化，会报如下错误：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Exception in thread &quot;main&quot; java.io.InvalidClassException: projectname.clasname; local class incompatible: stream classdesc serialVersionUID = -6009442170907349114, local class serialVersionUID = 6529685098267757690</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>一般而言，我们应该手动指定 <code>serialVersionUID</code> 的值，比如 1L，<br>也可以让 Eclipse <strong>根据当前类的的结构</strong>去自动生成它的 hash 值，这样序列化和反序列化时两者的 <code>serialVersionUID</code>是相同的，可以正常进行反序列化。</p>
+<p>如果类的结构发生了改变，比如增加/删除了 某些成员变量，那么系统就会重新计算当前类的 hash 值并把它赋值给 <code>serialVersionUID</code> ，这个时候当前类的 <code>serialVersionUID</code> 就会和序列化数据不一致，于是反序列化失败。</p>
+<ul>
+<li>如果手动指定了<code>serialVersionUID</code> 就不会有这个问题。</li>
+</ul>
+<p>但是如果类结构发生了 ==非常规性改变==，比如修改了类名、修改了成员变量类型，这个时候尽管 <code>serialVersionUID</code> 验证通过了，但是反序列化过程还是会失败，因为类结构发生了毁灭性变化，根本无法从老版本的数据中还原出一个新的类结构的对象。</p>
+<p>综上，类结构不变且类的版本不变（没有增加或者删除成员变量）的情况下，不指定 serialVersionUID 是没有问题的，但是为了提高稳定性，还是要指定。</p>
+<p><strong>两点要注意的</strong>：</p>
+<ol>
+<li>静态成员变量属于类不属于对象，所以<strong>不会参与</strong>序列化过程。</li>
+<li>用 transient 关键字标记的 成员变量不参与序列化过程。</li>
+</ol>
+<p>系统的默认序列化过程也是可以改变的。只要重新实现 <code>writeObject</code> 和 <code>readObject</code> 方法即可。</p>
+<h5 id="如何进行对象的序列化和反序列化？"><a href="#如何进行对象的序列化和反序列化？" class="headerlink" title="如何进行对象的序列化和反序列化？"></a>如何进行对象的序列化和反序列化？</h5><p>采用 <code>ObjectOutputStream</code>  <code>ObjectInputStream</code> 即可轻松实现。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">User user = new User(name);</div><div class="line">ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(&quot;cache.txt&quot;));</div><div class="line">objectOutputStream.writeObject(user);</div><div class="line">objectOutputStream.close();</div><div class="line"></div><div class="line">ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(&quot;cache.txt&quot;));</div><div class="line">User newUser = objectInputStream.readObject();</div><div class="line">objectInputStream.close();</div></pre></td></tr></table></figure></p>
+<h3 id="3-2-Parcelable接口"><a href="#3-2-Parcelable接口" class="headerlink" title="3.2 Parcelable接口"></a>3.2 Parcelable接口</h3><p>通过实现Parcelable接口序列化对象的步骤：<br>1、声明实现接口Parcelable<br>2、实现Parcelable的方法 <strong>writeToParcel</strong>，将你的对象<strong>序列化</strong>为一个Parcel对象<br>3、实例化静态内部对象CREATOR实现接口Parcelable.Creator  ，实现 反序列化</p>
+<p>Parcelable 的方法说明</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>功能</th>
+<th>标记位</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>createFromParcel</td>
+<td>从序列化后的对象中创建原始对象</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>newArray</td>
+<td>创建指定长度的原始对象数组</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>User(Parcel in)</td>
+<td>从序列化后的对象中创建原始对象</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>writeToParcel(Parcel dest, int flags)</td>
+<td>将当前的对象写入序列化结构中，其中 flags 标识有两种值，0 或者 1； 为 1 时标识当前对象需要作为返回值返回，不能立即释放资源，几乎所有情况都为 0</td>
+<td>PARCELABLE_WRITE_RETURN_VALUE</td>
+<td></td>
+</tr>
+<tr>
+<td>describeContents</td>
+<td>返回当前对象的描述，仅当当前对象中存在 文件描述符，才返回 1，几乎所有情况都返回 0</td>
+<td>CONTENT_FILE_DESCRIPTOR</td>
+</tr>
+</tbody>
+</table>
+<p>新建一个类，实现 Parcelable 接口，然后写好成员变量，再 <code>alt + enter</code> 自动补全代码。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> String mName;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mAge;</div><div class="line">    <span class="keyword">private</span> String mAddress;</div><div class="line">    <span class="keyword">private</span> Book mBook;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">User</span><span class="params">(Parcel in)</span> </span>&#123;<span class="comment">//从序列化后的对象中创建原始对象</span></div><div class="line">        mName = in.readString();</div><div class="line">        mAge = in.readInt();</div><div class="line">        mAddress = in.readString();</div><div class="line">        mBook = in.readParcelable(Book.class.getClassLoader());<span class="comment">//因为 book 也是一个可序列化对象，所以它的反序列化过程需要传递当前线程的上下文 类加载器</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel dest, <span class="keyword">int</span> flags)</span> </span>&#123;<span class="comment">//将当前的对象写入序列化结构中，其中 flags 标识有两种值，0 或者 1； 为 1 时标识当前对象需要作为返回值返回，不能立即释放资源，几乎所有情况都为 0</span></div><div class="line">        dest.writeString(mName);</div><div class="line">        dest.writeInt(mAge);</div><div class="line">        dest.writeString(mAddress);</div><div class="line">        dest.writeParcelable(mBook, flags); </div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">describeContents</span><span class="params">()</span> </span>&#123;<span class="comment">//如无特殊情况，这个方法都是返回 0，仅当当前对象中存在 文件描述符，才返回 1</span></div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//反序列化</span></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Creator&lt;User&gt; CREATOR = <span class="keyword">new</span> Creator&lt;User&gt;() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> User <span class="title">createFromParcel</span><span class="params">(Parcel in)</span> </span>&#123; </div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> User(in);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="keyword">public</span> User[] newArray(<span class="keyword">int</span> size) &#123;<span class="comment">//创建指定长度的原始对象数组</span></div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> User[size];</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h4><ul>
+<li>Serializable 是 Java 中的序列化接口，使用起来简单但是==开销很大==，序列化和反序列化需要大量的 I/O 操作。</li>
+<li>而 Parcelable 是 Android 中序列化方式，更适合使用在 Android 平台上，==效率高==。 缺点：使用起来麻烦。<ul>
+<li>Parcelable 主要用在<strong>内存序列化</strong>上</li>
+</ul>
+</li>
+<li>通过 Parcelable 将对象序列化到<strong>存储设备</strong>中 或者将对象序列化后存储<strong>通过网络传输</strong>也都是可以的，但是这个过程会稍显复杂，在这两种情况下，建议使用 Serializable 接口。</li>
+</ul>
+<h3 id="3-3-Binder"><a href="#3-3-Binder" class="headerlink" title="3.3 Binder"></a>3.3 Binder</h3><p>直观来说，Binder 是 Android 的一个类，它实现了 IBinder 接口。</p>
+<ul>
+<li>从 IPC 角度来说， Binder 是 Android 中的<strong>一种跨进程通信方式</strong></li>
+<li>Binder 还可以理解为一种<strong>虚拟的物理设备</strong>，它的设备驱动是 /dev/binder， 该通信方式在 Linux 上没有。</li>
+<li>从 Android FrameWork 角度来看， Binder 是 ServiceManager 连接各种 Manager (ActivityManager、 WindowManager， 等等)和相应的 ManagerService 的<strong>桥梁</strong></li>
+<li>从 Android 应用层 来说，Binder 是<strong>客户端和服务端进行通信的媒介</strong>，当 bindService 的时候，服务端会返回一个包含了服务端业务调用的 Binder 对象，通过这个 Binder 对象，客户端就可以获取服务端提供的数据或服务（包括普通的服务 和 AIDL服务）</li>
+</ul>
+<p>Android 开发中，Binder 主要用在 Service 中，包括 AIDL 和 Messenger，</p>
+<ul>
+<li>普通 Service 中的 Binder 不涉及进程间通信，所以较为简单，无法涉及核心</li>
+<li>Messenger 的底层其实是 AIDL</li>
+</ul>
+<p>示例中，编写代码时，查找 aidl 生成的接口，Project ==》app==》build ==》source==》debug==》com.xxx.xx.xx==》 目标类</p>
+<ul>
+<li>==注意==：AIDL 的特殊之处：尽管两个类都位于同一个包中，还是需要导入相应的类。</li>
+</ul>
+<p>==所有==<strong>可以在 Binder 中传输的接口</strong>都需要继承自 IInterface 接口。</p>
+<p>栗子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"> * This file is auto-generated.  DO NOT MODIFY.</div><div class="line"> * Original file: D:\\Android_RDC_project\\AndroidLearning\\app\\src\\main\\aidl\\com\\android\\rdc\\androidlearning\\IBookManager.aidl</div><div class="line"> */</div><div class="line"><span class="keyword">package</span> com.android.rdc.androidlearning;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IBookManager</span> <span class="keyword">extends</span> <span class="title">android</span>.<span class="title">os</span>.<span class="title">IInterface</span> </span>&#123;</div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Local-side IPC implementation stub class.</div><div class="line">     */</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Stub</span> <span class="keyword">extends</span> <span class="title">android</span>.<span class="title">os</span>.<span class="title">Binder</span> <span class="keyword">implements</span> <span class="title">com</span>.<span class="title">android</span>.<span class="title">rdc</span>.<span class="title">androidlearning</span>.<span class="title">IBookManager</span> </span>&#123;</div><div class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> java.lang.String DESCRIPTOR = <span class="string">"com.android.rdc.androidlearning.IBookManager"</span>;<span class="comment">//Binder 的唯一标识，一般用当前 Binder 的全类名表示</span></div><div class="line"></div><div class="line">        <span class="comment">/**</span></div><div class="line">         * Construct the stub at attach it to the interface.</div><div class="line">         */</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Stub</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">this</span>.attachInterface(<span class="keyword">this</span>, DESCRIPTOR);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">/**</span></div><div class="line">         * 将（服务端的 Binder 对象）转换为（客户端所需的 AIDL 类型的对象）</div><div class="line">         * 若服务端与 客户端处在同一个进程，则返回服务端的 Stub 对象本身</div><div class="line">         *                      否则返回系统封装后的 Stub.Proxy</div><div class="line">         * Cast an IBinder object into an com.android.rdc.androidlearning.IBookManager interface,</div><div class="line">         * generating a proxy if needed.</div><div class="line">         */</div><div class="line">        <span class="keyword">public</span> <span class="keyword">static</span> com.android.rdc.androidlearning.<span class="function">IBookManager <span class="title">asInterface</span><span class="params">(android.os.IBinder obj)</span> </span>&#123;</div><div class="line">            <span class="keyword">if</span> ((obj == <span class="keyword">null</span>)) &#123;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">            &#125;</div><div class="line">            android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);</div><div class="line">            <span class="keyword">if</span> (((iin != <span class="keyword">null</span>) &amp;&amp; (iin <span class="keyword">instanceof</span> com.android.rdc.androidlearning.IBookManager))) &#123;</div><div class="line">                <span class="keyword">return</span> ((com.android.rdc.androidlearning.IBookManager) iin);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> com.android.rdc.androidlearning.IBookManager.Stub.Proxy(obj);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">/**</span></div><div class="line">         * 返回当前的 Binder 对象</div><div class="line">         * */</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="keyword">public</span> android.os.<span class="function">IBinder <span class="title">asBinder</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">/**</span></div><div class="line">         * 运行在『服务端』的 Binder 线程池中，客户端发起 ，当客户端发起跨进程请求时，远程请求会通过系统底层封装后交由此方法来处理</div><div class="line">         *  通过code 可以确定请求的目标方法</div><div class="line">         *  （如果目标方法有参数的话） 从 data 中取出目标方法所需的参数，然后执行</div><div class="line">         *  当目标方法执行完毕后，（如果有返回值的话）向 reply 中写入返回值</div><div class="line">         *  如果 onTransact 返回 false ，那么客户端的请求失败。因此可以利用这个特性来做权限验证。</div><div class="line">         * */</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onTransact</span><span class="params">(<span class="keyword">int</span> code, android.os.Parcel data, android.os.Parcel reply, <span class="keyword">int</span> flags)</span> <span class="keyword">throws</span> android.os.RemoteException </span>&#123;</div><div class="line">            <span class="keyword">switch</span> (code) &#123;</div><div class="line">                <span class="keyword">case</span> INTERFACE_TRANSACTION: &#123;</div><div class="line">                    reply.writeString(DESCRIPTOR);</div><div class="line">                    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">case</span> TRANSACTION_getBookList: &#123;</div><div class="line">                    data.enforceInterface(DESCRIPTOR);</div><div class="line">                    java.util.List&lt;com.android.rdc.androidlearning.Book&gt; _result = <span class="keyword">this</span>.getBookList();</div><div class="line">                    reply.writeNoException();</div><div class="line">                    reply.writeTypedList(_result);</div><div class="line">                    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">case</span> TRANSACTION_addBook: &#123;</div><div class="line">                    data.enforceInterface(DESCRIPTOR);</div><div class="line">                    com.android.rdc.androidlearning.Book _arg0;</div><div class="line">                    <span class="keyword">if</span> ((<span class="number">0</span> != data.readInt())) &#123;</div><div class="line">                        _arg0 = com.android.rdc.androidlearning.Book.CREATOR.createFromParcel(data);</div><div class="line">                    &#125; <span class="keyword">else</span> &#123;</div><div class="line">                        _arg0 = <span class="keyword">null</span>;</div><div class="line">                    &#125;</div><div class="line">                    <span class="keyword">this</span>.addBook(_arg0);</div><div class="line">                    reply.writeNoException();</div><div class="line">                    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">super</span>.onTransact(code, data, reply, flags);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Proxy</span> <span class="keyword">implements</span> <span class="title">com</span>.<span class="title">android</span>.<span class="title">rdc</span>.<span class="title">androidlearning</span>.<span class="title">IBookManager</span> </span>&#123;</div><div class="line">            <span class="keyword">private</span> android.os.IBinder mRemote;</div><div class="line"></div><div class="line">            Proxy(android.os.IBinder remote) &#123;</div><div class="line">                mRemote = remote;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="keyword">public</span> android.os.<span class="function">IBinder <span class="title">asBinder</span><span class="params">()</span> </span>&#123;</div><div class="line">                <span class="keyword">return</span> mRemote;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="keyword">public</span> java.lang.<span class="function">String <span class="title">getInterfaceDescriptor</span><span class="params">()</span> </span>&#123;</div><div class="line">                <span class="keyword">return</span> DESCRIPTOR;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">/**</span></div><div class="line">             * 此方法运行在『客户端』</div><div class="line">             * */</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="keyword">public</span> java.util.List&lt;com.android.rdc.androidlearning.Book&gt; getBookList() <span class="keyword">throws</span> android.os.RemoteException &#123;</div><div class="line">                android.os.Parcel _data = android.os.Parcel.obtain();</div><div class="line">                android.os.Parcel _reply = android.os.Parcel.obtain();</div><div class="line">                java.util.List&lt;com.android.rdc.androidlearning.Book&gt; _result;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    _data.writeInterfaceToken(DESCRIPTOR);</div><div class="line">                    mRemote.transact(Stub.TRANSACTION_getBookList, _data, _reply, <span class="number">0</span>);<span class="comment">//调用 transact 发起远程请求。然后当前线程挂起，</span></div><div class="line">                    _reply.readException();<span class="comment">// RPC 过程返回后，当前线程继续执行</span></div><div class="line">                    _result = _reply.createTypedArrayList(com.android.rdc.androidlearning.Book.CREATOR);</div><div class="line">                &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                    _reply.recycle();</div><div class="line">                    _data.recycle();</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">return</span> _result;</div><div class="line">            &#125;</div><div class="line">            <span class="comment">/**</span></div><div class="line">             * 执行过程与 getBookList 一样，</div><div class="line">             * */</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addBook</span><span class="params">(com.android.rdc.androidlearning.Book book)</span> <span class="keyword">throws</span> android.os.RemoteException </span>&#123;</div><div class="line">                android.os.Parcel _data = android.os.Parcel.obtain();</div><div class="line">                android.os.Parcel _reply = android.os.Parcel.obtain();</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    _data.writeInterfaceToken(DESCRIPTOR);</div><div class="line">                    <span class="keyword">if</span> ((book != <span class="keyword">null</span>)) &#123;</div><div class="line">                        _data.writeInt(<span class="number">1</span>);</div><div class="line">                        book.writeToParcel(_data, <span class="number">0</span>);</div><div class="line">                    &#125; <span class="keyword">else</span> &#123;</div><div class="line">                        _data.writeInt(<span class="number">0</span>);</div><div class="line">                    &#125;</div><div class="line">                    mRemote.transact(Stub.TRANSACTION_addBook, _data, _reply, <span class="number">0</span>);</div><div class="line">                    _reply.readException();</div><div class="line">                &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                    _reply.recycle();</div><div class="line">                    _data.recycle();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TRANSACTION_getBookList = (android.os.IBinder.FIRST_CALL_TRANSACTION + <span class="number">0</span>);</div><div class="line">        <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TRANSACTION_addBook = (android.os.IBinder.FIRST_CALL_TRANSACTION + <span class="number">1</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> java.util.List&lt;com.android.rdc.androidlearning.Book&gt; getBookList() <span class="keyword">throws</span> android.os.RemoteException;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addBook</span><span class="params">(com.android.rdc.androidlearning.Book book)</span> <span class="keyword">throws</span> android.os.RemoteException</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="4-Android中的IPC方式"><a href="#4-Android中的IPC方式" class="headerlink" title="4 Android中的IPC方式"></a>4 Android中的IPC方式</h2><h3 id="4-1-使用Bundle"><a href="#4-1-使用Bundle" class="headerlink" title="4.1 使用Bundle"></a>4.1 使用Bundle</h3><p>四大组件中的三大组件（Activity、Service、Receiver）都是<strong>支持在 Intent 中传递 Bundle 数据</strong>的，Bundle 实现了 Parcelable 接口，所以它可以方便地在不同的进程间 传输。</p>
+<p>因此，当我们在一个进程中启动了另一个进程的 Activity、Service、Receiver，我们就可以在 Bundle 中附加我们需要传输给远程进程的信息并通过 Intent 传递出去。</p>
+<ul>
+<li>当然我们所传输的数据必须能够被序列化，如：<ul>
+<li>基本数据类型</li>
+<li>实现了 Parcelable 接口的对象。</li>
+<li>实现了 Serialiable 接口的对象。</li>
+<li>一些 Android 支持的特殊对象。<ul>
+<li>Charserquence</li>
+<li>StringArrayList</li>
+<li>IntegerArrayList</li>
+<li>Size</li>
+<li>…</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="特殊的使用场景："><a href="#特殊的使用场景：" class="headerlink" title="特殊的使用场景："></a>特殊的使用场景：</h4><p>进程 A 要进行计算，并将计算结果发送给进程 B，但是该计算结果不支持放入 Bundle 中。</p>
+<ul>
+<li>解决：在 A 中，通过 Intent 来启动线程 B 的一个 Service 组件（比如 IntentService），让 Service 在后台计算，计算完以后再启动 B 进程中想要启动的目标组件。</li>
+</ul>
+<p><strong>核心思想</strong>：将原本需要在 A 进程的计算任务转移到 B 进程的服务中，这样就避免了进程间通信的问题，而且代价也不大。</p>
+<h3 id="4-2-使用文件共享"><a href="#4-2-使用文件共享" class="headerlink" title="4.2 使用文件共享"></a>4.2 使用文件共享</h3><p>两个进程通过读/写同一个文件交换数据。</p>
+<ul>
+<li>比如，进程 A 写入，进程 B 读取。</li>
+</ul>
+<p>背景知识：</p>
+<ul>
+<li>Window 上，一个文件如果被加了<strong>排斥锁</strong>将会导致其他线程无法对其进行访问（包括读和写）。</li>
+<li>Android 基于 Linux，其读/写文件可以无限制地进行，甚至两个线程对同一个文件并行写也是允许的。（尽管这可能会出现一些问题）</li>
+</ul>
+<p>应用：</p>
+<ul>
+<li>序列化一个对象到文件系统中的同时，从另一个进程中恢复这个对象。<ul>
+<li>另一个进程成功地恢复之前存储的对象的<strong>内容</strong>，但是他们<strong>本质还是两个对象</strong>。</li>
+</ul>
+</li>
+</ul>
+<p>可能存在的问题：<br>并发读/写，读出的内容可能不是最新的。</p>
+<ul>
+<li>解决：<ol>
+<li>设法避免</li>
+<li>考虑使用线程同步来限制，多个线程的写操作。 </li>
+</ol>
+</li>
+</ul>
+<p>文件共享适合<strong>对数据同步要求不高</strong>的进程之间进行通信。</p>
+<h4 id="Sharepreference"><a href="#Sharepreference" class="headerlink" title="Sharepreference"></a>Sharepreference</h4><p>SharePreference 是个特例 </p>
+<p>底层通过 xml 文件的方式来存储键值对，，一般而言，它位于 <code>/data/data/当前应用的包名/share_prefs</code> 目录下，</p>
+<p>由于系统对 SharePreference 的读写操作有一定的<strong>缓存策略</strong>，即<strong>在内存*有一份 SharePreferce 的缓存</strong>。<strong>在多进程模式下</strong>，系统对它的读写操作就变得不可靠。高并发状态下，SharePreference 很大几率会丢失数据。</p>
+<ul>
+<li>不建议在进程间通信使用 SharePreference</li>
+</ul>
+<h3 id="4-3-使用Messenger"><a href="#4-3-使用Messenger" class="headerlink" title="4.3 使用Messenger"></a>4.3 使用Messenger</h3><p>『信使』<br>通过它可以在不同进程中传递 Message 对象，在 Message 中放入我们需要传递的数据，就可以实现进程间的数据传递了。</p>
+<p>Messenger 一次处理一个请求，所以服务端不用考虑线程同步的问题（因为不存在并发执行的情形）。</p>
+<h4 id="1-服务端进程"><a href="#1-服务端进程" class="headerlink" title="1. 服务端进程"></a>1. 服务端进程</h4><h4 id="客户端进程"><a href="#客户端进程" class="headerlink" title="客户端进程"></a>客户端进程</h4><p>在 Messager 中进行数据传递必须将数据放入 Messenger 中，</p>
+<ul>
+<li>Message 中支持数据类型就是 Messenger 所支持的传输类型</li>
+<li>Message 中所能使用的载体只有 <ul>
+<li>int what;</li>
+<li>int ar1</li>
+<li>int arg2</li>
+<li>Messenger replyTo</li>
+<li>Object obj<ul>
+<li>2 之前 obj 字段不支持跨进程传输</li>
+<li>2 之后 obj 也仅<strong>系统提供的</strong>实现 Parcelable 接口的的对象<ul>
+<li>即 FrameWork class</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Bundle <ul>
+<li>还好我们有 Bundle ，支持比较多的数据类型</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>如果要让『服务端』能够回复信息。</p>
+<ul>
+<li>那么当客户端发送消息的时候，需要把 接收服务端回复的 Messenger 通过 Message 的 replyTo 参数传递给服务端。<h3 id="4-4-使用AIDL"><a href="#4-4-使用AIDL" class="headerlink" title="4.4 使用AIDL"></a>4.4 使用AIDL</h3></li>
+</ul>
+<p>Android 接口定义语言(Android Interface  Definition Language)</p>
+<p>Messenger 只能传递消息，不能跨进程调用方法。而且只能串行处理客户端发来的请求。</p>
+<ul>
+<li>虽然它底层也是使用 AIDL 实现的。</li>
+</ul>
+<p>可以使用 AIDL 来实现跨进程的方法调用。</p>
+<p>aidl 文件的作用是 sdk 根据它来生成相应的 java 代码，也就是在编译时有用，在编译完之后，即使删除掉 aidl 文件，也是可以的，但是这样的话如果重新编译就没法生成 java 代码了。</p>
+<p>将编写的 <code>.aidl</code> 文件保存在项目的 <code>src/</code> 目录内，当你开发应用时，<strong>SDK 工具</strong>会在项目的 <code>gen/</code> 目录中生成 <code>IBinder</code> 接口文件。生成的文件名与 <code>.aidl</code> 文件名一致，只是使用了 <code>.java</code> 扩展名（例如，<code>IRemoteService.aidl</code> 生成的文件名是 <code>IRemoteService.java</code>）。</p>
+<p>如果<strong>使用 Android Studio</strong>，<strong>增量编译几乎会立即生成 Binder 类</strong>。 如果不是使用 Android Studio，则 Gradle 工具会在下一次开发应用时生成 Binder 类 </p>
+<p>通常应该在编写完 <code>.aidl</code> 文件后立即用 <code>gradle assembleDebug</code> （或 <code>gradle assembleRelease</code>）编译项目，以便您的代码能够链接到生成的类。</p>
+<h4 id="1-服务端"><a href="#1-服务端" class="headerlink" title="1. 服务端"></a>1. 服务端</h4><p>用一个 Service 来监听客户的连接请求，创建一个 AIDL 文件，将暴露给客户端的接口在这个 AIDL 文件中声明，最后在 Service 实现该接口。</p>
+<h4 id="2-客户端"><a href="#2-客户端" class="headerlink" title="2. 客户端"></a>2. 客户端</h4><ul>
+<li>绑定服务端 Service，</li>
+<li>绑定成功后将服务端返回的 IBinder 转化为 AIDL 接口所属的类型<ul>
+<li>注意不是平时那样强转，而是<ul>
+<li><code>IBookManager.Stub.asInterface(iBinder);</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>接着就可以使用 AIDL 中的方法了。</li>
+</ul>
+<p>AIDL 支持的数据类型：</p>
+<ul>
+<li>基本数据类型</li>
+<li>CharSequence </li>
+<li>List 只支持 ArrayList</li>
+<li>Map 只支持 HashMap</li>
+<li>Parcelable </li>
+<li><p>AIDL：AIDL 接口本身也可以在 AIDL 文件中使用</p>
+<ul>
+<li>AIDL 中无法使用普通的接口</li>
+</ul>
+</li>
+<li><p>注意：</p>
+<ul>
+<li>自定义的 Parcelable对象一定要显式地 import 进来。（不管它们是否与当前的 AIDL 文件位于同一个包中）</li>
+<li>如果 AIDL 文件中用到了自定义的 Parcelable 对象，必须使用新建一个和它同名的 aidl 文件，并在其中声明它为 parcelable 类型<ul>
+<li>如 Book.java<ul>
+<li>Book.aidl<ul>
+<li>要在其中声明 pacelable Book;</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>基本数据类型以外的参数需要==标上方向==</p>
+<ul>
+<li>in 输入型参数，类似于普通方法的参数</li>
+<li>out 输出型参数， 类似于返回值</li>
+<li>inout 输入输入型参数</li>
+</ul>
+<p>所以说，输入输出是针对这个方法而言的，而不是 C/S 结构中的输入/输出。</p>
+<p>AIDL 接口中只支持方法，不支持声明静态变量（==跟传统的接口有区别==）</p>
+<ul>
+<li>AIDL 包结构在客户端与服务端要保持一致，否则运行会出错。<ul>
+<li>因为客户端需要反序列化服务端中和  aidl 接口相关的类。</li>
+</ul>
+</li>
+</ul>
+<p>AIDL 接口中所支持的是抽象的 List ，而 List 只是一个接口，虽然服务端使用 CopyOnWriteArrayList ,但是在 Binder 中会按照 List 的规范去访问数据并最终形成一个 ArrayList 传递给客户端。</p>
+<ul>
+<li>ConcurrentHashMap 同理</li>
+</ul>
+<p>在<strong>服务端调用客户端</strong>（注册时的使用的接口中)的方法，在客户端的 Binder 线程池中执行。</p>
+<p>对象是不能直接跨进程传输的，<strong>对象的跨进程传输本质上都是反序列化过程</strong></p>
+<p>RemoteCallBackList 是系统专门用来发删除跨进程的 listener 的接口。</p>
+<ul>
+<li>它是一个泛型，支持管理任意的 AIDL 接口<ul>
+<li><code>public class RemoteCallBackList&lt;E extends IInterface&gt;</code></li>
+<li>当客户端进程终止之后， RemoteCallBackList 能够自动溢出客户端所注册的 listener</li>
+<li>其内部有一个 <code>ArrayMap&lt;IBinder,CallBack&gt;</code>用来专门保存所有的 AIDL 回调<ul>
+<li>CallBack 封装了真正的远程 listener。当客户端注册 listener 的时候，会将其中的信息存入 mCallBack 中<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">IBinder key = listener.asBinder();</div><div class="line">callBack value = new Callback(listener,cookie);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>多次跨进程传输客户端的同一个对象会在服务端生成不同的对象，但是这些新生成的对象有一个 共同点，那就是==它们底层的 Binder 对象是同一个==</p>
+<p>==注意==:</p>
+<ul>
+<li>RemoteCallBackList 使用方式比较特别。并不像 list 那样<ul>
+<li>beginBroadcast()</li>
+<li>finishBroadcast()</li>
+<li>这两个方法==一定要配对使用==</li>
+<li>getBroadcastItem()<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">final</span> <span class="keyword">int</span> N = mCallBackList.beginBroadcast();</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</div><div class="line">    IOnNewBookArrivedListener l = mCallBackList.getBroadcastItem(i);</div><div class="line">    <span class="keyword">if</span> (l != <span class="keyword">null</span>) &#123;</div><div class="line">        l.onNewBookArrived(book);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">mCallBackList.finishBroadcast();</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<p>客户端的 <code>onServiceConnected 和  onServiceDisconnected(ComponentName name)</code>都执行在 UI 线程中，不可以在里面调用服务端耗时的方法。</p>
+<p>服务端方法本身运行在服务端的 Binder 线程池中，所以服务端方法本身即可执行大量耗时操作。</p>
+<ul>
+<li>不要在服务端方法中开线程去执行异步任务。</li>
+</ul>
+<p>服务端也有可能运行在 UI 线程，这时要尽量避免调用耗时方法。</p>
+<p>Binder 死亡后</p>
+<p>进程空间分为用户空间和内核空间</p>
+<ul>
+<li>用户空间，数据互相隔离</li>
+<li>内核空间 数据共享</li>
+</ul>
+<p>通过内核 实现跨进程调用</p>
+<p>进程 A 调用进程 B 的函数</p>
+<ul>
+<li>知道调用的是哪一个对象的哪一个方法</li>
+<li>传递方法参数</li>
+<li>进程 B 执行完之后，返回相应的数据给进程 A。</li>
+</ul>
+<p>本质上就是 数据的传递。</p>
+<p>客户端调用的进程 Binder 对象的引用（一个代理），实际执行还是在服务端的。</p>
+<p>Client 进程的的操作实际上对代理对象的操作，代理对象利用 Binder 驱动找到真正的 Binder对象，并通知 Server 进程完成操作。</p>
+<p>采用的是 C/S 的架构。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/944365-62fdab905e7d2706.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="原理图"></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/944365-2f530e964ffab8d7.png?imageMogr2/auto-orient/strip%7CimageView2/2" alt="流程图"></p>
+<h3 id="4-5-使用ContentProvider"><a href="#4-5-使用ContentProvider" class="headerlink" title="4.5 使用ContentProvider"></a>4.5 使用ContentProvider</h3><h3 id="4-6-使用Socket"><a href="#4-6-使用Socket" class="headerlink" title="4.6 使用Socket"></a>4.6 使用Socket</h3><h2 id="5-Binder连接池"><a href="#5-Binder连接池" class="headerlink" title="5 Binder连接池"></a>5 Binder连接池</h2><h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li>《Android开发艺术探索》</li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源。谢谢！</p>
+<p>## </p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/Adnroid进阶/" rel="tag"># Adnroid进阶</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2017/05/03/Service-全面总结/" rel="next" title="Service 全面总结">
+                <i class="fa fa-chevron-left"></i> Service 全面总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2017/07/20/单例模式/" rel="prev" title="创建型模式之单例模式">
+                创建型模式之单例模式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/ivanljt" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-IPC简介"><span class="nav-number">1.</span> <span class="nav-text">Android IPC简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Android中的多进程模式"><span class="nav-number">2.</span> <span class="nav-text">2 Android中的多进程模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-开启多进程模式"><span class="nav-number">2.1.</span> <span class="nav-text">1 开启多进程模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#问题：使用-「：xxx」与-使用-「xxx-xxx-xxx」两种方式有区别吗？"><span class="nav-number">2.1.1.</span> <span class="nav-text">问题：使用 「：xxx」与 使用 「xxx.xxx.xxx」两种方式有区别吗？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多进程模式的运行机制"><span class="nav-number">2.2.</span> <span class="nav-text">2 多进程模式的运行机制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-IPC基础概念介绍"><span class="nav-number">3.</span> <span class="nav-text">3 IPC基础概念介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Serializable接口"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 Serializable接口</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用："><span class="nav-number">3.1.1.</span> <span class="nav-text">使用：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#serialVersionUID-的详细工作机制："><span class="nav-number">3.1.1.1.</span> <span class="nav-text">serialVersionUID 的详细工作机制：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#如何进行对象的序列化和反序列化？"><span class="nav-number">3.1.1.2.</span> <span class="nav-text">如何进行对象的序列化和反序列化？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Parcelable接口"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 Parcelable接口</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#对比"><span class="nav-number">3.2.1.</span> <span class="nav-text">对比</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-Binder"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 Binder</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Android中的IPC方式"><span class="nav-number">4.</span> <span class="nav-text">4 Android中的IPC方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-使用Bundle"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 使用Bundle</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#特殊的使用场景："><span class="nav-number">4.1.1.</span> <span class="nav-text">特殊的使用场景：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-使用文件共享"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 使用文件共享</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Sharepreference"><span class="nav-number">4.2.1.</span> <span class="nav-text">Sharepreference</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-使用Messenger"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 使用Messenger</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-服务端进程"><span class="nav-number">4.3.1.</span> <span class="nav-text">1. 服务端进程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#客户端进程"><span class="nav-number">4.3.2.</span> <span class="nav-text">客户端进程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-使用AIDL"><span class="nav-number">4.4.</span> <span class="nav-text">4.4 使用AIDL</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-服务端"><span class="nav-number">4.4.1.</span> <span class="nav-text">1. 服务端</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-客户端"><span class="nav-number">4.4.2.</span> <span class="nav-text">2. 客户端</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-使用ContentProvider"><span class="nav-number">4.5.</span> <span class="nav-text">4.5 使用ContentProvider</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-6-使用Socket"><span class="nav-number">4.6.</span> <span class="nav-text">4.6 使用Socket</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Binder连接池"><span class="nav-number">5.</span> <span class="nav-text">5 Binder连接池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">6.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>
