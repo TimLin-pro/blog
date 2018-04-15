@@ -71,7 +71,7 @@
 <link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="源码分析,拆轮子," />
+  <meta name="keywords" content="源码分析,拆轮子,测试," />
 
 
 
@@ -88,7 +88,7 @@
 
 
 <meta name="description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。 什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。 哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
-<meta name="keywords" content="源码分析,拆轮子">
+<meta name="keywords" content="源码分析,拆轮子,测试">
 <meta property="og:type" content="article">
 <meta property="og:title" content="拆轮子系列——LeakCanary工作原理">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/12/15/拆轮子系列——LeakCanary工作原理/index.html">
@@ -96,7 +96,7 @@
 <meta property="og:description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。 什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。 哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/737949-cff06b0079bf09c4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2">
-<meta property="og:updated_time" content="2017-12-19T01:53:23.000Z">
+<meta property="og:updated_time" content="2018-04-15T11:41:57.130Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="拆轮子系列——LeakCanary工作原理">
 <meta name="twitter:description" content="概述LeakCanary 是一个内存泄漏的自动化监测工具。 什么是内存泄漏？内存泄漏指的是应该被释放的内存的没有被释放。原因？长生命周期的对象持有短生命周期对象的引用。 哪些对象应该被回收？首先要找出哪些对象是应该被回收的？Android 中使用最频繁的是 Activity 和 Fragment 了。他们都有 onDestory 方法，当它们的 onDestroy 执行的时候，就可以把它们列为 「">
@@ -356,19 +356,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/源码分析/" itemprop="url" rel="index">
-                    <span itemprop="name">源码分析</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/源码分析/拆轮子/" itemprop="url" rel="index">
-                    <span itemprop="name">拆轮子</span>
+                  <a href="/blog/categories/测试/" itemprop="url" rel="index">
+                    <span itemprop="name">测试</span>
                   </a>
                 </span>
 
@@ -559,6 +548,8 @@
           
             <a href="/blog/tags/拆轮子/" rel="tag"># 拆轮子</a>
           
+            <a href="/blog/tags/测试/" rel="tag"># 测试</a>
+          
         </div>
       
 
@@ -735,7 +726,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-count">19</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -746,7 +737,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-count">14</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
