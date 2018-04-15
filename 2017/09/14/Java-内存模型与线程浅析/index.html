@@ -100,7 +100,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30509011-80b17200-9ad7-11e7-9244-2081c271c752.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/32106891-945e0bb2-bb5f-11e7-8d9e-be0b72d75ff2.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30508637-9ff0e262-9ace-11e7-8a3a-608482184f5d.jpg">
-<meta property="og:updated_time" content="2017-10-27T14:48:52.000Z">
+<meta property="og:updated_time" content="2018-04-09T07:36:32.886Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 内存模型与线程浅析">
 <meta name="twitter:description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。 缓存虽然解决了速度差，但是也引入了">
@@ -412,7 +412,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  8,037
+                  8,095
                 </span>
               
 
@@ -447,40 +447,39 @@
       
 
       
-        <h2 id="硬件的效率与一致性"><a href="#硬件的效率与一致性" class="headerlink" title="硬件的效率与一致性"></a>硬件的效率与一致性</h2><p><strong>多级缓存的作用</strong>：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。</p>
-<p>缓存虽然解决了速度差，但是也引入了新问题——缓存与主内存的数据一致性(Cache Coherence)</p>
+        <h2 id="硬件的效率与一致性"><a href="#硬件的效率与一致性" class="headerlink" title="硬件的效率与一致性"></a>硬件的效率与一致性</h2><p><strong>多级缓存的作用</strong>：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了<strong>提高处理器的利用率</strong>，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。</p>
+<p>缓存虽然解决了速度差，但是也引入了新问题——<strong>缓存与主内存的数据一致性</strong>(Cache Coherence)</p>
 <a id="more"></a>
 <p><img src="https://user-images.githubusercontent.com/16668676/28780154-57045378-7638-11e7-8145-c98bc2ab581b.png" alt="default"></p>
 <p>本文中「<strong>内存模型</strong>」一词，可以理解为<strong>在特定的操作协议下，对特定的内存或高速缓存进行读写访问的过程抽象</strong>。</p>
 <p>除了增加高速缓存之外，为了使得处理器内部的运算单元能尽量被充分利用，处理器可能<strong>会对输入代码进行乱序执行(Out-Of-Order Execution)优化</strong>（即 指令重排序），处理器会在计算之后将乱序执行的结果重组，保证该结果与顺序执行的结果是一致。</p>
 <p>Java 语言规范要求 JVM 在线程中维护一种类似串行的语义：<strong>只要程序的最终结果与在严格串行环境中执行的结果相同，那么上述操作（指令重排序、增加高速缓存）都是允许的</strong>。</p>
-<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><h3 id="主内存与工作内存"><a href="#主内存与工作内存" class="headerlink" title="主内存与工作内存"></a>主内存与工作内存</h3><p>以下所谈的<strong>变量</strong>(Variables)与 Java 编程中所说的变量有所区别，它包括了实例字段、静态字段和构成数组对象的元素，但<strong>不包括局部变量与方法参数</strong>，因为后者是线程私有的，不会被共享，自然就不会存在竞争问题。</p>
+<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><h3 id="主内存与工作内存"><a href="#主内存与工作内存" class="headerlink" title="主内存与工作内存"></a>主内存与工作内存</h3><p>以下所谈的<strong>变量</strong>(Variables)与 Java 编程中所说的变量有所区别，它包括了实例字段、静态字段和构成数组对象的元素，但<strong>不包括局部变量与方法参数</strong>，因为后者是<em>线程私有的，不会被共享，自然就不会存在竞争问题</em>。</p>
 <ul>
 <li>~注~：如果局部变量是一个 reference 类型，它引用的对象在 Java 堆中可被各个线程共享，但是 reference 本身在 Java 栈的局部变量表中，它是线程私有的。</li>
 </ul>
 <ul>
 <li>Java 内存模型规定了<strong>所有的变量都存储在主内存</strong>(Main  Memory)中(此处的主内存与介绍物理硬件时的主内存名字一样，两者也可以互相类比，但此处仅是虚拟机内存的一部分)。</li>
 <li>每条线程还有自己的<strong>工作内存</strong>(Working  Memory，可与前面讲的处理器高速缓存类比)，线程的工作内存中保存了被该线程使用到的变量的<strong>主内存副本拷贝</strong> [4]</li>
-<li>线程对变量的所有<strong>操作(读取、赋值等)都必须在==工作==内存中进行</strong>，而不能直接读写主内存中的变量 [5] 。<ul>
+<li>线程对变量的所有<strong>操作(读取、赋值等)都必须在==工作==内存中进行</strong>，而<strong>不能直接读写主内存中的变量</strong>。<ul>
 <li>干活要在操作线程中干。</li>
 <li>这个对象的引用、对象中某个在线程访问到的字段是有可能存在拷贝的，但不会有虚拟机实现成把整个对象拷<br>贝 A 一次。</li>
 </ul>
 </li>
-<li><strong>不同的线程</strong>之间也无法直接访问对方工作内存中的变量，线程间变量值的传递均<strong>需要通过主内存来完成</strong>。</li>
+<li><strong>不同的线程</strong>之间也无法直接访问对方工作内存中的变量，<strong>线程间变量值的传递均需要通过主内存来完成</strong>。</li>
 </ul>
 <p><img src="https://user-images.githubusercontent.com/16668676/28780155-570d932a-7638-11e7-90cf-082ba9b59d00.png" alt="12.2 线程、主内存、工作内存三者的交互关系"></p>
-<h3 id="内存间交互操作"><a href="#内存间交互操作" class="headerlink" title="内存间交互操作"></a>内存间交互操作</h3><p>Java 内存模型中定义了以下 8 种操作来完成，虚拟机实现时必须保证下面提及的每一种操作都是原子的、不可再分的(对于 double 和 long 类型的变量来说，load、store、read 和 write 操作在某些平台上允许有例外。</p>
+<h3 id="内存间交互操作"><a href="#内存间交互操作" class="headerlink" title="内存间交互操作"></a>内存间交互操作</h3><p>Java 内存模型中定义了以下 <strong>8 种操作</strong>来完成，虚拟机实现时必须保证<strong>下面提及的每一种操作都是原子的、不可再分的</strong>(对于 double 和 long 类型的变量来说，load、store、read 和 write 操作在某些平台上允许有例外。</p>
 <ul>
-<li>lock</li>
-<li>unlock</li>
-<li>read</li>
-<li>load</li>
-<li>use</li>
-<li>assign</li>
-<li>store</li>
-<li>write</li>
-<li>如果要把一个变量从主内存复制到工作内存，那就要顺序地执行 read 和 load 操作，</li>
-<li>如果要把变量从工作内存同步回主内存，就要顺序地执行 store 和 write 操作。</li>
+<li>lock、unlock</li>
+<li>read 从主存读取</li>
+<li>load 加载</li>
+<li>use 使用</li>
+<li>assign 分配</li>
+<li>store 存储 </li>
+<li>write 写回主存</li>
+<li>如果要把一个变量从主内存<strong>复制到工作内存</strong>，那就要顺序地执行 <strong>read 和 load 操作</strong>，</li>
+<li>如果要把变量从工作内存<strong>同步回主内存</strong>，就要顺序地执行 <strong>store 和 write 操作</strong>。</li>
 <li>注意，Java 内存模型只要求上述两个操作<strong>必须按顺序执行</strong>，而<strong>没有保证是==连续==执行</strong>。</li>
 </ul>
 <p>Java 内存模型还规定了在执行上述 8 种基本操作时必须满足如下规则：</p>
@@ -518,28 +517,31 @@
 <p>这 8 种内存访问操作以及上述规则限定，再加上稍后介绍的对 volatile 的一些特殊规定，就已经完全确定了 Java 程序中哪些内存访问操作在并发下是安全的。</p>
 <h3 id="对于-volatile-型变量的特殊规则"><a href="#对于-volatile-型变量的特殊规则" class="headerlink" title="对于 volatile 型变量的特殊规则"></a>对于 volatile 型变量的特殊规则</h3><p>当一个变量定义为 volatile 之后，它将具备两种特性，</p>
 <ul>
-<li>第一是保证此变量对所有线程的<strong>可见性</strong>，这里的「可见性」是指当一条线程修改了这个变量的值，新值<strong>对于其他线程来说是可以立即得知</strong>的。<ul>
+<li>第一是保证此变量对所有线程的<strong><em>可见性</em></strong>，这里的「可见性」是指当<strong>一条线程修改了这个变量的值</strong>，新值<strong>对于其他线程来说是可以立即得知</strong>的。<ul>
 <li>而普通变量不能做到这一点，普通变量的值在线程间传递均需要通过主内存来完成，例如，线程 A 修改一个普通变量的值，然后向主内存进行回写，另外一条线程 B 在线程 A 回写完成了之后再从主内存进行读取操作，新变量值才会对线程 B 可见。</li>
 </ul>
 </li>
-<li>第二个语义是禁止指令重排序。</li>
+<li>第二个语义是<strong><em>禁止指令重排序</em></strong>。</li>
 </ul>
 <p>可见性 != 线程安全</p>
-<p>volatile 变量在各个线程的工作内存中不存在一致性问题(在各个线程的工作内存中，volatile 变量也可以存在不一致的情况，但由于每次使用之前都要先刷新，执行引擎看不到不一致的情况，因此可以认为不存在一致性问题)，但是 <strong>Java 里面的==运算并非原子操作==</strong>，导致 volatile 变量的运算在并发下一样是不安全的，</p>
+<p>volatile 变量在各个线程的工作内存中不存在一致性问题(在各个线程的工作内存中，volatile 变量也可以存在不一致的情况，但由于<strong>每次使用之前都要先刷新</strong>，执行引擎看不到不一致的情况，因此可以认为不存在一致性问题)，但是 <strong>Java 里面的==运算并非原子操作==</strong>，导致 volatile 变量的运算在并发下一样是不安全的，</p>
 <ul>
-<li>非原子操作会导致读取数据后，多个线程并行进行操作的都是旧值。那么加载到主内存的值也就不是最新的了。</li>
+<li>非原子操作会导致读取数据后，多个线程<strong>并行所进行操作的都是旧值</strong>。那么加载到主内存的值也就不是最新的了。<ul>
+<li>非原子操作 执行过程中是可以暂停的，暂停的那一段时间里其他线程可能修改了这个变量的值。</li>
 </ul>
-<p>由于 volatile 变量只能保证可见性，在不符合以下<strong>两条规则</strong>的运算场景中，我们仍然要通<br>过加锁(使用 synchronized 或 java.util.concurrent 中的原子类)来保证原子性。</p>
+</li>
+</ul>
+<p>由于 volatile 变量只能保证可见性，在<strong>不符合</strong>以下<strong>两条规则</strong>的运算场景中，我们<strong>仍然要通过加锁</strong>(使用 synchronized 或 java.util.concurrent 中的原子类)来保证原子性。</p>
 <ul>
 <li><strong>运算结果并不依赖变量的当前值</strong>，或者能够<strong>确保只有单一的线程修改变量的值</strong>。</li>
 <li>变量<strong>不需要与其他的状态变量共同参与不变约束</strong></li>
 </ul>
-<h4 id="性能"><a href="#性能" class="headerlink" title="性能"></a>性能</h4><p>某些情况下，volatile 的同步机制的性能确实要优于锁(使用 synchronized 关键字或 java.util.concurrent 包里面的锁)，但是由于虚拟机对锁实行的许多消除和优化，使得我们很难量化地认为 volatile 就会比 synchronized 快多少。</p>
+<h4 id="volatile-性能"><a href="#volatile-性能" class="headerlink" title="volatile 性能"></a>volatile 性能</h4><p>某些情况下，volatile 的同步机制的性能确实要优于锁(使用 synchronized 关键字或 java.util.concurrent 包里面的锁)，但是由于虚拟机对锁实行的许多消除和优化，使得我们很难量化地认为 volatile 就会比 synchronized 快多少。</p>
 <ul>
 <li>volatile 变量<strong>读操作的性能消耗与普通变量几乎没有什么差别</strong>，但是<strong>写操作则可能会慢一些</strong>，因为它需要在本地代码中插入许<br>多内存屏障指令来保证处理器不发生乱序执行。</li>
 </ul>
-<p>大多数场景下 volatile 的总开销仍然要比锁低，我们在 volatile 与锁之中选择的唯一依据仅仅是 volatile 的语义能否满足使用场景的需求。</p>
-<h3 id="内存屏障"><a href="#内存屏障" class="headerlink" title="内存屏障"></a>内存屏障</h3><p>内存屏障（Memory Barrier，或有时叫做内存栅栏，Memory Fence）是一种 CPU 指令，用于控制特定条件下的重排序和内存可见性问题。Java 编译器也会根据内存屏障的规则禁止重排序。<br>内存屏障可以被分为以下 4 种类型</p>
+<p>大多数场景下 volatile 的总开销仍然要比锁低，我们在 volatile 与锁之中<strong>选择的唯一依据仅仅是 volatile 的语义能否满足使用场景的需求</strong>。</p>
+<h3 id="内存屏障"><a href="#内存屏障" class="headerlink" title="内存屏障"></a>内存屏障</h3><p><strong>内存屏障</strong>（Memory Barrier，或有时叫做<strong>内存栅栏</strong>，Memory Fence）是一种 CPU 指令，用于控制特定条件下的重排序和内存可见性问题。Java 编译器也会根据内存屏障的规则禁止重排序。<br>内存屏障可以被分为以下 4 种类型</p>
 <ul>
 <li><strong>LoadLoad 屏障</strong>：对于这样的语句 Load1; LoadLoad 屏障; Load2，在 Load2 及后续读取操作要读取的数据被访问前，保证 Load1 要读取的数据被读取完毕。</li>
 <li><strong>StoreStore 屏障</strong>：对于这样的语句 Store1; StoreStore 屏障; Store2，在 Store2 及后续写入操作执行前，保证 Store1 的写入操作对其它处理器可见。</li>
@@ -548,17 +550,20 @@
 </ul>
 <p>有的处理器的重排序规则较严，无需内存屏障也能很好的工作，Java 编译器会在这种情况下不放置内存屏障。<br>为了实现 JSR-133 的规定，Java 编译器会这样使用内存屏障：</p>
 <p><img src="https://user-images.githubusercontent.com/16668676/30509011-80b17200-9ad7-11e7-9244-2081c271c752.png" alt="fences-table"></p>
-<h3 id="对于-long-和-double-型变量的特殊规则"><a href="#对于-long-和-double-型变量的特殊规则" class="headerlink" title="对于 long 和 double 型变量的特殊规则"></a>对于 long 和 double 型变量的特殊规则</h3><p>允许虚拟机实现选择可以不保证 64 位数据类型的 load、store、read 和 write 这 4 个操作的<br>原子性，这点就是所谓的 long 和 double 的<strong>非原子性协定</strong>(Nonatomic Treatment ofdouble and<br>long Variables)。</p>
+<h3 id="对于-long-和-double-型变量的特殊规则"><a href="#对于-long-和-double-型变量的特殊规则" class="headerlink" title="对于 long 和 double 型变量的特殊规则"></a>对于 long 和 double 型变量的特殊规则</h3><p>允许虚拟机实现选择<strong>可以不保证 64 位数据类型的 load、store、read 和 write 这 4 个操作的原子性</strong>，这点就是所谓的 long 和 double 的<strong>非原子性协定</strong>(Nonatomic Treatment ofdouble and long Variables)。</p>
 <p>Java 内存模型「强烈建议」虚拟机把这些操作实现为具有原子性的操作。目前各种商用虚拟机也都是将它们实现为原子操作，因此我们在<strong>编写代码时==一般不需要==把用到的 long 和 double 变量专门声明为 volatile</strong>。</p>
 <h3 id="原子性、可见性与有序性"><a href="#原子性、可见性与有序性" class="headerlink" title="原子性、可见性与有序性"></a>原子性、可见性与有序性</h3><h4 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h4><p><strong>原子性</strong>是指<strong>一个操作是不可中断的。即使是在多个线程一起执行的时候，一个操作一旦开始，就不会被其它线程干扰</strong>。</p>
 <p>由 Java 内存模型直接保证的原子性变量操作包括 read、load、assign、use、store 和 write，我们大致可以认为<strong>基本数据类型的访问读写是具备原子性的</strong>(例外就是 long 和 double 的非原子性协定)。</p>
-<p>尽管虚拟机未把 lock 和 unlock 操作直接开放给用户使用，但是却提供了更高层次的字节码指令 monitorenter 和 monitorexit 来隐式地使用这两个操作，这两个字节码指令反映到 Java 代码中就是同步块——synchronized 关键字，因此在 synchronized 块之间的操作也具备原子性。</p>
+<p>尽管虚拟机未把 lock 和 unlock 操作直接开放给用户使用，但是却<strong>提供了更高层次的字节码指令monitorenter 和 monitorexit 来隐式地使用这两个操作，这两个字节码指令反映到 Java 代码中就是同步块——synchronized 关键字</strong>，因此在 synchronized 块之间的操作也具备原子性。</p>
 <h4 id="可见性"><a href="#可见性" class="headerlink" title="可见性"></a>可见性</h4><p><strong>可见性</strong>(Visibility)：可见性是指当一个线程修改了共享变量的值，其他线程能够<strong>立即得知这个修改</strong>。</p>
-<p>除了 volatile 以外，Java 还有两个关键字能实现可见性，即 synchronized 和 final。</p>
+<p>除了 volatile 以外，Java 还有两个关键字能实现可见性，即 <strong>synchronized 和 final</strong>。</p>
 <ul>
 <li>同步块的可见性是由「对一个变量执行 unlock 操作之前，必须先把此变量同步回主内存中(执行 store、write 操作)」这条规则获得的，</li>
 <li>final 关键字的可见性是指：保证一个对象的构建方法结束前，所有 final 成员变量都必须完成初始化（前提是没有 this 引用溢出）。在构造器中一旦初始化完成，并且构造器没有把「this」的引用传递出去，那在其他线程中就能看见 final 字段的值。<ul>
-<li><strong>this 引用逃逸</strong> 是指在构造函数返回之前其他线程就持有该对象的引用。调用尚未构造完全的对象的方法可能引发令人疑惑的错误, 因此应该避免 this 逃逸的发生。this 逃逸经常发生在构造函数中启动线程或注册监听器时</li>
+<li><strong>this 引用逃逸</strong> 是指在构造函数返回之前其他线程就持有该对象的引用。调用尚未构造完全的对象的方法可能引发令人疑惑的错误, 因此应该避免 this 逃逸的发生。<ul>
+<li>例子：在<strong>构造函数中</strong>启动线程 / 注册监听器/ 创建匿名内部类。</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -569,9 +574,9 @@
 <p>假设 A B C 之间满足 Happens-Before 条件，且 A Happens-Before B Happens-Before C，那么执行结果就是 j = 1; i = 2;</p>
 <p>这些先行发生关系无须任何同步器协助就已经存在，可以在编码中直接使用。<strong>如果两个操作之间的关系不在此列，并且无法从下列规则推导出来的话，它们就没有顺序性保障，虚拟机可以对它们随意地进行重排序</strong>。</p>
 <ul>
-<li><strong>程序次序规则</strong>(Program Order Rule)：在一个线程内，按照程序代码顺序，书写在前面的操作先行发生于书写在后面的操作。准确地说，应该是控制流顺序而不是程序代码顺序，因为要考虑分支、循环等结构。</li>
-<li><strong>管程锁定规则</strong>(Monitor Lock Rule)：一个 unlock 操作先行发生于后面对<em>同一个锁</em>的 lock操作。这里必须强调的是<em>同一个锁</em>，而「后面」是指时间上的先后顺序。</li>
-<li><strong>volatile 变量规则</strong>(Volatile Variable Rule)：对一个 volatile 变量的写操作先行发生于后面对这个变量的读操作，这里的「后面」同样是指时间上的先后顺序。</li>
+<li><strong>程序次序规则</strong>(Program Order Rule)：<strong>在一个线程内，按照程序代码顺序</strong>，书写在前面的操作先行发生于书写在后面的操作。准确地说，应该是<strong>控制流顺序</strong>而不是程序代码顺序，因为要考虑分支、循环等结构。</li>
+<li><strong>管程锁定规则</strong>(Monitor Lock Rule)：一个 <strong>unlock 操作</strong>先行发生于后面对<em>同一个锁</em>的 lock操作。这里必须强调的是<em>同一个锁</em>，而「后面」是指<strong>时间上</strong>的先后顺序。</li>
+<li><strong>volatile 变量规则</strong>(Volatile Variable Rule)：对一个 volatile 变量的<strong>写操作先行发生于后面</strong>对这个变量的<strong>读操作</strong>，这里的「后面」同样是指<strong>时间上</strong>的先后顺序。</li>
 <li><strong>线程启动规则</strong>(Thread Start Rule)：Thread 对象的 start()方法先行发生于此线程的每一个动作。</li>
 <li><strong>线程终止规则</strong>(Thread Termination Rule)：线程中的所有操作必须在其他线程检测到该线程已经结束之前完成，我们可以通过 Thread.join()方法结束、Thread.isAlive()的返回值等手段检测到线程已经终止执行。</li>
 <li><strong>线程中断规则</strong>(Thread Interruption Rule)：对线程 interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生，可以通过 Thread.interrupted()方法检测到是否有中断发生。</li>
@@ -583,7 +588,7 @@
 <p>这句话应该如何理解呢？</p>
 <p>考虑这样一个场景：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">int</span> value = <span class="number">0</span>;</div><div class="line"><span class="comment">//线程 A 先（时间上）调用了 getValue 方法</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getValue</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> value;</div><div class="line">&#125;</div><div class="line"><span class="comment">//之后（时间上）线程 B 调用了 setValue(2) 方法</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setValue</span><span class="params">(<span class="keyword">int</span> value)</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>.value = value;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>但是线程 A 的 getValue 获取的结果是什么呢？可能是 0 ，也可能是 2。也就是说，没有进行同步处理的情况下，不同线程对在时间上先后对调用对某个共享变量的操作，并不能保证但是它们的结果是根据它们在时间上调用顺序确定的。换句话说，在不同线程之间，「时间上的先调用」并不代表「先行发生」。要解决这个问题，可以给 getValue 和 setValue 方法都定义为 synchronized 的，因为这样就可以套用「管程锁定原则」了。或者将 value 定义了 volatile 变量，因为 setValue 方法对 value 的修改不依赖 value 的原值，满足 volatile 关键字使用场景，这样就可以套用 volatile 变量规则来实现先行发生规则了。</p>
+<p>但是线程 A 的 getValue 获取的结果是什么呢？可能是 0 ，也可能是 2。也就是说，<em>没有进行同步处理的情况下</em>，不同线程对在时间上先后对调用对某个共享变量的操作，并不能保证它们的结果是根据它们在时间上调用顺序确定的。换句话说，在不同线程之间，「时间上的先调用」并不代表「先行发生」。要解决这个问题，可以给 getValue 和 setValue 方法都定义为 synchronized 的，因为这样就可以套用「管程锁定原则」了。或者将 value 定义了 volatile 变量，因为 setValue 方法对 value 的修改不依赖 value 的原值，满足 volatile 关键字使用场景，这样就可以套用 volatile 变量规则来实现先行发生规则了。</p>
 <p>通过上面的讨论，我们可以得出结论：一个操作「时间上的先发生」不代表这个操作会会是「先行发生」。那么一个操作「先行发生」是否能推导出这个操作必定是「时间上先发生」呢？这个推论也是不成立的，一个典型的栗子就是「指令重排序」</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> i = <span class="number">2</span>;</div><div class="line"><span class="keyword">int</span> j = <span class="number">1</span>;</div></pre></td></tr></table></figure>
 <p>按照程序次序规则，<code>int i = 2;</code> 的操作先行发生与 <code>int j = 1;</code>,但是 <code>int j = 1;</code> 完全可能先执行，这并不影响先行发生原则的正确性，因为在同一条线程中无法感知到这点。</p>
@@ -591,11 +596,11 @@
 <blockquote>
 <p>  从上面的分析中我们可以看出，Happens-Before原则致力于<strong>解决变量间可见性问题</strong>。但是它是如何解决的呢？</p>
 <p>  <strong>导致多线程间变量间可见性问题的根源在于 CPU 缓存以及指令重排序</strong>。那么，要解决这个可见性问题，一个最简单粗暴的方法就是禁止所有的重排序和 CPU 缓存。即关闭所有的编译器、操作系统和处理器的优化，这样所有的指令顺序全部按照程序代码书写的顺序执行。去掉 CPU 高速缓存，让 CPU 每次读写操作都直接与主存交互。</p>
-<p>  但是，如此粗暴的解决方案是不可取的，因为这会极大影响处理器的计算性能，并且对于那些非多线程共享的 变量是极不公平的。我们可以采用一种折中的方案来解决 CPU 高速缓存与指令重排带来的数据一致性问题。使用分割线把整个程序划分为几个程序块，在每个程序内部的指令是可重排序的，但是分割线上的指令与程序块其他指令之间是不可以重排序的。在一个程序块内部，CPU 不用每次都与主内存进行交互，只需要在 CPU 缓存中执行读写操作即可，但是当程序执行到分割线出，CPU 必须将执行结果同步到主内存或者从主内存读取最新的变量值，那么 Happen-before 规则就是定义了这些程序块的分割线。</p>
+<p>  但是，如此粗暴的解决方案是不可取的，因为这会极大影响处理器的计算性能，并且对于那些非多线程共享的 变量是极不公平的。我们可以采用一种折中的方案来解决 CPU 高速缓存与指令重排带来的数据一致性问题。<strong>使用分割线把整个程序划分为几个程序块</strong>，在每个<strong>程序块内部的指令是可重排序的</strong>，但是分割线上的指令与程序块其他指令之间是不可以重排序的。在一个程序块内部，CPU 不用每次都与主内存进行交互，只需要在 CPU 缓存中执行读写操作即可，但是当程序执行到分割线出，CPU 必须将执行结果同步到主内存或者从主内存读取最新的变量值，那么 Happen-before 规则就是定义了这些程序块的分割线。</p>
 </blockquote>
 <p><img src="https://user-images.githubusercontent.com/16668676/32106891-945e0bb2-bb5f-11e7-8d9e-be0b72d75ff2.png" alt="image"></p>
 <blockquote>
-<p>  如图所示，这里的unlock M和lock M就是划分程序的分割线。在这里，红色区域和绿色区域的代码内部是可以进行重排序的，但是unlock和lock操作是不能与它们进行重排序的。即第一个图中的红色部分必须要在unlock M指令之前全部执行完，第二个图中的绿色部分必须全部在lock M指令之后执行。并且在第一个图中的unlock M指令处，红色部分的执行结果要全部刷新到主存中，在第二个图中的lock M指令处，绿色部分用到的变量都要从主存中重新读取。</p>
+<p>  如图所示，这里的unlock M和lock M就是划分程序的分割线。在这里，红色区域和绿色区域的代码内部是可以进行重排序的，但是 unlock 和 lock 操作是不能与它们进行重排序的。即第一个图中的红色部分必须要在unlock M指令之前全部执行完，第二个图中的绿色部分必须全部在lock M指令之后执行。并且在第一个图中的unlock M指令处，红色部分的执行结果要全部刷新到主存中，在第二个图中的lock M指令处，绿色部分用到的变量都要从主存中重新读取。</p>
 <p>  在程序中加入分割线将其划分成多个程序块，虽然在程序块<strong>内部代码仍然可能被重排序</strong>，但是<strong>保证了程序代码在宏观上是有序的</strong>。并且可以确保<strong>在分割线处，CPU一定会和主内存进行交互</strong>。<strong>Happens-Before原则就是定义了程序中什么样的代码可以作为分割线</strong>。并且无论是哪条Happens-Before原则，它们所产生分割线的作用都是相同的。</p>
 </blockquote>
 <h2 id="Java-与线程"><a href="#Java-与线程" class="headerlink" title="Java 与线程"></a>Java 与线程</h2><h3 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h3><p>(广义)<br>实现线程主要有 3 种方式：使用内核线程实现、使用用户线程实现和使用用户线程加轻量级进程混合实现。</p>
@@ -892,7 +897,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -960,7 +965,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#硬件的效率与一致性"><span class="nav-number">1.</span> <span class="nav-text">硬件的效率与一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-内存模型"><span class="nav-number">2.</span> <span class="nav-text">Java 内存模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主内存与工作内存"><span class="nav-number">2.1.</span> <span class="nav-text">主内存与工作内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存间交互操作"><span class="nav-number">2.2.</span> <span class="nav-text">内存间交互操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对于-volatile-型变量的特殊规则"><span class="nav-number">2.3.</span> <span class="nav-text">对于 volatile 型变量的特殊规则</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#性能"><span class="nav-number">2.3.1.</span> <span class="nav-text">性能</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存屏障"><span class="nav-number">2.4.</span> <span class="nav-text">内存屏障</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对于-long-和-double-型变量的特殊规则"><span class="nav-number">2.5.</span> <span class="nav-text">对于 long 和 double 型变量的特殊规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原子性、可见性与有序性"><span class="nav-number">2.6.</span> <span class="nav-text">原子性、可见性与有序性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#原子性"><span class="nav-number">2.6.1.</span> <span class="nav-text">原子性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可见性"><span class="nav-number">2.6.2.</span> <span class="nav-text">可见性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#有序性"><span class="nav-number">2.6.3.</span> <span class="nav-text">有序性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#先行发生原则"><span class="nav-number">2.7.</span> <span class="nav-text">先行发生原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#先行发生原则的真正意义"><span class="nav-number">2.8.</span> <span class="nav-text">先行发生原则的真正意义</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-与线程"><span class="nav-number">3.</span> <span class="nav-text">Java 与线程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#线程的实现"><span class="nav-number">3.1.</span> <span class="nav-text">线程的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-内核线程实现"><span class="nav-number">3.1.1.</span> <span class="nav-text">1.内核线程实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-使用用户线程实现"><span class="nav-number">3.1.2.</span> <span class="nav-text">2.使用用户线程实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-使用用户线程加轻量级进程混合实现"><span class="nav-number">3.1.3.</span> <span class="nav-text">3.使用用户线程加轻量级进程混合实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程调度"><span class="nav-number">3.2.</span> <span class="nav-text">线程调度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程的状态转换"><span class="nav-number">3.3.</span> <span class="nav-text">线程的状态转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#相关方法介绍"><span class="nav-number">3.3.1.</span> <span class="nav-text">相关方法介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sleep-方法"><span class="nav-number">3.3.2.</span> <span class="nav-text">sleep 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#wait-方法"><span class="nav-number">3.3.3.</span> <span class="nav-text">wait 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#join-方法"><span class="nav-number">3.3.4.</span> <span class="nav-text">join 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#yield-方法"><span class="nav-number">3.3.5.</span> <span class="nav-text">yield 方法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简记："><span class="nav-number">4.</span> <span class="nav-text">简记：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#硬件效率与一致性"><span class="nav-number">4.1.</span> <span class="nav-text">硬件效率与一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工作内存与主内存"><span class="nav-number">4.2.</span> <span class="nav-text">工作内存与主内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存间的交互操作"><span class="nav-number">4.3.</span> <span class="nav-text">内存间的交互操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#volatile-关键字"><span class="nav-number">4.4.</span> <span class="nav-text">volatile 关键字</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">5.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#硬件的效率与一致性"><span class="nav-number">1.</span> <span class="nav-text">硬件的效率与一致性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-内存模型"><span class="nav-number">2.</span> <span class="nav-text">Java 内存模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主内存与工作内存"><span class="nav-number">2.1.</span> <span class="nav-text">主内存与工作内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存间交互操作"><span class="nav-number">2.2.</span> <span class="nav-text">内存间交互操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对于-volatile-型变量的特殊规则"><span class="nav-number">2.3.</span> <span class="nav-text">对于 volatile 型变量的特殊规则</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#volatile-性能"><span class="nav-number">2.3.1.</span> <span class="nav-text">volatile 性能</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存屏障"><span class="nav-number">2.4.</span> <span class="nav-text">内存屏障</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对于-long-和-double-型变量的特殊规则"><span class="nav-number">2.5.</span> <span class="nav-text">对于 long 和 double 型变量的特殊规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原子性、可见性与有序性"><span class="nav-number">2.6.</span> <span class="nav-text">原子性、可见性与有序性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#原子性"><span class="nav-number">2.6.1.</span> <span class="nav-text">原子性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可见性"><span class="nav-number">2.6.2.</span> <span class="nav-text">可见性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#有序性"><span class="nav-number">2.6.3.</span> <span class="nav-text">有序性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#先行发生原则"><span class="nav-number">2.7.</span> <span class="nav-text">先行发生原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#先行发生原则的真正意义"><span class="nav-number">2.8.</span> <span class="nav-text">先行发生原则的真正意义</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-与线程"><span class="nav-number">3.</span> <span class="nav-text">Java 与线程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#线程的实现"><span class="nav-number">3.1.</span> <span class="nav-text">线程的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-内核线程实现"><span class="nav-number">3.1.1.</span> <span class="nav-text">1.内核线程实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-使用用户线程实现"><span class="nav-number">3.1.2.</span> <span class="nav-text">2.使用用户线程实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-使用用户线程加轻量级进程混合实现"><span class="nav-number">3.1.3.</span> <span class="nav-text">3.使用用户线程加轻量级进程混合实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程调度"><span class="nav-number">3.2.</span> <span class="nav-text">线程调度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程的状态转换"><span class="nav-number">3.3.</span> <span class="nav-text">线程的状态转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#相关方法介绍"><span class="nav-number">3.3.1.</span> <span class="nav-text">相关方法介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sleep-方法"><span class="nav-number">3.3.2.</span> <span class="nav-text">sleep 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#wait-方法"><span class="nav-number">3.3.3.</span> <span class="nav-text">wait 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#join-方法"><span class="nav-number">3.3.4.</span> <span class="nav-text">join 方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#yield-方法"><span class="nav-number">3.3.5.</span> <span class="nav-text">yield 方法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简记："><span class="nav-number">4.</span> <span class="nav-text">简记：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#硬件效率与一致性"><span class="nav-number">4.1.</span> <span class="nav-text">硬件效率与一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工作内存与主内存"><span class="nav-number">4.2.</span> <span class="nav-text">工作内存与主内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存间的交互操作"><span class="nav-number">4.3.</span> <span class="nav-text">内存间的交互操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#volatile-关键字"><span class="nav-number">4.4.</span> <span class="nav-text">volatile 关键字</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-number">5.</span> <span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
             
 
           </div>

@@ -99,7 +99,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30313215-2bede358-97cf-11e7-84bd-2eeff1472644.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28906024-2978ad6c-7847-11e7-88d2-30d22e7babb0.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30313218-2c1d4698-97cf-11e7-9765-6d1ffdc9b915.png">
-<meta property="og:updated_time" content="2017-11-16T03:48:18.000Z">
+<meta property="og:updated_time" content="2018-04-10T23:58:30.655Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 线程安全与锁优化">
 <meta name="twitter:description" content="线程安全线程安全的定义：当多个线程访问一个对象时，如果不用考虑这些线程在运行时环境下的调度和交替执行，也不需要进行额外的同步，或者在调用方进行任何其他的协调操作，调用这个对象的行为都可以获得正确的结果，那么这个对象是线程安全的。 Java 语言中的线程安全可将 Java 语言中的各种操作共享的数据分为以下 5 类：不可变、绝对线程安全、相对线程安全、线程兼容和线程对立。">
@@ -422,7 +422,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  6,661
+                  6,665
                 </span>
               
 
@@ -457,10 +457,10 @@
       
 
       
-        <h2 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h2><p>线程安全的定义：当<strong>多个线程访问一个对象</strong>时，如果<strong>不用考虑这些线程在运行时环境下的调度和交替执行</strong>，也不需要进行<strong>额外</strong>的同步，或者在调用方进行任何其他的协调操作，调用这个对象的行为都可以获得正确的结果，那么这个对象是线程安全的。</p>
+        <h2 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h2><p>线程安全的<strong>定义</strong>：当<strong>多个线程访问一个对象</strong>时，如果<strong>不用考虑这些线程在运行时环境下的调度和交替执行</strong>，也不需要进行<strong>额外</strong>的同步，或者在调用方进行任何其他的协调操作，调用这个对象的行为都可以获得正确的结果，那么这个对象是线程安全的。</p>
 <h3 id="Java-语言中的线程安全"><a href="#Java-语言中的线程安全" class="headerlink" title="Java 语言中的线程安全"></a>Java 语言中的线程安全</h3><p>可将 Java 语言中的各种操作共享的数据分为以下 5 类：不可变、绝对线程安全、相对线程安全、线程兼容和线程对立。</p>
 <a id="more"></a>
-<h4 id="1-不可变"><a href="#1-不可变" class="headerlink" title="1. 不可变"></a>1. 不可变</h4><p>只要一个不可变对象被正确地构建出来（没有 this 引用逃的情况），那么其外部的可见状态永远也不会改变。</p>
+<h4 id="1-不可变"><a href="#1-不可变" class="headerlink" title="1. 不可变"></a>1. 不可变</h4><p>只要一个不可变对象被正确地构建出来（没有 this 引用逃逸的情况），那么其外部的可见状态永远也不会改变。</p>
 <p>final  + 基本数据类型，则该变量为不可变变量<br>final  + 对象，无法保证对象是不可变的</p>
 <p>如何保证对象的行为不会对其状态产生任何影响？最简单的就是<strong>将对象中带有状态的变量都声明为 final</strong>。</p>
 <p>Java API 中属于不可变的类有以下几种：</p>
@@ -475,29 +475,29 @@
 <p>栗子：Vector</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> jvm.ch13;</div><div class="line"></div><div class="line"><span class="keyword">import</span> java.util.Vector;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VectorTest</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Vector&lt;Integer&gt; sIntegerVector = <span class="keyword">new</span> Vector&lt;&gt;();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line"></div><div class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">                sIntegerVector.add(i);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            Thread removeThread = <span class="keyword">new</span> Thread(() -&gt; &#123;</div><div class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; sIntegerVector.size(); i++) &#123;</div><div class="line">                    sIntegerVector.remove(i);</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line"></div><div class="line">            Thread printThread = <span class="keyword">new</span> Thread(() -&gt; &#123;</div><div class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; sIntegerVector.size(); i++) &#123;</div><div class="line">                    System.out.println(sIntegerVector.get(i));</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line"></div><div class="line">            removeThread.start();</div><div class="line">            printThread.start();</div><div class="line">            <span class="keyword">while</span> (Thread.activeCount() &gt; <span class="number">20</span>) &#123;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>以上代码可能会报 ArrayIndexOutOfBoundException</p>
-<p>因为可能出现一个线程恰好在一个错误的时间删除了一个元素，导致 i 元素已经不再可用。因为可能出现这样的情况：get(i) 进入等待锁期间，remove(i) 刚好执行了。</p>
+<p>因为可能出现一个线程恰好在一个错误的时间删除了一个元素，导致 i 元素已经不再可用。因为可能出现这样的情况：<strong>get(i) 进入等待锁期间，remove(i) 刚好执行了</strong>。</p>
 <p>解决：操作时加上锁，使得复合操作变为原子操作。</p>
 <p>原子操作与复合操作简介：</p>
 <ul>
 <li>原子操作：不可分割的操作，要么成功要么失败</li>
-<li>复合操作：可分割的操作，可能出现数据失效的问题。</li>
+<li><strong>复合操作：可分割的操作</strong>，可能出现数据失效的问题。</li>
 </ul>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">Thread removeThread = <span class="keyword">new</span> Thread(() -&gt; &#123;</div><div class="line">    <span class="keyword">synchronized</span> (sIntegerVector) &#123;<span class="comment">//加上锁使之成为原子操作</span></div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; sIntegerVector.size(); i++) &#123;</div><div class="line">            sIntegerVector.remove(i);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line">Thread printThread = <span class="keyword">new</span> Thread(() -&gt; &#123;</div><div class="line">    <span class="keyword">synchronized</span> (sIntegerVector) &#123;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; sIntegerVector.size(); i++) &#123;</div><div class="line">            System.out.println(sIntegerVector.get(i));</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
 <p>为什么是使用 Vector 对象作为锁？因为 Vector  内部是使用自带的锁来实现的。</p>
 <h4 id="3-相对线程安全"><a href="#3-相对线程安全" class="headerlink" title="3. 相对线程安全"></a>3. 相对线程安全</h4><p>即通常意义上所讲的线程安全。它需要保证对这个对象单独操作是线程安全的，调用时就不需要做额外的保障措施。</p>
-<p>对于一些特定顺序的连续调用，就可能需要在调用端使用额外的同步手段来保证调用的正确=性。</p>
+<p><strong>对于一些特定顺序的连续调用，就可能需要在调用端使用<em>额外的同步手段</em>来保证调用的正确性</strong>。</p>
 <p>Java API 中大部分线程安全的类都属于这种类型：</p>
 <ul>
-<li>Vector HashTable Collections.sychronizedCollection()</li>
+<li><code>Vector，HashTable，Collections.sychronizedCollection()</code></li>
 </ul>
 <h4 id="4-线程兼容"><a href="#4-线程兼容" class="headerlink" title="4. 线程兼容"></a>4. 线程兼容</h4><p>也就是平常所说的线程不安全类。对象本身并不安全，但是可以通过在调用端正确地使用同步手段来保证对象子啊并发环境中可以安全地使用。</p>
-<p>比如：ArrayList HashKMap</p>
+<p>比如：ArrayList、HashKMap</p>
 <h4 id="5-线程对立"><a href="#5-线程对立" class="headerlink" title="5. 线程对立"></a>5. 线程对立</h4><p>在调用端是否使用同步手段都无法再多线程环境下使用。</p>
 <ul>
 <li>这种排斥多线程代码很少出现。</li>
 </ul>
 <h3 id="线程安全的实现方法"><a href="#线程安全的实现方法" class="headerlink" title="线程安全的实现方法"></a>线程安全的实现方法</h3><p>线程安全的实现方法主要有以下几种：互斥同步、非阻塞同步、无同步方案。</p>
-<h4 id="1-互斥同步"><a href="#1-互斥同步" class="headerlink" title="1. 互斥同步"></a>1. 互斥同步</h4><p>「互斥同步」的意思是通过互斥来实现同步。<br><strong>同步</strong>是指在多个线程并发访问共享数据的时候，保证共享数据在同一时刻只能有一个（或者一些，使用信号量的时候）线程使用。临界区、互斥量、信号量都是主要的互斥实现方式。</p>
+<h4 id="1-互斥同步"><a href="#1-互斥同步" class="headerlink" title="1. 互斥同步"></a>1. 互斥同步</h4><p>「互斥同步」的意思是通过互斥来实现同步。<br><strong>同步</strong>是指在多个线程并发访问共享数据的时候，保证共享数据在<strong>同一时刻只能有一个（或者一些，使用信号量的时候）线程使用</strong>。<strong>临界区、互斥量、信号量都是主要的互斥实现方式</strong>。</p>
 <p>最基本的互斥同步实现方法就是使用 synchronized 关键字。synchronized 关键字经过编译之后，会在同步块的前后分别形成 monitorenter、monitorexit 两条指令。根据虚拟机规范的要求，</p>
 <ul>
 <li>在执行 monitorenter 指令时，首先要尝试获取对象的锁。如果这个对象没被锁定，或者当前线程已经拥有了那个对象的锁，把锁的计数器加 1，</li>
@@ -532,8 +532,8 @@
 </ul>
 </li>
 </ul>
-<h5 id="ReentrantLock-还是-synchronized？"><a href="#ReentrantLock-还是-synchronized？" class="headerlink" title="ReentrantLock 还是 synchronized？"></a>ReentrantLock 还是 synchronized？</h5><p>关于性能：Java 1.6 发布之后，synchronized 与 ReentrantLock 的性能基本上是完全持平了。因此，Java 1.6 或以上，性能因素就不再是选择 ReentrantLock 的理由了，虚拟机在未来的性能改进中肯定也会更加偏向于原生的 synchronized。</p>
-<p>因此在不需要用到 ReentrantLock 三个特性的情况下，优先考虑使用 synchronized 来进行同步。</p>
+<h5 id="ReentrantLock-还是-synchronized？"><a href="#ReentrantLock-还是-synchronized？" class="headerlink" title="ReentrantLock 还是 synchronized？"></a>ReentrantLock 还是 synchronized？</h5><p>关于性能：<strong>Java 1.6 发布之后，synchronized 与 ReentrantLock 的性能基本上是完全持平了</strong>。因此，Java 1.6 或以上，性能因素就不再是选择 ReentrantLock 的理由了，虚拟机在未来的性能改进中肯定也会更加偏向于原生的 synchronized。</p>
+<p>因此在<strong>不需要用到 ReentrantLock 三个特性的情况下，优先考虑使用 synchronized 来进行同步</strong>。</p>
 <h4 id="2-非阻塞同步"><a href="#2-非阻塞同步" class="headerlink" title="2. 非阻塞同步"></a>2. 非阻塞同步</h4><p>互斥同步最主要的问题就是进行线程阻塞和唤醒所带来的性能问题，因此这种同步也称为<strong>阻塞同步</strong>（Blocking Synchronization）。从处理问题的方式上说，互斥同步属于一种<strong>悲观的并发策略</strong>，<strong>总是认为只要不去做正确的同步措施（例如加锁），那就肯定会出现问题</strong>。</p>
 <p><strong>基于冲突检测</strong>的<strong>乐观并发策略</strong>，通俗地说，就是先进行操作，</p>
 <ul>
@@ -553,7 +553,7 @@
 </li>
 </ul>
 <p>Java 1.5 之后，Java 程序中才可以使用 CAS 操作，该操作由 sun.misc.Unsafe 类里面的 <code>compareAndSwapInt()</code>和 <code>compareAndSwapLong()</code> 等几个方法包装提供，虚拟机在内部对这些方法做了特殊处理，即时编译出来的结果就是一条平台相关的处理器 CAS 指令。</p>
-<p><strong>CAS 指令</strong>需要有 <strong>3 个操作数</strong>，分别是<strong>内存位置</strong>（在 Java 中可以简单理解为变量的内存地址，用 V 表示）、<strong>旧的预期值</strong>（用 A 表示）和<strong>新值</strong>（用 B 表示）。CAS 指令执行时，当且仅当 V 符合旧预期值 A 时，处理器用新值 B 更新 V 的值，否则它就不执行更新，但是无论是否更新了 V 的值，都会返回 V 的旧值，上述的处理过程是一个<strong>原子操作</strong>。</p>
+<p><strong>CAS 指令</strong>需要有 <strong>3 个操作数</strong>，分别是<strong>内存位置</strong>（在 Java 中可以简单理解为变量的内存地址，用 V 表示）、<strong>旧的预期值</strong>（用 A 表示）和<strong>新值</strong>（用 B 表示）。<strong>CAS 指令执行时，当且仅当 V 符合旧预期值 A 时，处理器用新值 B 更新 V 的值，否则它就不执行更新</strong>，但是<strong>无论是否更新了 V 的值，都会返回 V 的旧值</strong>，上述的处理过程是一个<strong>原子操作</strong>。</p>
 <p>Unsafe 类<strong>不是提供给用户程序调用的类</strong>（Unsafe.getUnsafe()的代码中限制了只有启动类加载器（Bootstrap  ClassLoader）加载的 Class 才能访问它），因此，如果不采用反射手段，我们只能通过其他的 Java  API 来间接使用它。</p>
 <ul>
 <li>如 J.U.C（java.util.concurrent） 包里面的整数原子类，其中的 compareAndSet()和 getAndIncrement()等方法都使用了 Unsafe 类的 CAS 操作。</li>
@@ -561,7 +561,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">incrementAndGet</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="keyword">for</span>（;;）&#123;</div><div class="line">        <span class="keyword">int</span> current = get()；</div><div class="line">        <span class="keyword">int</span> next = current+<span class="number">1</span>；</div><div class="line">        <span class="keyword">if</span>（compareAndSet（current,next））</div><div class="line">            <span class="keyword">return</span> next；</div><div class="line">        &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>CAS 存在的问题：</p>
 <ul>
-<li>无法涵盖互斥同步的所有使用场景</li>
+<li><strong>无法涵盖互斥同步的所有使用场景</strong></li>
 <li>存在==ABA 问题==，值改了但是自己却不知道。<ul>
 <li>怎么解决？<ul>
 <li>加入引用计数。</li>
@@ -575,7 +575,7 @@
 <p><strong>可重入代码的一些共同的特征</strong>：</p>
 <ul>
 <li>不依赖存储在堆上的数据和公用的系统资源、</li>
-<li>用到的状态量都由参数中传入、</li>
+<li>用到的状态量都<strong>由参数中传入</strong>、</li>
 <li>不调用非可重入的方法等。</li>
 </ul>
 <p><strong>判断代码是否具备可重入性</strong>：如果一个方法，它的<strong>返回结果是可以预测的</strong>，也就是说只要输入了相同的数据，就都能返回相同的结果，那它就满足可重入性的要求，当然也就是线程安全的。</p>
@@ -600,8 +600,8 @@
 </ul>
 <p>独享锁与共享锁也是使用 AQS 来实现的。通过实现不同的方法来实现独享或者共享。</p>
 <h3 id="乐观锁-悲观锁"><a href="#乐观锁-悲观锁" class="headerlink" title="乐观锁/悲观锁"></a>乐观锁/悲观锁</h3><p>并不是指具体类型的锁，而是指<strong>看待并发同步的态度</strong>。</p>
-<p><strong>悲观锁</strong>采用一种悲观的并发策略<strong>，</strong>总是<strong>认为只要不去做正确的同步措施（例如加锁），那就肯定会出现问题</strong>。<br>所谓乐观锁就是，每次不加锁而是<strong>假设没有冲突而去完成某项操作</strong>，如果因为<strong>冲突失败就重试，直到成功为止</strong>。乐观锁不能解决脏读的问题。</p>
-<h4 id="二者之间如何选择选择？"><a href="#二者之间如何选择选择？" class="headerlink" title="二者之间如何选择选择？"></a>二者之间如何选择选择？</h4><p>首先要弄清楚，事实是悲观的还是乐观的？</p>
+<p><strong>悲观锁</strong>采用一种悲观的并发策略<strong>，</strong>总是<strong>认为只要不去做正确的同步措施（例如加锁），那就肯定会出现问题</strong>。<br>所谓<strong>乐观锁</strong>就是，每次不加锁而是<strong>假设没有冲突而去完成某项操作</strong>，如果因为<strong>冲突失败就重试，直到成功为止</strong>。乐观锁<strong>不能解决脏读的问题</strong>。</p>
+<h4 id="二者之间如何选择选择？"><a href="#二者之间如何选择选择？" class="headerlink" title="二者之间如何选择选择？"></a>二者之间如何选择选择？</h4><p>首先要弄清楚，<strong>事实是悲观的还是乐观的</strong>？</p>
 <p>假如你的资源竞争很激烈，并且无法共享的话，乐观锁不过是让大量请求的希望落空罢了。——如果事实是悲观的，但是采用了乐观锁，那就只会导致大量请求落空罢了。</p>
 <p>假如你的资源没什么竞争（这个和并发高低没必然的关联，业务的影响更大），那悲观锁意味着不必要地加锁。如果原本是可共享的资源（比如资源支持多个只读方），那么悲观锁意味着失去原本的可以使用的时间。——如果事实是乐观的，但是使用了悲观锁，那么就损失一些本来可以使用的时间。</p>
 <p>再详细点可以从以下几个方面来判断：</p>
@@ -614,8 +614,8 @@
 <h3 id="分段锁"><a href="#分段锁" class="headerlink" title="分段锁"></a>分段锁</h3><p>分段锁其实是一种<strong>锁的设计</strong>，并不是具体的一种锁。</p>
 <p>我们以<code>ConcurrentHashMap</code>来说一下分段锁的含义以及设计思想，<code>ConcurrentHashMap</code>中的分段锁称为 Segment，它即类似于 HashMap（Java7 与 Java8 中 HashMap 的实现）的结构，即内部拥有一个 Entry 数组，<strong>数组中的每个元素又是一个链表；同时又是一个 ReentrantLock（Segment 继承了 ReentrantLock)</strong>。<br>当需要 put 元素的时候，并不是对整个 hashmap 进行加锁，而是<strong>先通过 hashcode 来知道他要放在那一个分段中，然后对这个分段进行加锁</strong>，所以当多线程 put 的时候，只要不是放在一个分段中，就实现了真正的并行的插入。</p>
 <p>但是，在统计 size 的时候，可就是获取 hashmap 全局信息的时候，就需要获取所有的分段锁才能统计。分段锁的设计<strong>目的是细化锁的粒度</strong>，当操作不需要更新整个数组的时候，就仅仅针对数组中的一项进行加锁操作。</p>
-<h3 id="偏向锁-轻量级锁-重量级锁"><a href="#偏向锁-轻量级锁-重量级锁" class="headerlink" title="偏向锁/轻量级锁/重量级锁"></a>偏向锁/轻量级锁/重量级锁</h3><p>这三种锁是指<strong>锁的状态</strong>，并且是针对<code>Synchronized</code>。在 Java5 通过引入<strong>锁升级的机制</strong>来实现高效<code>Synchronized</code>。这三种锁的状态是通过对象监视器在对象头中的字段来表明的。</p>
-<p><strong>偏向锁</strong>：当一段同步代码总是被一个线程访问的时候， 那么该线程就会自动获取锁，降低获取锁的代价。如果说轻量级锁是在无竞争的情况下使用 CAS 操作去消除同步使用的互斥量，那偏向锁就是<strong>在无竞争的情况下把整个同步都消除掉，连 CAS 操作都不做了</strong>。偏向锁的“偏”，意思是这个锁会<strong>偏向于第一个获得它的线程</strong>，如果在接下来的执行过程中，该锁没有被其他的线程获取，则持有偏向锁的线程将永远不需要再进行同步。</p>
+<h3 id="偏向锁-轻量级锁-重量级锁"><a href="#偏向锁-轻量级锁-重量级锁" class="headerlink" title="偏向锁/轻量级锁/重量级锁"></a>偏向锁/轻量级锁/重量级锁</h3><p>这三种锁是指<strong>锁的状态</strong>，并且是针对<code>Synchronized</code> 的。在 Java1.5 通过引入<strong>锁升级的机制</strong>来实现高效的<code>Synchronized</code>。这三种锁的状态是<strong>通过对象监视器在对象头中的字段来表明的</strong>。</p>
+<p><strong>偏向锁</strong>：当一段同步代码总是被一个线程访问的时候， 那么该线程就会自动获取锁，降低获取锁的代价。如果说轻量级锁是在无竞争的情况下使用 CAS 操作去消除同步使用的互斥量，那偏向锁就是<strong>在无竞争的情况下把整个同步都消除掉，连 CAS 操作都不做了</strong>。偏向锁的“偏”，意思是这个锁会<strong>偏向于<em>第一个</em>获得它的线程</strong>，如果在接下来的执行过程中，该锁没有被其他的线程获取，则持有偏向锁的线程将永远不需要再进行同步。</p>
 <p><strong>轻量级锁</strong>：当锁是偏向锁时（因为经常被一个线程访问），当另外一个线程需要访问相应的同步代码段时，偏向锁会升级为轻量级锁，其他线程会通过<strong>自旋的方式</strong>尝试去获取锁，轻量级锁并不是用来代替重量级锁的，它的本意是<strong>在没有多线程竞争的前提下，减少传统的重量级锁使用操作系统互斥量产生的性能消耗</strong>。</p>
 <p><strong>重量级锁</strong>：自旋达到一定次数之后，就会膨胀为重量级锁。重量级锁会使其他申请线程进入阻塞状态。</p>
 <p>错误观点：<del>锁<strong>可以升级但不能降级</strong>，意味着偏向锁升级成轻量级锁后不能降级成偏向锁</del>。具体可以参考下<a href="http://www.jianshu.com/p/9932047a89be" target="_blank" rel="noopener">这篇文章</a></p>
@@ -701,7 +701,7 @@
 <h3 id="锁消除"><a href="#锁消除" class="headerlink" title="锁消除"></a>锁消除</h3><p><strong>锁消除</strong>是指虚拟机<strong>即时编译器在运行时</strong>，对一些代码上要求同步，但是被检测到不可能存在共享数据竞争的锁进行消除。</p>
 <p>锁消除的<strong>主要判定依据</strong>来源于<strong>逃逸分析的数据支持</strong>（第 11 章已经讲解过逃逸分析技术），如果判断在一段代码中，<strong>堆上的所有数据都不会逃逸出去</strong>从而被其他线程访问到，那就可以把它们当做栈上数据对待，认为它们是线程私有的，同步加锁自然就无须进行。</p>
 <p>举个栗子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> String concatString（String s1，String s2，String s3）&#123;</div><div class="line">    StringBuffer sb=<span class="keyword">new</span> StringBuffer()；</div><div class="line">    sb.append（s1）；</div><div class="line">    sb.append（s2）；</div><div class="line">    sb.append（s3）；</div><div class="line">    <span class="keyword">return</span> sb.toString()；</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> String concatString（String s1，String s2，String s3）&#123;</div><div class="line">    StringBuffer sb = <span class="keyword">new</span> StringBuffer()；</div><div class="line">    sb.append（s1）;</div><div class="line">    sb.append（s2）;</div><div class="line">    sb.append（s3）;</div><div class="line">    <span class="keyword">return</span> sb.toString()；</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>每个 StringBuffer.append()方法中都有一个同步块，锁就是 sb 对象。虚拟机观察变量 sb，很快就会发现它的动态作用域被限制在 concatString()方法内部。sb 的所有引用永远不会“逃逸”到 concatString()方法之外，其他线程无法访问到它，因此，虽然这里有锁，但是可以被安全地消除掉，在<strong>即时编译之后，这段代码就会忽略掉所有的同步而直接执行</strong>了。</p>
 <h3 id="锁粗化"><a href="#锁粗化" class="headerlink" title="锁粗化"></a>锁粗化</h3><p>原则上，我们在编写代码的时候，总是推荐将同步块的作用范围限制得尽量小——只在共享数据的实际作用域中才进行同步，这样是为<strong>使得需要同步的操作数量尽可能变小</strong>。</p>
 <p>如果一系列的连续操作都对同一个对象反复加锁和解锁，甚至加锁操作是出现在循环体中的，那即使没有线程竞争，<strong>频繁地进行互斥同步操作也会导致不必要的性能损耗</strong>。</p>
@@ -920,7 +920,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
