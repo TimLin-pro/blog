@@ -100,7 +100,7 @@
 <meta property="og:image" content="https://tech.meituan.com/img/java-hashmap/hashMap%201.8%20%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%E4%BE%8B%E5%9B%BE1.png">
 <meta property="og:image" content="https://tech.meituan.com/img/java-hashmap/hashMap%201.8%20%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95%E4%BE%8B%E5%9B%BE2.png">
 <meta property="og:image" content="https://tech.meituan.com/img/java-hashmap/jdk1.8%20hashMap%E6%89%A9%E5%AE%B9%E4%BE%8B%E5%9B%BE.png">
-<meta property="og:updated_time" content="2018-04-15T11:59:52.590Z">
+<meta property="og:updated_time" content="2018-06-02T02:53:02.261Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 集合框架之 HashMap 工作原理">
 <meta name="twitter:description" content="概要概括的说，HashMap 是一个关联数组、哈希表，它是线程不安全的，允许key 为 null,value 为 null。遍历时无序。其底层数据结构是数组称之为哈希桶，每个桶里面放的是链表，链表中的每个节点，就是哈希表中的每个元素。在 JDK8 中，当链表长度达到 8，会转化成红黑树，以提升它的查询、插入效率，它实现了Map&amp;lt;K,V&amp;gt;, Cloneable, Serializable">
@@ -412,7 +412,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  4,825
+                  5,160
                 </span>
               
 
@@ -428,7 +428,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  19
+                  21
                 </span>
               
             </div>
@@ -521,6 +521,12 @@
 <p>因此，我们在扩充 HashMap 的时候，不需要像 JDK1.7 的实现那样重新计算 hash，只需要看看原来的 hash 值新增的那个 bit 是 1 还是 0 就好了，<strong>是 0 的话索引没变，是 1 的话索引变成“原索引+oldCap</strong>，可以看看下图为 16 扩充为 32 的 resize 示意图：</p>
 <p><img src="https://tech.meituan.com/img/java-hashmap/jdk1.8%20hashMap%E6%89%A9%E5%AE%B9%E4%BE%8B%E5%9B%BE.png" alt="jdk1.8 hashMap 扩容例图"></p>
 <p>这个设计确实非常的巧妙，既省去了重新计算 hash 值的时间，而且同时，由于新增的 1bit 是 0 还是 1 可以认为是随机的，因此 resize 的过程，均匀的把之前的冲突的节点分散到新的 bucket 了。这一块就是 JDK1.8 新增的优化点。</p>
+<h3 id="树化与链表化"><a href="#树化与链表化" class="headerlink" title="树化与链表化"></a>树化与链表化</h3><p>当冲突链表长度达到 8 的时候，会调用 <code>treeifyBin</code> 尝试将链表转换为树。</p>
+<p>如果当前数组的长度小于 64 的话，只会触发扩容，而不会将链表转换为红黑树。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">treeifyBin</span><span class="params">(Node&lt;K,V&gt;[] tab, <span class="keyword">int</span> hash)</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> n, index; Node&lt;K,V&gt; e;</div><div class="line">    <span class="keyword">if</span> (tab == <span class="keyword">null</span> || (n = tab.length) &lt; MIN_TREEIFY_CAPACITY)<span class="comment">//在「树化」之前先判断，当前的容量</span></div><div class="line">        resize();</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ((e = tab[index = (n - <span class="number">1</span>) &amp; hash]) != <span class="keyword">null</span>) &#123;</div><div class="line">        TreeNode&lt;K,V&gt; hd = <span class="keyword">null</span>, tl = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">do</span> &#123;</div><div class="line">            TreeNode&lt;K,V&gt; p = replacementTreeNode(e, <span class="keyword">null</span>);</div><div class="line">            <span class="keyword">if</span> (tl == <span class="keyword">null</span>)</div><div class="line">                hd = p;</div><div class="line">            <span class="keyword">else</span> &#123;</div><div class="line">                p.prev = tl;</div><div class="line">                tl.next = p;</div><div class="line">            &#125;</div><div class="line">            tl = p;</div><div class="line">        &#125; <span class="keyword">while</span> ((e = e.next) != <span class="keyword">null</span>);</div><div class="line">        <span class="keyword">if</span> ((tab[index] = hd) != <span class="keyword">null</span>)</div><div class="line">            hd.treeify(tab);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当移除元素或者是扩容的时候，如果树的大小&lt;=6，会调用 HashMap.TreeNode#untreeify 方法将红黑树转换为链表。</p>
+<h4 id="为什么要进行「树化」呢？"><a href="#为什么要进行「树化」呢？" class="headerlink" title="为什么要进行「树化」呢？"></a>为什么要进行「树化」呢？</h4><p>一方面是为了保证性能，如果同一个桶上面的冲突都通过链表连接，链表的查询是线性的，同一个桶上冲突较多的时候，会严重影响存取的性能。</p>
+<p>另一个原因其实也是由性能问题引发的哈希碰撞拒绝服务攻击，因为构造哈希冲突的数据并不是困难的事情，恶意代码可以构造这样的数据大量与服务端交互，导致服务端CPU 大量占用。</p>
 <h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><p>此部分内容参考自<a href="http://yikun.github.io/2015/04/01/Java-HashMap%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%8F%8A%E5%AE%9E%E7%8E%B0/" target="_blank" rel="noopener">HashMap 的工作原理</a></p>
 <p><strong>1. 什么时候会使用 HashMap？他有什么特点？</strong><br>是基于 Map 接口的实现，存储键值对时，它可以接收 null 的键值，是非同步的，HashMap 存储着 Entry(hash, key, value, next)对象。</p>
 <p><strong>2. 你知道 HashMap 的工作原理吗？</strong><br>通过 hash 的方法，通过 put 和 get 存储和获取对象。存储对象时，我们将 K/V 传给 put 方法时，它调用 hashCode 计算 hash 从而得到 bucket 位置，进一步存储，HashMap 会根据当前 bucket 的占用情况自动调整容量(超过 Load Facotr 则 resize 为原来的 2 倍)。获取对象时，我们将 K 传给 get，它调用 hashCode 计算 hash 从而得到 bucket 位置，并进一步调用 equals()方法确定键值对。如果发生碰撞的时候，Hashmap 通过链表将产生碰撞冲突的元素组织起来，在 Java 8 中，如果一个 bucket 中碰撞冲突的元素超过某个限制(默认是 8)，则使用红黑树来替换链表，从而提高速度。</p>
@@ -804,7 +810,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概要"><span class="nav-text">概要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现"><span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#两个重要的参数"><span class="nav-text">两个重要的参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#put-函数的实现"><span class="nav-text">put 函数的实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#get-函数的实现"><span class="nav-text">get 函数的实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hash-函数的实现"><span class="nav-text">hash 函数的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#计算下标"><span class="nav-text">计算下标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Java-8-所做的优化"><span class="nav-text">Java 8 所做的优化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#resize-（扩容）实现"><span class="nav-text">resize （扩容）实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见问题"><span class="nav-text">常见问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概要"><span class="nav-text">概要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现"><span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#两个重要的参数"><span class="nav-text">两个重要的参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#put-函数的实现"><span class="nav-text">put 函数的实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#get-函数的实现"><span class="nav-text">get 函数的实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hash-函数的实现"><span class="nav-text">hash 函数的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#计算下标"><span class="nav-text">计算下标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Java-8-所做的优化"><span class="nav-text">Java 8 所做的优化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#resize-（扩容）实现"><span class="nav-text">resize （扩容）实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#树化与链表化"><span class="nav-text">树化与链表化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么要进行「树化」呢？"><span class="nav-text">为什么要进行「树化」呢？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见问题"><span class="nav-text">常见问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
             
 
           </div>
