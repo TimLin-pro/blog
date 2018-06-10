@@ -98,7 +98,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29449202-6aed8b00-842c-11e7-8e3f-362ead423f2d.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29449446-6771e5ce-842d-11e7-935f-d1e5685d43af.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29453380-021cc0ea-843c-11e7-901d-a7490d12f9ea.jpg">
-<meta property="og:updated_time" content="2018-04-15T11:58:57.512Z">
+<meta property="og:updated_time" content="2018-06-05T02:20:20.189Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android源码中的代理模式">
 <meta name="twitter:description" content="代理模式的定义代理模式也称为委托模式，为其他对象提供一种代理以控制对这个对象的访问。 代理模式的使用场景当无法或不想访问某个对象或者访问某个对象存在困难时可以通过一个代理对象来间接访问。 为了保证客户端使用的透明性，委托对象与代理对象需要实现相同的接口（或继承相同的抽象类）">
@@ -421,7 +421,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  2,107
+                  2,174
                 </span>
               
 
@@ -481,6 +481,7 @@
 <p><strong>动态代理</strong>通过反射机制动态地生成代理者的对象，code 阶段不需要知道代理谁，代理的真正对象会在执行阶段确定。</p>
 <p>Java 提供一个便捷的动态代理接口 InvocationHandler，实现该接口需要重写其调用方法 invoke。</p>
 <p>动态代理通过一个代理类来代理 N 多个被代理类，其实质是对代理者与被代理者进行解耦，使两者之间没有直接的的耦合关系。</p>
+<p>代理可以看作是 对调用目标的一个包装，这样我们对目标代码的调用不是直接发生的，而是代理完成。（观点：大部分动态代理的场景可以看作是 装饰器模式的应用。）</p>
 <h3 id="静态代理-vs-动态代理"><a href="#静态代理-vs-动态代理" class="headerlink" title="静态代理 vs 动态代理"></a>静态代理 vs 动态代理</h3><p>相对而言静态代理则只能为给定接口下的实现类做代理，如果接口不同那么就需要重新定义不同代理类，较为复杂。</p>
 <ul>
 <li>但是静态代理更符合面向对象的原则。</li>

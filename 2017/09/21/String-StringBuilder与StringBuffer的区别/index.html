@@ -96,7 +96,7 @@
 <meta property="og:description" content="概述 CharSequence 就是字符序列，String, StringBuilder 和 StringBuffer 本质上都是通过字符数组实现的。  String 字符串常量（不可变） StringBuffer 字符串变量（线程安全） StringBuilder 字符串变量（非线程安全）">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://ofucm8avi.bkt.clouddn.com/1.png">
-<meta property="og:updated_time" content="2018-04-15T12:03:33.884Z">
+<meta property="og:updated_time" content="2018-06-08T10:08:33.288Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="String StringBuilder与StringBuffer的区别">
 <meta name="twitter:description" content="概述 CharSequence 就是字符序列，String, StringBuilder 和 StringBuffer 本质上都是通过字符数组实现的。  String 字符串常量（不可变） StringBuffer 字符串变量（线程安全） StringBuilder 字符串变量（非线程安全）">
@@ -397,7 +397,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  926
+                  1,450
                 </span>
               
 
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  3
+                  6
                 </span>
               
             </div>
@@ -459,6 +459,18 @@
 <p>insert 方法则在指定的点添加字符。</p>
 <p>例如:<br>z 引用一个当前内容是“start”的字符串缓冲区对象，<br>用 z.append(“le”) 会使字符串缓冲区包含“startle”，<br>而 z.insert(4, “le”) 将<strong>更改字符串缓冲区</strong>，使之包含“starlet”。</p>
 <h2 id="StringBuilder"><a href="#StringBuilder" class="headerlink" title="StringBuilder"></a>StringBuilder</h2><p>StringBuilder 是 Java5 新增的一个非线程安全的可变的字符序列。可以把它理解为 StringBuffer 的非线程安全版本，因为实际应用中很少有需要对字符串进行同步的情况，所以采用 StringBuilder 的性能更加。在不需要同步，优先采用 StringBuilder。</p>
+<p>初始长度分为三种情况:</p>
+<p> 如果是调用的是无参构造函数，则默认容量为 16</p>
+<p>如果指定了一个大于 0 的 capacity，则初始容量为 指定的 capacity</p>
+<p>如果使用了参数类型为  CharSequence/String 的构造函数，则初始容量为<code>CharSequence的长度 + 16</code>。</p>
+<h3 id="扩容"><a href="#扩容" class="headerlink" title="扩容"></a>扩容</h3><p>每次 append 的时候都会调用 ensureCapacityInternal ，当前长度 + append 内容总长度作为 minimumCapacity，如果  minimumCapacity 超过了 value 数组的长度，就将value 数组复制到长度为 newCapacity 的新数组，</p>
+<p>一般情况下 newCapacity 大于  minimumCapacity</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * For positive values of &#123;<span class="doctag">@code</span> minimumCapacity&#125;, this method</div><div class="line"> * behaves like &#123;<span class="doctag">@code</span> ensureCapacity&#125;, however it is never</div><div class="line"> * synchronized.</div><div class="line"> * If &#123;<span class="doctag">@code</span> minimumCapacity&#125; is non positive due to numeric</div><div class="line"> * overflow, this method throws &#123;<span class="doctag">@code</span> OutOfMemoryError&#125;.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">ensureCapacityInternal</span><span class="params">(<span class="keyword">int</span> minimumCapacity)</span> </span>&#123;</div><div class="line">    <span class="comment">// overflow-conscious code</span></div><div class="line">    <span class="keyword">if</span> (minimumCapacity - value.length &gt; <span class="number">0</span>) &#123;</div><div class="line">        value = Arrays.copyOf(value,</div><div class="line">                newCapacity(minimumCapacity));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * The maximum size of array to allocate (unless necessary).</div><div class="line"> * Some VMs reserve some header words in an array.</div><div class="line"> * Attempts to allocate larger arrays may result in</div><div class="line"> * OutOfMemoryError: Requested array size exceeds VM limit</div><div class="line"> */</div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAX_ARRAY_SIZE = Integer.MAX_VALUE - <span class="number">8</span>;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Returns a capacity at least as large as the given minimum capacity.</div><div class="line"> * Returns the current capacity increased by the same amount + 2 if</div><div class="line"> * that suffices.</div><div class="line"> * Will not return a capacity greater than &#123;<span class="doctag">@code</span> MAX_ARRAY_SIZE&#125;</div><div class="line"> * unless the given minimum capacity is greater than that.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span>  minCapacity the desired minimum capacity</div><div class="line"> * <span class="doctag">@throws</span> OutOfMemoryError if minCapacity is less than zero or</div><div class="line"> *         greater than Integer.MAX_VALUE</div><div class="line"> * 返回一个至少跟 minCapacity 一样大的值。如果空间足够的话，当前的容量会增长一倍 +2 。</div><div class="line"> * 除非给定的值超过MAX_ARRAY_SIZE。否则返回的容量不会超过 MAX_ARRAY_SIZE。</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">newCapacity</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</div><div class="line">    <span class="comment">// overflow-conscious code。防止溢出</span></div><div class="line">    <span class="keyword">int</span> newCapacity = (value.length &lt;&lt; <span class="number">1</span>) + <span class="number">2</span>;<span class="comment">//当前数组长度 * 2 + 2</span></div><div class="line">    <span class="keyword">if</span> (newCapacity - minCapacity &lt; <span class="number">0</span>) &#123;<span class="comment">//如果新长度 &lt; minCapacity，将新长度赋值为 minCapacity</span></div><div class="line">        newCapacity = minCapacity;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> (newCapacity &lt;= <span class="number">0</span> || MAX_ARRAY_SIZE - newCapacity &lt; <span class="number">0</span>)</div><div class="line">       ? hugeCapacity(minCapacity)<span class="comment">//检查溢出。如果溢出了，抛出错误。否则置为 MAX_ARRAY_SIZE</span></div><div class="line">        : newCapacity;<span class="comment">//长度在正常范围内，直接使用该长度</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">hugeCapacity</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (Integer.MAX_VALUE - minCapacity &lt; <span class="number">0</span>) &#123; <span class="comment">// overflow</span></div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> OutOfMemoryError();</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> (minCapacity &gt; MAX_ARRAY_SIZE)</div><div class="line">        ? minCapacity : MAX_ARRAY_SIZE;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li><a href="https://docs.oracle.com/javase/7/docs/api/java/lang/StringBuilder.html" target="_blank" rel="noopener">Class StringBuilder</a></li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
 
       
     </div>
@@ -727,7 +739,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#String-类型和-StringBuilder-类型的主要性能区别"><span class="nav-text">String 类型和 StringBuilder 类型的主要性能区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StringBuffer"><span class="nav-text">StringBuffer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主要操作"><span class="nav-text">主要操作:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StringBuilder"><span class="nav-text">StringBuilder</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#String-类型和-StringBuilder-类型的主要性能区别"><span class="nav-text">String 类型和 StringBuilder 类型的主要性能区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StringBuffer"><span class="nav-text">StringBuffer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主要操作"><span class="nav-text">主要操作:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StringBuilder"><span class="nav-text">StringBuilder</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#扩容"><span class="nav-text">扩容</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
             
 
           </div>

@@ -95,7 +95,7 @@
 <meta property="og:site_name" content="Tim&#39;s Track">
 <meta property="og:description" content="一、什么是单例模式？wiki 给出的定义如下：单例模式，也叫单子模式，是一种常用的软件设计模式。在应用这个模式时，单例对象的类必须保证只有一个实例存在。许多时候整个系统只需要拥有一个的全局对象，这样有利于我们协调系统整体的行为。  比如在某个服务器程序中，该服务器的配置信息存放在一个文件中，这些配置数据由一个单例对象统一读取，然后服务进程中的其他对象再通过这个单例对象获取这些配置信息。这种方式简化">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-15T11:50:48.514Z">
+<meta property="og:updated_time" content="2018-06-03T15:52:43.705Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="创建型模式之单例模式">
 <meta name="twitter:description" content="一、什么是单例模式？wiki 给出的定义如下：单例模式，也叫单子模式，是一种常用的软件设计模式。在应用这个模式时，单例对象的类必须保证只有一个实例存在。许多时候整个系统只需要拥有一个的全局对象，这样有利于我们协调系统整体的行为。  比如在某个服务器程序中，该服务器的配置信息存放在一个文件中，这些配置数据由一个单例对象统一读取，然后服务进程中的其他对象再通过这个单例对象获取这些配置信息。这种方式简化">
@@ -395,7 +395,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,943
+                  1,983
                 </span>
               
 
@@ -441,6 +441,7 @@
 <li>例如 网络请求经常要用到 cookie，如果使用 OkHttp 可以将其封装为一个单例工具类，内部使用 CookJar 对 cookie  进行管理，这样后续的请求就会方便很多。 </li>
 </ul>
 </li>
+<li>安全性。比如 SQLite 数据库的增删查改，通过单例对象对外提供增删查改功能，可以避免一些并发错误。</li>
 </ul>
 <h2 id="三、单例模式的实现方式"><a href="#三、单例模式的实现方式" class="headerlink" title="三、单例模式的实现方式"></a>三、单例模式的实现方式</h2><h3 id="1-饿汉模式"><a href="#1-饿汉模式" class="headerlink" title="1. 饿汉模式"></a>1. 饿汉模式</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton sInstance = <span class="keyword">new</span> Singleton();</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;</div><div class="line">        </div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> sInstance;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>在声明静态对象时就把它初始化。（因为饿，所以迫不及待先把它 new 出来）</p>
@@ -490,8 +491,8 @@
 <li>这种实现方式主要是方便对单例对象进行统一管理。</li>
 </ul>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><ul>
-<li>不管使用哪一种形式实现单例模式，核心原理都是==将构造函数私有化==，并且==通过静态方法获取唯一的的实例==。</li>
-<li>在获取的过程中必须保证线程安全、<strong>防止反序列化导致重新生成实例对象</strong>等问题。</li>
+<li>不管使用哪一种形式实现单例模式，<strong>核心原理</strong>都是==将构造函数私有化==，并且==通过静态方法获取唯一的的实例==。</li>
+<li>在获取的过程中必须保证<strong>线程安全</strong>、<strong>防止反序列化导致重新生成实例对象</strong>等问题。</li>
 </ul>
 <h2 id="使用时的注意点"><a href="#使用时的注意点" class="headerlink" title="使用时的注意点"></a>使用时的注意点</h2><p>避免内存泄漏</p>
 <ul>
