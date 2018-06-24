@@ -71,7 +71,7 @@
 <link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Gradle," />
 
 
 
@@ -87,16 +87,20 @@
 
 
 
-<meta name="description" content="Live a life you will remember.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Tim&#39;s Track">
-<meta property="og:url" content="https://ivanljt.github.io/blog/archives/index.html">
+<meta name="description" content="概述api、provided、compile、implementation 都是 gradle 添加依赖时的选项，不同的选项表示不同的依赖关系。 其中 api、implementation 是Gradle 3.4 引入的新的依赖配置，用来代替 compile 依赖配置。其中 api 和以前的 compile 依赖配置是一样的。使用 api/compile 的依赖方式，会向外界暴露本模块所依赖的库的">
+<meta name="keywords" content="Gradle">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gradle 中api provided compile implementation 之间的区别">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2018/06/24/gradle-中api-provided-compile-implementation-之间的区别/index.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
-<meta property="og:description" content="Live a life you will remember.">
+<meta property="og:description" content="概述api、provided、compile、implementation 都是 gradle 添加依赖时的选项，不同的选项表示不同的依赖关系。 其中 api、implementation 是Gradle 3.4 引入的新的依赖配置，用来代替 compile 依赖配置。其中 api 和以前的 compile 依赖配置是一样的。使用 api/compile 的依赖方式，会向外界暴露本模块所依赖的库的">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNc79gy1fsme3uaov4j30g20bsjrl.jpg">
+<meta property="og:updated_time" content="2018-06-24T10:43:57.955Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Tim&#39;s Track">
-<meta name="twitter:description" content="Live a life you will remember.">
+<meta name="twitter:title" content="gradle 中api provided compile implementation 之间的区别">
+<meta name="twitter:description" content="概述api、provided、compile、implementation 都是 gradle 添加依赖时的选项，不同的选项表示不同的依赖关系。 其中 api、implementation 是Gradle 3.4 引入的新的依赖配置，用来代替 compile 依赖配置。其中 api 和以前的 compile 依赖配置是一样的。使用 api/compile 的依赖方式，会向外界暴露本模块所依赖的库的">
+<meta name="twitter:image" content="https://ws3.sinaimg.cn/large/006tNc79gy1fsme3uaov4j30g20bsjrl.jpg">
 
 
 
@@ -124,13 +128,13 @@
 
 
 
-  <link rel="canonical" href="https://ivanljt.github.io/blog/archives/"/>
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2018/06/24/gradle-中api-provided-compile-implementation-之间的区别/"/>
 
 
 
 
 
-  <title> 归档 | Tim's Track </title>
+  <title> gradle 中api provided compile implementation 之间的区别 | Tim's Track </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -155,7 +159,7 @@
     
   
 
-  <div class="container sidebar-position-left  page-archive  ">
+  <div class="container sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -283,334 +287,315 @@
           <div id="content" class="content">
             
 
-  <section id="posts" class="posts-collapse">
-    <span class="archive-move-on"></span>
+  <div id="posts" class="posts-expand">
+    
 
-    <span class="archive-page-counter">
-      
-      
-      
-        
-      
-      嗯..! 目前共计 30 篇日志。 继续努力。
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2018/06/24/gradle-中api-provided-compile-implementation-之间的区别/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
     </span>
 
     
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                gradle 中api provided compile implementation 之间的区别
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-24T14:22:13+08:00">
+                2018-06-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Gradle/" itemprop="url" rel="index">
+                    <span itemprop="name">Gradle</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2018/06/24/gradle-中api-provided-compile-implementation-之间的区别/" class="leancloud_visitors" data-flag-title="gradle 中api provided compile implementation 之间的区别">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  987
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  4
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
 
       
       
-      
 
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><code>api、provided、compile、implementation</code> 都是 gradle 添加依赖时的选项，不同的选项表示不同的依赖关系。</p>
+<p>其中 api、implementation 是Gradle 3.4 引入的新的依赖配置，用来代替 <code>compile</code> 依赖配置。其中 <code>api</code> 和以前的 <code>compile</code> 依赖配置是一样的。使用 api/compile 的依赖方式，会向外界暴露本模块所依赖的库的接口，使用 implementation 则不会。</p>
+<h2 id="解决了什么问题？"><a href="#解决了什么问题？" class="headerlink" title="解决了什么问题？"></a>解决了什么问题？</h2><p>为什么要做这样的修改呢？使用 <code>implementation</code> 依赖配置，可以显著减少构建的时间。</p>
+<p>考虑这样的场景，有如下六个模块：</p>
+<p><img src="https://ws3.sinaimg.cn/large/006tNc79gy1fsme3uaov4j30g20bsjrl.jpg" alt="依赖示意图"></p>
+<p>D、E、F 三个模块都依赖了 Lib 库。</p>
+<p>假设 D、E、F 三个模块都以 <code>implementation</code> 的方式引用 Lib 库，那么上层的 A，B，C 三个模块都无法引用到 Lib 库中的内容。当 Lib 发生变化的时候，只有 D E F 这三个模块需要重新编译，A,B,C 则不需要（因为DEF 三个模块对外的接口都没有改变）。</p>
+<p>假设 D、E、F 三个模块都以 <code>compile/api</code>  的方式引用 Lib 库（对外暴露了自己引用的库的接口），那么无论上层的 A，B，C 三个模块对 D、E、F模块的依赖是 compile、api 方式还是 implementation 方式，它们（A、B、C）都可以引用到 Lib 库中的内容。这种情况下当 Lib 发生变化的时候，A B C D E F 这三个模块都需要重新编译。</p>
+<h2 id="其它变化"><a href="#其它变化" class="headerlink" title="其它变化"></a>其它变化</h2><p>在该版本中，官方团队也把之前命名的不规范的地方修改了，provided改成了compileOnly，apk 改为了 runtimeOnly。改变的只是名称，功能没变。</p>
+<h3 id="compileOnly-的使用场景"><a href="#compileOnly-的使用场景" class="headerlink" title="compileOnly 的使用场景"></a>compileOnly 的使用场景</h3><p>包括但是不限于下面的两种：</p>
+<ol>
+<li>编译时所需的依赖性，但在运行时从不需要，例如纯源注释或注释处理器;</li>
+<li>API在编译时需要，但其实现由消费库，应用程序或运行时环境提供的依赖项。</li>
+</ol>
+<h3 id="runtimeOnly-的使用场景"><a href="#runtimeOnly-的使用场景" class="headerlink" title="runtimeOnly 的使用场景"></a>runtimeOnly 的使用场景</h3><p>依赖项仅在运行时对模块及其消费者可用。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><table>
+<thead>
+<tr>
+<th>新配置</th>
+<th>已弃用配置</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>implementation</code></td>
+<td><code>compile</code></td>
+<td>依赖项在编译时对模块可用，并且仅在运行时对模块的消费者可用。 对于大型多项目构建，使用 <code>implementation</code> 而不是 <code>api</code>/<code>compile</code> 可以<strong>显著缩短构建时间</strong>，因为它可以减少构建系统需要重新编译的项目量。 大多数应用和测试模块都应使用此配置。</td>
+</tr>
+<tr>
+<td><code>api</code></td>
+<td><code>compile</code></td>
+<td>依赖项在编译时对模块可用，并且在编译时和运行时还对模块的消费者可用。 此配置的行为类似于 <code>compile</code>（现在已弃用），一般情况下，您应当仅在库模块中使用它。 应用模块应使用 <code>implementation</code>，除非您想要将其 API 公开给单独的测试模块。</td>
+</tr>
+<tr>
+<td><code>compileOnly</code></td>
+<td><code>provided</code></td>
+<td>依赖项仅在编译时对模块可用，并且在编译或运行时对其消费者不可用。 此配置的行为类似于 <code>provided</code>（现在已弃用）。</td>
+</tr>
+<tr>
+<td><code>runtimeOnly</code></td>
+<td><code>apk</code></td>
+<td>依赖项仅在运行时对模块及其消费者可用。 此配置的行为类似于 <code>apk</code>（现在已弃用）。</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p> <strong>注</strong>：<code>compile</code>、<code>provided</code> 和 <code>apk</code> 目前仍然可用。 不过，它们将在下一个主要版本的 Android 插件中消失。</p>
+</blockquote>
+<p>日常开发中一般都是用 implementation，部分情况下会用到 api，其他的依赖方式一般不怎么用到。记住 compile、api 依赖方式是「传递性的」，而 implementation 依赖方式的是「非传递性」的。</p>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li><p><a href="https://developer.android.com/studio/build/gradle-plugin-3-0-0-migration" target="_blank" rel="noopener">迁移到 Android Plugin for Gradle 3.0.0</a></p>
+</li>
+<li><p><a href="https://jeroenmols.com/blog/2017/06/14/androidstudio3/" target="_blank" rel="noopener">Implementation vs API dependency</a></p>
+</li>
+<li><p><a href="https://blog.csdn.net/yuzhiqiang_1993/article/details/78366985" target="_blank" rel="noopener">Android Studio3.x新的依赖方式（implementation、api、compileOnly）</a></p>
+</li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
+
+      
+    </div>
+
+    <div>
       
         
-        <div class="collection-title">
-          <h2 class="archive-year motion-element" id="archive-year-2018">2018</h2>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/Gradle/" rel="tag"># Gradle</a>
+          
         </div>
       
-      
-
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2018/06/24/gradle-中api-provided-compile-implementation-之间的区别/" itemprop="url">
-              
-                <span itemprop="name">gradle 中api provided compile implementation 之间的区别</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-06-24T14:22:13+08:00"
-              content="2018-06-24" >
-          06-24
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-    
-
-      
-      
-      
-
-      
-      
-
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2018/06/02/Fragment Note/" itemprop="url">
-              
-                <span itemprop="name">Fragment Note</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-06-02T16:13:05+08:00"
-              content="2018-06-02" >
-          06-02
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-    
-
-      
-      
-      
 
       
         
-        <div class="collection-title">
-          <h2 class="archive-year motion-element" id="archive-year-2017">2017</h2>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/06/02/Fragment Note/" rel="next" title="Fragment Note">
+                <i class="fa fa-chevron-left"></i> Fragment Note
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
         </div>
       
-      
 
       
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/12/15/拆轮子系列——LeakCanary工作原理/" itemprop="url">
-              
-                <span itemprop="name">拆轮子系列——LeakCanary工作原理</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-12-15T13:28:02+08:00"
-              content="2017-12-15" >
-          12-15
-        </time>
-      </div>
-
-    </header>
+      
+    </footer>
   </article>
 
 
 
-    
-
+    <div class="post-spread">
       
-      
-      
-
-      
-      
-
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
         
-            <a class="post-title-link" href="/blog/2017/12/03/拆轮子系列——litepal-原理解析/" itemprop="url">
-              
-                <span itemprop="name">拆轮子系列——LitePal 原理解析</span>
-              
-            </a>
-        
-      </h1>
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-12-03T10:36:11+08:00"
-              content="2017-12-03" >
-          12-03
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-    
-
-      
-      
-      
-
-      
-      
-
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/10/14/拆轮子系列——EventBus源码解析/" itemprop="url">
-              
-                <span itemprop="name">拆轮子系列——EventBus 源码解析</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-10-14T12:09:21+08:00"
-              content="2017-10-14" >
-          10-14
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-    
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
 
       
-      
-      
-
-      
-      
-
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/10/07/拆轮子系列——ButterKnife工作原理/" itemprop="url">
-              
-                <span itemprop="name">拆轮子系列——ButterKnife工作原理</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-10-07T10:07:55+08:00"
-              content="2017-10-07" >
-          10-07
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-    
-
-      
-      
-      
-
-      
-      
-
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/09/21/String-StringBuilder与StringBuffer的区别/" itemprop="url">
-              
-                <span itemprop="name">String StringBuilder与StringBuffer的区别</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-09-21T14:26:19+08:00"
-              content="2017-09-21" >
-          09-21
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-    
-
-      
-      
-      
-
-      
-      
-
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/09/19/JVM 之类加载机制/" itemprop="url">
-              
-                <span itemprop="name">虚拟机类加载机制</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-09-19T12:54:59+08:00"
-              content="2017-09-19" >
-          09-19
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-    
-
-  </section>
-
-  
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/blog/archives/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/blog/archives/page/4/">4</a><a class="extend next" rel="next" href="/blog/archives/page/2/"><i class="fa fa-angle-right"></i></a>
-  </nav>
-
-
+    </div>
+  </div>
 
 
           </div>
@@ -618,6 +603,46 @@
 
 
           
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
 
         </div>
         
@@ -637,8 +662,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
@@ -711,6 +745,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决了什么问题？"><span class="nav-text">解决了什么问题？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其它变化"><span class="nav-text">其它变化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#compileOnly-的使用场景"><span class="nav-text">compileOnly 的使用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#runtimeOnly-的使用场景"><span class="nav-text">runtimeOnly 的使用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-text">小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -827,11 +877,9 @@
 
 
   
-  
-    <script type="text/javascript" id="motion.page.archive">
-      $('.archive-year').velocity('transition.slideLeftIn');
-    </script>
-  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
 
 
   
