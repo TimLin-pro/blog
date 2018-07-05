@@ -1,0 +1,1156 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="框架," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="示例：HelloRxJava一般学一门新的编程语言都是先从打印的「hello word」开始，我们看看如何用 Rxjava 打印出「Hello RxJava」 并以之作为分析的实例。 1234567891011121314151617181920212223242526272829//创建 ObservableObservable&amp;lt;String&amp;gt; observable = Observ">
+<meta name="keywords" content="框架">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxJava 订阅原理">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2018/06/24/RxJava-订阅原理/index.html">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="示例：HelloRxJava一般学一门新的编程语言都是先从打印的「hello word」开始，我们看看如何用 Rxjava 打印出「Hello RxJava」 并以之作为分析的实例。 1234567891011121314151617181920212223242526272829//创建 ObservableObservable&amp;lt;String&amp;gt; observable = Observ">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tNc79gy1fsmjkz2m4fj307n04qglj.jpg">
+<meta property="og:updated_time" content="2018-07-05T16:13:29.256Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxJava 订阅原理">
+<meta name="twitter:description" content="示例：HelloRxJava一般学一门新的编程语言都是先从打印的「hello word」开始，我们看看如何用 Rxjava 打印出「Hello RxJava」 并以之作为分析的实例。 1234567891011121314151617181920212223242526272829//创建 ObservableObservable&amp;lt;String&amp;gt; observable = Observ">
+<meta name="twitter:image" content="https://ws2.sinaimg.cn/large/006tNc79gy1fsmjkz2m4fj307n04qglj.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2018/06/24/RxJava-订阅原理/"/>
+
+
+
+
+
+  <title> RxJava 订阅原理 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2018/06/24/RxJava-订阅原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                RxJava 订阅原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-24T18:52:01+08:00">
+                2018-06-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/框架/" itemprop="url" rel="index">
+                    <span itemprop="name">框架</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2018/06/24/RxJava-订阅原理/" class="leancloud_visitors" data-flag-title="RxJava 订阅原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  1,280
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  6
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="示例：HelloRxJava"><a href="#示例：HelloRxJava" class="headerlink" title="示例：HelloRxJava"></a>示例：HelloRxJava</h2><p>一般学一门新的编程语言都是先从打印的「hello word」开始，我们看看如何用 Rxjava 打印出「Hello RxJava」 并以之作为分析的实例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//创建 Observable</span></div><div class="line">Observable&lt;String&gt; observable = Observable.create(<span class="keyword">new</span> ObservableOnSubscribe&lt;String&gt;() &#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribe</span><span class="params">(ObservableEmitter&lt;String&gt; emitter)</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">        emitter.onNext(<span class="string">"Hello RxJava"</span>);</div><div class="line">        emitter.onComplete();</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line"><span class="comment">//订阅</span></div><div class="line">observable.subscribe(<span class="keyword">new</span> Observer&lt;String&gt;() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSubscribe</span><span class="params">(Disposable d)</span> </span>&#123;</div><div class="line">		System.out.println(<span class="string">"onSubsribe call"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(String s)</span> </span>&#123;</div><div class="line">		System.out.println(s);<span class="comment">//打印收到的文字，这里是 Hello RxJava</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">		e.printStackTrace();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onComplete</span><span class="params">()</span> </span>&#123;</div><div class="line">		System.out.println(<span class="string">"onComplete call"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<a id="more"></a>
+<h2 id="Observerable-是如何创建的？"><a href="#Observerable-是如何创建的？" class="headerlink" title="Observerable 是如何创建的？"></a>Observerable 是如何创建的？</h2><p>首先 new 了一个 ObservableOnSubscribe 对象，并实现其中的 subscribe 方法。该对象被传递给了 Observable#create 方法以创建 Observable（当然也有其他方法可以创建 Observable ，但是原理大同小异）。</p>
+<p><code>io.reactivex.Observable#create</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@CheckReturnValue</span></div><div class="line"><span class="meta">@SchedulerSupport</span>(SchedulerSupport.NONE)</div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">Observable&lt;T&gt; <span class="title">create</span><span class="params">(ObservableOnSubscribe&lt;T&gt; source)</span> </span>&#123;</div><div class="line">    ObjectHelper.requireNonNull(source, <span class="string">"source is null"</span>);<span class="comment">//不可为空</span></div><div class="line">    <span class="keyword">return</span> RxJavaPlugins.onAssembly(<span class="keyword">new</span> ObservableCreate&lt;T&gt;(source));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>create 方法传递进来的 Observable 又传递给了 Observable 构造方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">final</span> ObservableOnSubscribe&lt;T&gt; source;<span class="comment">//保存成员变量</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">ObservableCreate</span><span class="params">(ObservableOnSubscribe&lt;T&gt; source)</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>.source = source;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>io.reactivex.plugins.RxJavaPlugins#onAssembly(io.reactivex.Observable<t>)</t></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Calls the associated hook function.</div><div class="line"> * <span class="doctag">@param</span> &lt;T&gt; the value type</div><div class="line"> * <span class="doctag">@param</span> source the hook's input value</div><div class="line"> * <span class="doctag">@return</span> the value returned by the hook</div><div class="line"> */</div><div class="line"><span class="meta">@SuppressWarnings</span>(&#123; <span class="string">"rawtypes"</span>, <span class="string">"unchecked"</span> &#125;)</div><div class="line"><span class="meta">@NonNull</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">Observable&lt;T&gt; <span class="title">onAssembly</span><span class="params">(@NonNull Observable&lt;T&gt; source)</span> </span>&#123;</div><div class="line">    Function&lt;? <span class="keyword">super</span> Observable, ? extends Observable&gt; f = onObservableAssembly;</div><div class="line">    <span class="keyword">if</span> (f != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> apply(f, source);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> source;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>io.reactivex.plugins.RxJavaPlugins#onAssembly 方法中只是调用了相关的 hook 函数（如果有的话），然后返回原对象。</p>
+<p>创建的结果：ObservableOnSubsribe 外面包装了一层。如下图所示：</p>
+<p><img src="https://ws2.sinaimg.cn/large/006tNc79gy1fsmjkz2m4fj307n04qglj.jpg" alt="image-20180624202952875"></p>
+<h2 id="订阅过程"><a href="#订阅过程" class="headerlink" title="订阅过程"></a>订阅过程</h2><p>实例代码中在订阅之前我们先创建了一个 <code>observer</code> 对象。</p>
+<p>然后调用 <code>Observable#subscribe</code> 方法，将 <code>observer</code> 作为参数传递给该方法。</p>
+<p>点开看看 <code>Observable#subscribe</code> 方法的实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">subscribe</span><span class="params">(Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    ObjectHelper.requireNonNull(observer, <span class="string">"observer is null"</span>);<span class="comment">//非空检查</span></div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        observer = RxJavaPlugins.onSubscribe(<span class="keyword">this</span>, observer);</div><div class="line"></div><div class="line">        ObjectHelper.requireNonNull(observer, <span class="string">"Plugin returned null Observer"</span>);<span class="comment">//非空检查</span></div><div class="line"></div><div class="line">        subscribeActual(observer);<span class="comment">//调用真正的订阅方法。</span></div><div class="line">    &#125; <span class="keyword">catch</span> (NullPointerException e) &#123; <span class="comment">// NOPMD</span></div><div class="line">        <span class="keyword">throw</span> e;</div><div class="line">    &#125; <span class="keyword">catch</span> (Throwable e) &#123;</div><div class="line">        Exceptions.throwIfFatal(e);</div><div class="line">        <span class="comment">// can't call onError because no way to know if a Disposable has been set or not</span></div><div class="line">        <span class="comment">// can't call onSubscribe because the call might have set a Subscription already</span></div><div class="line">        RxJavaPlugins.onError(e);<span class="comment">//</span></div><div class="line"></div><div class="line">        NullPointerException npe = <span class="keyword">new</span> NullPointerException(<span class="string">"Actually not, but can't throw other exceptions due to RS"</span>);</div><div class="line">        npe.initCause(e);</div><div class="line">        <span class="keyword">throw</span> npe;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面 try 块中的第一行代码调用了 <code>RxJavaPlugins#onSubscribe</code> 。点开看看它具体做了啥？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@SuppressWarnings</span>(&#123; <span class="string">"rawtypes"</span>, <span class="string">"unchecked"</span> &#125;)</div><div class="line"><span class="meta">@NonNull</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; Observer&lt;? <span class="keyword">super</span> T&gt; onSubscribe(<span class="meta">@NonNull</span> Observable&lt;T&gt; source, <span class="meta">@NonNull</span> Observer&lt;? <span class="keyword">super</span> T&gt; observer) &#123;</div><div class="line">    BiFunction&lt;? <span class="keyword">super</span> Observable, ? <span class="keyword">super</span> Observer, ? extends Observer&gt; f = onObservableSubscribe;</div><div class="line">    <span class="keyword">if</span> (f != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> apply(f, source, observer);<span class="comment">//调用相应的 hook 函数(如果有的话)</span></div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> observer;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们订阅的实际对象是 <code>ObserverableCreate</code>，因此点进去看看其中的 <code>subscribeActual</code> 方法实现：</p>
+<p><code>ObservableCreate#subscribeActual</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">subscribeActual</span><span class="params">(Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    CreateEmitter&lt;T&gt; parent = <span class="keyword">new</span> CreateEmitter&lt;T&gt;(observer);<span class="comment">//以 observer 作为参数构造一个 CreateEmitter</span></div><div class="line">    observer.onSubscribe(parent);<span class="comment">//回调 Observer#onSubsribe 方法</span></div><div class="line"></div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        source.subscribe(parent);<span class="comment">//调用源订阅方法，也就是我们自己实现的在其中发送数据的方法</span></div><div class="line">    &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</div><div class="line">        Exceptions.throwIfFatal(ex);</div><div class="line">        parent.onError(ex);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里的<code>source#subcribe</code> 也就是：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribe</span><span class="params">(ObservableEmitter&lt;String&gt; emitter)</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">    emitter.onNext(<span class="string">"hello rxJava"</span>);<span class="comment">//调用 发送数据</span></div><div class="line">    emitter.onComplete();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>订阅是从下游传递到上游。传递到源头之后，会触发调用 <code>Emitter#onXxx</code> 方法，将数据从上游发送到下游。</p>
+<h3 id="emitter-是如何将数据发射给-observer-的呢？"><a href="#emitter-是如何将数据发射给-observer-的呢？" class="headerlink" title="emitter 是如何将数据发射给 observer 的呢？"></a>emitter 是如何将数据发射给 observer 的呢？</h3><p>我们先看看 <strong>emitter 是什么</strong>？</p>
+<p>上面的 emitter 的实际类型是 CreateEmitter</p>
+<p>具体实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CreateEmitter</span>&lt;<span class="title">T</span>&gt;</span></div><div class="line"><span class="keyword">extends</span> <span class="title">AtomicReference</span>&lt;<span class="title">Disposable</span>&gt;</div><div class="line"><span class="keyword">implements</span> <span class="title">ObservableEmitter</span>&lt;<span class="title">T</span>&gt;, <span class="title">Disposable</span> &#123;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = -<span class="number">3434801548987643227L</span>;</div><div class="line"></div><div class="line">    <span class="keyword">final</span> Observer&lt;? <span class="keyword">super</span> T&gt; observer;</div><div class="line"></div><div class="line">    CreateEmitter(Observer&lt;? <span class="keyword">super</span> T&gt; observer) &#123;</div><div class="line">        <span class="keyword">this</span>.observer = observer;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(T t)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (t == <span class="keyword">null</span>) &#123;<span class="comment">//判空</span></div><div class="line">            onError(<span class="keyword">new</span> NullPointerException(<span class="string">"onNext called with null. Null values are generally not allowed in 2.x operators and sources."</span>));</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (!isDisposed()) &#123;<span class="comment">//如果当前状态不是 dispose</span></div><div class="line">            observer.onNext(t);<span class="comment">//调用 observer#onNext</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable t)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (!tryOnError(t)) &#123;</div><div class="line">            RxJavaPlugins.onError(t);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">tryOnError</span><span class="params">(Throwable t)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (t == <span class="keyword">null</span>) &#123;</div><div class="line">            t = <span class="keyword">new</span> NullPointerException(<span class="string">"onError called with null. Null values are generally not allowed in 2.x operators and sources."</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (!isDisposed()) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                observer.onError(t);</div><div class="line">            &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                dispose();</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onComplete</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (!isDisposed()) &#123;<span class="comment">//不是出于 disposed 状态</span></div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                observer.onComplete();<span class="comment">//调用</span></div><div class="line">            &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                dispose();<span class="comment">//onComplete 只能调用一次，调用完成之后，状态变为 dispose</span></div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>CreateEmitter</code> 是 <code>ObservableCreate</code>的一个内部类，继承自<code>AtomicReference&lt;Disposable&gt;</code>, 实现了两个接口 <code>ObservableEmitter&lt;T&gt;</code> 和 <code>Disposable</code> 。 </p>
+<p>可以看到 <code>CreateEmitter</code> 对 <code>observer</code> 进行了包装（observer 依赖通过构造函数参数注入）。它在调用 observer 的相应方法的前后对状态进行判断和更新。</p>
+<h3 id="CreateEmitter-又是在什么时候创建的呢？"><a href="#CreateEmitter-又是在什么时候创建的呢？" class="headerlink" title="CreateEmitter 又是在什么时候创建的呢？"></a><code>CreateEmitter</code> 又是在什么时候创建的呢？</h3><p>在订阅过程中调用到 <code>ObservableCreate#subscribeActual</code> ，该方法会利用 observer 构造一个 <code>CreateEmmiter</code>， 然后把它作为参数去调用 <code>source#subcribe</code> 方法。</p>
+<p><code>source</code> 也就是我们创建的 <code>ObservableOnSubscribe</code> 匿名内部类。<code>CreateEmmiter</code> 就是通过这样的方式作为参数传递给了我们自己实现的 <code>subscribe</code> 方法。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>订阅是从下游传递到上游。传递到源头之后，会触发调用 <code>Emitter#onXxx</code> 方法，将数据从上游发送到下游。</p>
+<p>上游对数据流的控制是通过 <code>CreateEmitter</code> 实现的。</p>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/框架/" rel="tag"># 框架</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/06/24/gradle-中api-provided-compile-implementation-之间的区别/" rel="next" title="gradle 中 api provided compile implementation 之间的区别">
+                <i class="fa fa-chevron-left"></i> gradle 中 api provided compile implementation 之间的区别
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/ivanljt" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#示例：HelloRxJava"><span class="nav-text">示例：HelloRxJava</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Observerable-是如何创建的？"><span class="nav-text">Observerable 是如何创建的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#订阅过程"><span class="nav-text">订阅过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#emitter-是如何将数据发射给-observer-的呢？"><span class="nav-text">emitter 是如何将数据发射给 observer 的呢？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CreateEmitter-又是在什么时候创建的呢？"><span class="nav-text">CreateEmitter 又是在什么时候创建的呢？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-text">小结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>
