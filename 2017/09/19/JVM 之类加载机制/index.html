@@ -97,7 +97,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28912625-9333eabc-7867-11e7-9b7f-6a2d4aa3f7a8.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28991885-d64d2c7c-79c1-11e7-9a8f-865a69fc24a2.png">
-<meta property="og:updated_time" content="2018-05-05T07:24:41.033Z">
+<meta property="og:updated_time" content="2018-07-27T15:55:52.459Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="虚拟机类加载机制">
 <meta name="twitter:description" content="概述虚拟机的类加载机制：虚拟机把描述类的数据从 Class 文件加载到内存，并对数据进行校验、转换解析和初始化，最终形成可以被虚拟机直接使用的 Java 类型。 与那些在编译时需要进行连接工作的语言不同，在 Java 语言里面，类型的加载、连接和初始化过程都是在程序运行期间完成的，  缺点：这种策略会令类加载时稍微增加一些性能开销 优点：为 Java 应用程序提供高度的灵活性，Java 里天生可以">
@@ -398,7 +398,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  7,627
+                  7,630
                 </span>
               
 
@@ -623,8 +623,8 @@
 <p><strong>工作过程</strong>：当一个类加载器收到了类加载的请求时，它不是自己加载，而是将这个请求委派给父类加载器去完成，每一层的类加载器都是如此，因此<strong>所有的加载请求最终都应该传送到顶层的启动类加载器中</strong>，只有当父加载器反馈自己无法完成该请求时，子加载器才会尝试自己去加载。</p>
 <p><strong>好处</strong>：</p>
 <ul>
-<li>Java 类随着它的类加载器一起具备了一种带有优先级的层次关系。</li>
-<li>保证 java 核心库的安全性（例如：如果用户自己写了一个 java.lang.String 类就会因为双亲委派机制不能被加载，不会破坏原生的 String 类的加载）<ul>
+<li>Java 类随着它的类加载器一起具备了一种<strong>带有优先级的层次关系</strong>。</li>
+<li><strong>保证 java 核心库的安全性</strong>（例如：如果用户自己写了一个 java.lang.String 类就会因为双亲委派机制不能被加载，不会破坏原生的 String 类的加载）<ul>
 <li>栗子： Object 类，无论哪一个类要加载该类，最终都是委派给处于模型最顶端的启动类加载器进行加载，因此 Object 类在程序的各种类加载器环境中都是同一个类。</li>
 </ul>
 </li>
@@ -689,7 +689,10 @@
 <p><strong>注意以下几种情况不会执行类初始化：</strong></p>
 <ul>
 <li>通过子类引用父类的静态字段，只会触发父类的初始化，而不会触发子类的初始化。</li>
-<li>定义对象数组，不会触发该类的初始化。</li>
+<li><strong>定义对象数组</strong>，不会触发该类的初始化。<ul>
+<li><code>Xxx[] ary = new Xxx[];</code></li>
+</ul>
+</li>
 <li>常量在编译期间会存入调用类的常量池中，本质上并没有直接引用定义常量的类，不会触发定义常量所在的类。</li>
 <li>通过类名获取 Class 对象，不会触发类的初始化。</li>
 <li>通过 Class.forName 加载指定类时，如果指定参数 initialize 为 false 时，也不会触发类初始化，其实这个参数是告诉虚拟机，是否要对类进行初始化。</li>
@@ -699,7 +702,7 @@
 <li>《深入理解 Java 虚拟机》</li>
 <li><a href="https://www.ziwenxie.site/2017/06/07/java-jvm-classloader/" target="_blank" rel="noopener">JVM 类加载机制详解</a></li>
 </ul>
-<p>本文大部分内容参考自《深入理解 Java 虚拟机》，当然也有一些个人理解，若有不正确的结论、说法，请大家指出，共同探讨，共同进步，谢谢!</p>
+<p>本文内容主要参考自《深入理解 Java 虚拟机》，当然也有一些个人理解，若有不正确的结论、说法，请大家指出，共同探讨，共同进步，谢谢!</p>
 
       
     </div>
