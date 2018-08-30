@@ -95,7 +95,7 @@
 <meta property="og:site_name" content="Tim&#39;s Track">
 <meta property="og:description" content="前面已经讲过了 RxJava 的订阅原理。 使用RxJava 可以非常方便地进行切换线程操作，那么线程调度原理是怎么样的呢？ 本次我们将探索RxJava2.x线程切换的实现原理。 以一个例子开始 打印出 hello world。 123456789101112Observable.create((ObservableOnSubscribe&amp;lt;String&amp;gt;) emitter -&amp;gt;">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-07-28T15:47:21.047Z">
+<meta property="og:updated_time" content="2018-08-02T17:09:39.439Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RxJava 线程切换原理">
 <meta name="twitter:description" content="前面已经讲过了 RxJava 的订阅原理。 使用RxJava 可以非常方便地进行切换线程操作，那么线程调度原理是怎么样的呢？ 本次我们将探索RxJava2.x线程切换的实现原理。 以一个例子开始 打印出 hello world。 123456789101112Observable.create((ObservableOnSubscribe&amp;lt;String&amp;gt;) emitter -&amp;gt;">
@@ -322,7 +322,7 @@
 <p>所以run里面的source.subscribe(parent);即为wrapper的observer订阅了上游的observable,触发了上游observable的subscribeActual，开始执行数据的分发<br>上层obserable -》wrapper产生的observer -》真实的observser</p>
 <h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>因为订阅是从外层往内传的，所以多次设置<code>subscribeOn()</code>时，只有第一次生效。</p>
 <ul>
-<li>业务代码中 <code>observable.subscribe</code>触发</li>
+<li>业务代码中，<strong>观察者订阅的时候</strong>。  <code>observable.subscribe</code>触发</li>
 <li>—&gt;(Wrapper)<code>Observable.subscribeActual()</code>内部调用</li>
 <li>—&gt;<code>parent.setDisposable(scheduler.scheduleDirect(new SubscribeTask(parent)));</code>,</li>
 <li>–&gt;<code>scheduler</code>在指定线程调用(完成线程切换)</li>
@@ -403,6 +403,10 @@
 <li><a href="https://github.com/ReactiveX/RxJava/blob/5b2394c9ee91f298661fff5e043744c84b425808/src/main/java/rx/Scheduler.java#L54" target="_blank" rel="noopener"><code>#createWorker()</code></a> <strong>抽象</strong>方法 ：创建 Worker 。</li>
 <li><a href="https://github.com/ReactiveX/RxJava/blob/5b2394c9ee91f298661fff5e043744c84b425808/src/main/java/rx/Scheduler.java#L129" target="_blank" rel="noopener"><code>#now()</code></a> <strong>默认</strong>方法 ：返回当前时间。</li>
 </ul>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li><a href="http://cherylgood.cn/detail/5a6037029a7b56c5c24fbc69.html" target="_blank" rel="noopener">线程切换</a></li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
 
     
   </div>
@@ -488,7 +492,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-count">32</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -499,7 +503,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -510,7 +514,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">19</span>
+                <span class="site-state-item-count">21</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
