@@ -98,7 +98,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/44859151-2465cc80-aca6-11e8-9374-e7af115b58b1.png">
 <meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcgy1fqj12dx3guj30wy0acq7h.jpg">
 <meta property="og:image" content="https://ws3.sinaimg.cn/large/006tKfTcgy1fqj174ztg9j30ws08wgq2.jpg">
-<meta property="og:updated_time" content="2018-08-30T15:01:10.122Z">
+<meta property="og:updated_time" content="2018-08-31T06:21:52.855Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Http 头部字段">
 <meta name="twitter:description" content="HTTP 报文格式 HTTP 请求报文在请求中，HTTP 报文由方法、URI、HTTP 版本、HTTP 首部字段等部分构成。 使用首部字段是为了给浏览器和服务器提供报文主体大小、所使用的语言、认证信息等内容。  HTTP 响应报文在响应中，HTTP 报文由 HTTP 版本、状态码（数字和原因短语）、HTTP 首部字段 3 部分构成。  HTTP 首部字段首部和方法配合工作，共同决定了客户端和服务器">
@@ -399,7 +399,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,647
+                  1,783
                 </span>
               
 
@@ -415,7 +415,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  6
+                  7
                 </span>
               
             </div>
@@ -682,6 +682,10 @@
 </tr>
 </tbody>
 </table>
+<h3 id="vary"><a href="#vary" class="headerlink" title="vary"></a>vary</h3><ul>
+<li>首部字段 Vary 可对缓存进行控制。源服务器会向代理服务器传达关于本地缓存使用方法的命令。</li>
+<li>从代理服务器接收到源服务器返回包含 Vary 指定项的响应之后，若再要进行缓存，仅对请求中含有相同 Vary 指定首部字段的请求返回缓存。即使对相同资源发起请求，但由于 Vary 指定的首部字段不相同，因此必须要从源服务器重新获取资源。</li>
+</ul>
 <h3 id="实体首部字段"><a href="#实体首部字段" class="headerlink" title="实体首部字段"></a>实体首部字段</h3><p>实体首部字段是包含在请求报文和响应报文中的<strong>实体部分所使用的首部</strong>，用于补充内容的更新时间等与实体相关的信息。</p>
 <p>有很多首部可以用来<strong>描述 HTTP 报文的负荷</strong>。</p>
 <p>实体首部提供了<strong>有关实体及其内容的大量信息</strong>，从有关<strong>对象类型的信息</strong>，到能够<strong>对资源使用的各种有效的请求方法</strong>。总之，<strong>实体首部可以告知报文的接收者它在对什么进行处理</strong>。下表中 列出了实体的信息性首部。</p>
@@ -1011,7 +1015,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-报文格式"><span class="nav-text">HTTP 报文格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-请求报文"><span class="nav-text">HTTP 请求报文</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-响应报文"><span class="nav-text">HTTP 响应报文</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-首部字段"><span class="nav-text">HTTP 首部字段</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#通用首部字段"><span class="nav-text">通用首部字段</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Cache-Control"><span class="nav-text">Cache-Control</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#缓存请求指令"><span class="nav-text">缓存请求指令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#max-age"><span class="nav-text">max-age</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#only-if-cached-指令"><span class="nav-text">only-if-cached 指令</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#请求首部字段"><span class="nav-text">请求首部字段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#响应首部字段"><span class="nav-text">响应首部字段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实体首部字段"><span class="nav-text">实体首部字段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#扩展首部"><span class="nav-text">扩展首部</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-报文格式"><span class="nav-text">HTTP 报文格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-请求报文"><span class="nav-text">HTTP 请求报文</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-响应报文"><span class="nav-text">HTTP 响应报文</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-首部字段"><span class="nav-text">HTTP 首部字段</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#通用首部字段"><span class="nav-text">通用首部字段</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Cache-Control"><span class="nav-text">Cache-Control</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#缓存请求指令"><span class="nav-text">缓存请求指令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#max-age"><span class="nav-text">max-age</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#only-if-cached-指令"><span class="nav-text">only-if-cached 指令</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#请求首部字段"><span class="nav-text">请求首部字段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#响应首部字段"><span class="nav-text">响应首部字段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vary"><span class="nav-text">vary</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实体首部字段"><span class="nav-text">实体首部字段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#扩展首部"><span class="nav-text">扩展首部</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
