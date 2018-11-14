@@ -71,7 +71,7 @@
 <link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="代码质量,编码规范," />
 
 
 
@@ -87,16 +87,18 @@
 
 
 
-<meta name="description" content="Live a life you will remember.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Tim&#39;s Track">
-<meta property="og:url" content="https://ivanljt.github.io/blog/tags/设计模式/index.html">
+<meta name="description" content="1.何谓重构「重构」有两种不同含义：  作为名词时的含义：软件内部结构的一种调整，目的是在不改变「软件的可视行为」前提下，提高它的可拓展性，降低修改成本。 作为动词时的含义：使用一系列重构的准则，在不改变「软件的可视行为」前提下，调整其结构。  注：「软件的可视行为」的指的是程序运行时表现。 几个常见的问题：「重构」只是整理代码吗？从某种角度而言，是的。  重构（包含的各种原则）是整理代码的一套方">
+<meta name="keywords" content="代码质量,编码规范">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈重构">
+<meta property="og:url" content="https://ivanljt.github.io/blog/2018/11/14/浅谈重构/index.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
-<meta property="og:description" content="Live a life you will remember.">
+<meta property="og:description" content="1.何谓重构「重构」有两种不同含义：  作为名词时的含义：软件内部结构的一种调整，目的是在不改变「软件的可视行为」前提下，提高它的可拓展性，降低修改成本。 作为动词时的含义：使用一系列重构的准则，在不改变「软件的可视行为」前提下，调整其结构。  注：「软件的可视行为」的指的是程序运行时表现。 几个常见的问题：「重构」只是整理代码吗？从某种角度而言，是的。  重构（包含的各种原则）是整理代码的一套方">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-11-14T03:08:29.569Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Tim&#39;s Track">
-<meta name="twitter:description" content="Live a life you will remember.">
+<meta name="twitter:title" content="浅谈重构">
+<meta name="twitter:description" content="1.何谓重构「重构」有两种不同含义：  作为名词时的含义：软件内部结构的一种调整，目的是在不改变「软件的可视行为」前提下，提高它的可拓展性，降低修改成本。 作为动词时的含义：使用一系列重构的准则，在不改变「软件的可视行为」前提下，调整其结构。  注：「软件的可视行为」的指的是程序运行时表现。 几个常见的问题：「重构」只是整理代码吗？从某种角度而言，是的。  重构（包含的各种原则）是整理代码的一套方">
 
 
 
@@ -124,13 +126,13 @@
 
 
 
-  <link rel="canonical" href="https://ivanljt.github.io/blog/tags/设计模式/"/>
+  <link rel="canonical" href="https://ivanljt.github.io/blog/2018/11/14/浅谈重构/"/>
 
 
 
 
 
-  <title> 标签: 设计模式 | Tim's Track </title>
+  <title> 浅谈重构 | Tim's Track </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -155,7 +157,7 @@
     
   
 
-  <div class="container sidebar-position-left  ">
+  <div class="container sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -283,214 +285,294 @@
           <div id="content" class="content">
             
 
-  <div id="posts" class="posts-collapse">
-    <div class="collection-title">
-      <h2 >
-        设计模式
-        <small>标签</small>
-      </h2>
-    </div>
-
+  <div id="posts" class="posts-expand">
     
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/09/05/Android-源码中的装饰者模式/" itemprop="url">
-              
-                <span itemprop="name">Android 源码中的装饰者模式</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-09-05T15:54:40+08:00"
-              content="2017-09-05" >
-          09-05
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/" itemprop="url">
-              
-                <span itemprop="name">Android 源码中的享元模式——Message 复用原理</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-08-26T15:33:23+08:00"
-              content="2017-08-26" >
-          08-26
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/08/24/Android-源码中的模板方法模式——AsyncTask解析/" itemprop="url">
-              
-                <span itemprop="name">Android 源码中的模板方法模式——AsyncTask解析</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-08-24T11:47:11+08:00"
-              content="2017-08-24" >
-          08-24
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/08/21/行为型设置模式之备忘录模式/" itemprop="url">
-              
-                <span itemprop="name">行为型设计模式之备忘录模式</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-08-21T20:19:44+08:00"
-              content="2017-08-21" >
-          08-21
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/08/18/Android源码中的代理模式/" itemprop="url">
-              
-                <span itemprop="name">Android源码中的代理模式</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-08-18T17:45:11+08:00"
-              content="2017-08-18" >
-          08-18
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/08/09/Android源码中的观察者模式/" itemprop="url">
-              
-                <span itemprop="name">Android源码中的观察者模式</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-08-09T09:20:49+08:00"
-              content="2017-08-09" >
-          08-09
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2017/07/20/单例模式/" itemprop="url">
-              
-                <span itemprop="name">创建型模式之单例模式</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2017-07-20T09:59:02+08:00"
-              content="2017-07-20" >
-          07-20
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-  </div>
 
   
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2018/11/14/浅谈重构/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                浅谈重构
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-14T08:43:25+08:00">
+                2018-11-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2018/11/14/浅谈重构/" class="leancloud_visitors" data-flag-title="浅谈重构">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  1,238
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  4
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="1-何谓重构"><a href="#1-何谓重构" class="headerlink" title="1.何谓重构"></a>1.何谓重构</h2><p>「重构」有两种不同含义：</p>
+<ul>
+<li>作为名词时的含义：软件内部结构的一种调整，目的是在不改变「软件的可视行为」前提下，提高它的可拓展性，降低修改成本。</li>
+<li>作为动词时的含义：使用一系列重构的准则，在不改变「软件的可视行为」前提下，调整其结构。</li>
+</ul>
+<p>注：「软件的可视行为」的指的是程序运行时表现。</p>
+<h3 id="几个常见的问题："><a href="#几个常见的问题：" class="headerlink" title="几个常见的问题："></a>几个常见的问题：</h3><h4 id="「重构」只是整理代码吗？"><a href="#「重构」只是整理代码吗？" class="headerlink" title="「重构」只是整理代码吗？"></a>「重构」只是整理代码吗？</h4><p>从某种角度而言，是的。</p>
+<ul>
+<li>重构（包含的各种原则）是整理代码的一套方法论。掌握之后，可以吧帮助我们更高效并且可控地整理好代码。</li>
+</ul>
+<h4 id="「重构」与「性能优化」的区别"><a href="#「重构」与「性能优化」的区别" class="headerlink" title="「重构」与「性能优化」的区别"></a>「重构」与「性能优化」的区别</h4><p>和重构一样，性能优化通常不会改变组件的行为（除了执行速度），只会改变其内部结构。但是<strong>两者出发点不同</strong>：</p>
+<p>性能优化往往使代码较难理解，但为了得到所需的性能你不得不那么做。</p>
+<p>我要强调的第二点是：重构不会改变软件「可受观察之行为」——重构之后软件功能一如以往。</p>
+<h4 id="「添加新功能」和「重构」的区别"><a href="#「添加新功能」和「重构」的区别" class="headerlink" title="「添加新功能」和「重构」的区别"></a>「添加新功能」和「重构」的区别</h4><ul>
+<li>添加新功能时，你不应该修改既有代码，只管添加新功能。通过测试（并让测试正常运行〉，你可以衡量自己的工作进度。</li>
+<li>重构时你就不能再添加功能，只管改进程序结构。此时你不应该添加任何测试（除非发现先前遗漏的任何东西），只在绝对必要（用以处理接口变化〕时才修改测试。</li>
+</ul>
+<p>无论何时都应该清楚自己当前在做什么，是「添加新功能」还是在「重构」。</p>
+<h2 id="2-为何重构"><a href="#2-为何重构" class="headerlink" title="2.为何重构"></a>2.为何重构</h2><ol>
+<li>改进软件设计。比如消除重复代码。代码数量减少将使未来可能的程序修改动作容易得多。确定代码将所有事物和行为都只表述一次。</li>
+<li>提高可读性，降低维护成本 <ul>
+<li>我们写下的源码有两个读者——计算机 和 另一些程序员。让后者能够读懂你的代码才是最重要的。（业务需求总是改变的，可能十天后就会有新同事需要尝试读懂你的代码，并做一些修改）</li>
+<li>当你努力让程序运转的时候，你不会想到未来出现的那个开发者。其实很多时候，那个「未来的开发者」就是你自己。也就是说，重构可以帮助你完成这些</li>
+<li>利用重构来协助我理解不熟悉的代码</li>
+</ul>
+</li>
+<li>帮助找到 bug。<ul>
+<li>对代码进行重构，我就可以深入理解代码的作为，并恰到好处地把新的理解反馈回去。搞清楚程序结构的同时，我也清楚了自己所做的一些假设</li>
+</ul>
+</li>
+<li>帮助提高编程速度。如果设计不合理。或许某一段时间内你的进展迅速，但<strong>恶劣的设计很快就让你的速度慢下来</strong>。你会把时间花在调试上面，无法添加新功能。修改时间愈来愈长，因为你必须花愈来愈多的时间去理解系统、寻找重复代码。</li>
+</ol>
+<h2 id="3-何时重构"><a href="#3-何时重构" class="headerlink" title="3.何时重构"></a>3.何时重构</h2><p>重构本来就不是一件「特别拨出时间做」的事情，<strong>重构应该随时随地进行</strong>。你不应该为重构而重构，你<strong>之所以重构，是因为你想做别的什么事，而重构可以帮助你把那些事做好</strong>。</p>
+<p>几个典型的重构时机：</p>
+<ul>
+<li>添加功能时一并重构</li>
+<li>修补错误时一并重构</li>
+<li>code review 时一并重构</li>
+</ul>
+<h2 id="4-小结"><a href="#4-小结" class="headerlink" title="4.小结"></a>4.小结</h2><p>坏味道的代码编写而成的程序，有以下几个特征：</p>
+<ul>
+<li>难以阅读的程序，难以修改。</li>
+<li>逻辑重复（duplicated logic）的程序，难以修改。</li>
+<li>添加新行为时需要修改既有代码的程序，难以修改。</li>
+<li>带复杂条件逻辑（complex conditional logic）的程序，难以修改。</li>
+</ul>
+<p>因此，我们希望程序：</p>
+<ol>
+<li>容易理解；</li>
+<li>所有逻辑都只在唯一一处指定；</li>
+<li>新的改动不会危及现有行为；</li>
+<li>尽可能简单表达条件逻辑（conditional logic）。</li>
+</ol>
+<p>重构是这样一个过程：它在一个目前可运行的程序上进行，企图在「不改变程序行为」的情况下赋予上述美好性质，使我们能够继续保持高速开发，从而增加程序的价值。</p>
+<h2 id="5-参考资料与学习资源推荐"><a href="#5-参考资料与学习资源推荐" class="headerlink" title="5.参考资料与学习资源推荐"></a>5.参考资料与学习资源推荐</h2><ul>
+<li>《重构，改善既有代码的设计》</li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/代码质量/" rel="tag"># 代码质量</a>
+          
+            <a href="/blog/tags/编码规范/" rel="tag"># 编码规范</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/11/07/Skeleton-工作原理/" rel="next" title="Skeleton 工作原理">
+                <i class="fa fa-chevron-left"></i> Skeleton 工作原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
 
 
           </div>
@@ -498,6 +580,46 @@
 
 
           
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
 
         </div>
         
@@ -517,8 +639,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
@@ -591,6 +722,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-何谓重构"><span class="nav-text">1.何谓重构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#几个常见的问题："><span class="nav-text">几个常见的问题：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#「重构」只是整理代码吗？"><span class="nav-text">「重构」只是整理代码吗？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#「重构」与「性能优化」的区别"><span class="nav-text">「重构」与「性能优化」的区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#「添加新功能」和「重构」的区别"><span class="nav-text">「添加新功能」和「重构」的区别</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-为何重构"><span class="nav-text">2.为何重构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-何时重构"><span class="nav-text">3.何时重构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-小结"><span class="nav-text">4.小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-参考资料与学习资源推荐"><span class="nav-text">5.参考资料与学习资源推荐</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -707,6 +854,10 @@
 
 
   
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
 
   
 
