@@ -87,19 +87,19 @@
 
 
 
-<meta name="description" content="Toast.makeText(context,”msg”,Toast.Length_SHORT).show();`我们都知道调用了这行代码，便会触发显示 Toast 信息，但是从调用开始到显示出来的具体过程是怎么样的，里面具体实现又是怎么样的呢？">
+<meta name="description" content="序言Toast.makeText(context,&amp;quot;msg&amp;quot;,Toast.Length_SHORT).show(); 我们都知道调用了这行代码，便会触发显示 Toast 信息，但是从调用开始到显示出来的具体过程是怎么样的，里面具体实现又是怎么样的呢？">
 <meta name="keywords" content="原理分析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Toast 原理">
 <meta property="og:url" content="https://ivanljt.github.io/blog/2017/07/28/Toast 原理浅析/index.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
-<meta property="og:description" content="Toast.makeText(context,”msg”,Toast.Length_SHORT).show();`我们都知道调用了这行代码，便会触发显示 Toast 信息，但是从调用开始到显示出来的具体过程是怎么样的，里面具体实现又是怎么样的呢？">
+<meta property="og:description" content="序言Toast.makeText(context,&amp;quot;msg&amp;quot;,Toast.Length_SHORT).show(); 我们都知道调用了这行代码，便会触发显示 Toast 信息，但是从调用开始到显示出来的具体过程是怎么样的，里面具体实现又是怎么样的呢？">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/28705462-7393612a-73a2-11e7-92b0-5d0ebfb237f0.jpg">
-<meta property="og:updated_time" content="2018-04-15T12:03:11.388Z">
+<meta property="og:updated_time" content="2018-11-14T06:54:44.708Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Toast 原理">
-<meta name="twitter:description" content="Toast.makeText(context,”msg”,Toast.Length_SHORT).show();`我们都知道调用了这行代码，便会触发显示 Toast 信息，但是从调用开始到显示出来的具体过程是怎么样的，里面具体实现又是怎么样的呢？">
+<meta name="twitter:description" content="序言Toast.makeText(context,&amp;quot;msg&amp;quot;,Toast.Length_SHORT).show(); 我们都知道调用了这行代码，便会触发显示 Toast 信息，但是从调用开始到显示出来的具体过程是怎么样的，里面具体实现又是怎么样的呢？">
 <meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/28705462-7393612a-73a2-11e7-92b0-5d0ebfb237f0.jpg">
 
 
@@ -397,7 +397,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  2,139
+                  2,316
                 </span>
               
 
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  10
+                  11
                 </span>
               
             </div>
@@ -432,9 +432,10 @@
       
 
       
-        <p>Toast.makeText(context,”msg”,Toast.Length_SHORT).show();`<br>我们都知道调用了这行代码，便会触发显示 Toast 信息，但是从调用开始到显示出来的具体过程是怎么样的，里面具体实现又是怎么样的呢？</p>
+        <h2 id="序言"><a href="#序言" class="headerlink" title="序言"></a>序言</h2><p><code>Toast.makeText(context,&quot;msg&quot;,Toast.Length_SHORT).show();</code></p>
+<p>我们都知道调用了这行代码，便会触发显示 Toast 信息，但是从调用开始到显示出来的具体过程是怎么样的，里面具体实现又是怎么样的呢？</p>
 <a id="more"></a>
-<p>在 Toast 内部有两类 IPC 过程。</p>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>在 Toast 内部有两类 IPC 过程。</p>
 <ul>
 <li>第一类： Toast 访问 NotificationManagerService</li>
 <li>第二类：NotificationManagerService 回调 Toast 里的 TN 接口。</li>
@@ -491,7 +492,7 @@
 </ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">final Handler mHandler = new Handler() &#123;</div><div class="line">    @Override</div><div class="line">    public void handleMessage(Message msg) &#123;</div><div class="line">        IBinder token = (IBinder) msg.obj;</div><div class="line">        handleShow(token);</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 <p>其具体实现又是在 handleShow(token);<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleShow</span><span class="params">(IBinder windowToken)</span> </span>&#123;</div><div class="line"> </div><div class="line">    <span class="keyword">if</span> (mView != mNextView) &#123;</div><div class="line">        <span class="comment">// 如果有必要的话，将还在显示的 toast 隐藏掉</span></div><div class="line">        handleHide();</div><div class="line">        mView = mNextView;</div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">        mWM = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);<span class="comment">//获取 windowManager</span></div><div class="line">        <span class="comment">//省略代码，给布局参数赋值</span></div><div class="line">        <span class="keyword">if</span> (mView.getParent() != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (localLOGV) Log.v(TAG, <span class="string">"REMOVE! "</span> + mView + <span class="string">" in "</span> + <span class="keyword">this</span>);</div><div class="line">            mWM.removeView(mView);</div><div class="line">        &#125;</div><div class="line">        mWM.addView(mView, mParams);</div><div class="line">        trySendAccessibilityEvent();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>以上代码核心在于<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">`mWM = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);`</div><div class="line">`mWM.addView(mView, mParams);`</div></pre></td></tr></table></figure></p>
+<p>以上代码核心在于<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mWM = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);</div><div class="line">mWM.addView(mView, mParams);</div></pre></td></tr></table></figure></p>
 <p>将 Toast 的视图添加到 Window 中。 这样 View 就能顺利显示出来了。</p>
 <p>你可能会问，为什么 TN 调用 show 方法要用到的 Handler ？</p>
 <ul>
@@ -509,6 +510,11 @@
 <p>scheduleTimeoutLocked 会发出消息给 hanlder,收到相应的信息后 handleMessage 方法会调用<code>handleTimeout((ToastRecord)msg.obj);</code>, 该方法又会调用 <code>cancelToastLocked(index);</code></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">cancelToastLocked</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</div><div class="line">    ToastRecord record = mToastQueue.get(index);</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        record.callback.hide();<span class="comment">//</span></div><div class="line">    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">    &#125;</div><div class="line">        <span class="comment">//代码省略</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>可以看到隐藏 Toast 的实现也是在 TN 中的。与 handleShow 对应，有一个 handleHide 方法。<br>该方法会将 Toast 的视图从 Window 中移除。如下所示：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleHide</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (mView != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">if</span> (mView.getParent() != <span class="keyword">null</span>) &#123;</div><div class="line">            mWM.removeViewImmediate(mView);</div><div class="line">        &#125;</div><div class="line">        mView = <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h2 id="Toast-的「一个-Bug」"><a href="#Toast-的「一个-Bug」" class="headerlink" title="Toast 的「一个 Bug」"></a>Toast 的「一个 Bug」</h2><p>其实这是一个系统的Bug，谷歌为了让应用的 Toast 能够显示在其他应用上面，所以使用了通知栏相关的 API，但是这个 API 随着用户屏蔽通知栏而变得不可用，系统错误地认为你没有通知栏权限，从而间接导致 Toast 有 show 请求时被系统所拦截</p>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li><a href="https://www.jianshu.com/p/1d64a5ccbc7c" target="_blank" rel="noopener">Toast通知栏权限填坑指南</a></li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
 
       
     </div>
@@ -684,8 +690,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
@@ -758,6 +773,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#序言"><span class="nav-text">序言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#原理"><span class="nav-text">原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Toast-的「一个-Bug」"><span class="nav-text">Toast 的「一个 Bug」</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
