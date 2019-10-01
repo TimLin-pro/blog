@@ -32,7 +32,7 @@
 
   
   
-  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
 
 
 
@@ -66,9 +66,9 @@
 
 
 
-<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
 
-<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
   <meta name="keywords" content="原理分析,Android 进阶,设计模式," />
@@ -80,7 +80,7 @@
 
 
 
-  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
 
 
 
@@ -91,7 +91,7 @@
 <meta name="keywords" content="原理分析,Android 进阶,设计模式">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 源码中的享元模式——Message 复用原理">
-<meta property="og:url" content="https://ivanljt.github.io/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/index.html">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/index.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
 <meta property="og:description" content="介绍享元模式是对象池的一种实现，它的英文名为 Flyweight，代表轻量级的意思。 享元模式用来尽可能==减少内存使用量==，它适合用于可能存在大量对象的场景，来==缓存可共享的对象==（例如 Message、Java 中的字符串常量池）,从而实现对象共享、避免创建过多对象的效果，这样一来就可以提升性能，避免内存移除等。 享元模式中的部分状态是可以共享的，  可以共享的状态称为内部状态。内部状态">
 <meta property="og:locale" content="zh-Hans">
@@ -108,7 +108,7 @@
 <script type="text/javascript" id="hexo.configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
-    root: '/blog/',
+    root: '/',
     scheme: 'Pisces',
     sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
     fancybox: true,
@@ -129,7 +129,7 @@
 
 
 
-  <link rel="canonical" href="https://ivanljt.github.io/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/"/>
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/"/>
 
 
 
@@ -169,7 +169,7 @@
     
 
     <div class="custom-logo-site-title">
-      <a href="/blog/"  class="brand" rel="start">
+      <a href="/"  class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
         <span class="site-title">Tim's Track</span>
         <span class="logo-line-after"><i></i></span>
@@ -197,7 +197,7 @@
       
         
         <li class="menu-item menu-item-home">
-          <a href="/blog/" rel="section">
+          <a href="/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
@@ -207,7 +207,7 @@
       
         
         <li class="menu-item menu-item-about">
-          <a href="/blog/about" rel="section">
+          <a href="/about" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
             
@@ -217,7 +217,7 @@
       
         
         <li class="menu-item menu-item-archives">
-          <a href="/blog/archives" rel="section">
+          <a href="/archives" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
@@ -227,7 +227,7 @@
       
         
         <li class="menu-item menu-item-tags">
-          <a href="/blog/tags" rel="section">
+          <a href="/tags" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
@@ -298,7 +298,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="https://ivanljt.github.io/blog/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Tim Lin">
@@ -357,7 +357,7 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/原理分析/" itemprop="url" rel="index">
+                  <a href="/categories/原理分析/" itemprop="url" rel="index">
                     <span itemprop="name">原理分析</span>
                   </a>
                 </span>
@@ -368,7 +368,7 @@
                 
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/原理分析/Android-进阶/" itemprop="url" rel="index">
+                  <a href="/categories/原理分析/Android-进阶/" itemprop="url" rel="index">
                     <span itemprop="name">Android 进阶</span>
                   </a>
                 </span>
@@ -379,7 +379,7 @@
                 
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/原理分析/Android-进阶/设计模式/" itemprop="url" rel="index">
+                  <a href="/categories/原理分析/Android-进阶/设计模式/" itemprop="url" rel="index">
                     <span itemprop="name">设计模式</span>
                   </a>
                 </span>
@@ -396,7 +396,7 @@
 
           
           
-             <span id="/blog/2017/08/26/Android-源码中的享元模式——Message复用机制/" class="leancloud_visitors" data-flag-title="Android 源码中的享元模式——Message 复用原理">
+             <span id="/2017/08/26/Android-源码中的享元模式——Message复用机制/" class="leancloud_visitors" data-flag-title="Android 源码中的享元模式——Message 复用原理">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -490,7 +490,7 @@
 <p><img src="https://user-images.githubusercontent.com/16668676/29739978-6c03d780-8a7e-11e7-8aad-3da3590c2ea1.png" alt="msg"></p>
 <h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>Message 通过在内部构建一个链表来维护一个被会受到  Message 对象的对象池，当用户调用 obtain 方法时，会优先从池中获取。如果池中没有可以复用的对象就创建一个新的对象，该对象使用完之后，会被缓存到对象池中，当下次调用 obtain 方法时，他们就会被复用。</p>
 <p>此处 Message 扮演了三个角色。既是 FlyWeight 抽象，又是 ConcreteFlyWeight 对象，同时还担任 FlyWeightFactory 角色，承担着管理对象池的职责。</p>
-<p>想进一步了解 Android 消息机制的同学可参考<a href="https://ivanljt.github.io/blog/2017/04/28/Android-%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/">Android 消息机制解析</a>。</p>
+<p>想进一步了解 Android 消息机制的同学可参考<a href="https://ivanljt.github.io/blog/2017/04/28/Android-%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/" target="_blank" rel="noopener">Android 消息机制解析</a>。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>享元模式的优点：</p>
 <ul>
 <li>大幅度降低了内存中对象的数量。从而降低了内存的占用，提高了程序的性能。</li>
@@ -503,7 +503,7 @@
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
 <li><a href="http://www.cnblogs.com/java-my-life/archive/2012/04/26/2468499.html" target="_blank" rel="noopener">《JAVA 与模式》之享元模式</a></li>
 <li>《Android 源码设计模式解析与实战》</li>
-<li><a href="https://ivanljt.github.io/blog/2017/04/28/Android-%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/">Android 消息机制解析</a></li>
+<li><a href="https://ivanljt.github.io/blog/2017/04/28/Android-%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6%E8%A7%A3%E6%9E%90/" target="_blank" rel="noopener">Android 消息机制解析</a></li>
 </ul>
 <p>若本文中有不正确的结论、说法，请大家指出，共同探讨，共同进步，谢谢!</p>
 
@@ -535,11 +535,11 @@
       
         <div class="post-tags">
           
-            <a href="/blog/tags/原理分析/" rel="tag"># 原理分析</a>
+            <a href="/tags/原理分析/" rel="tag"># 原理分析</a>
           
-            <a href="/blog/tags/Android-进阶/" rel="tag"># Android 进阶</a>
+            <a href="/tags/Android-进阶/" rel="tag"># Android 进阶</a>
           
-            <a href="/blog/tags/设计模式/" rel="tag"># 设计模式</a>
+            <a href="/tags/设计模式/" rel="tag"># 设计模式</a>
           
         </div>
       
@@ -552,7 +552,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2017/08/24/Android-源码中的模板方法模式——AsyncTask解析/" rel="next" title="Android 源码中的模板方法模式——AsyncTask解析">
+              <a href="/2017/08/24/Android-源码中的模板方法模式——AsyncTask解析/" rel="next" title="Android 源码中的模板方法模式——AsyncTask解析">
                 <i class="fa fa-chevron-left"></i> Android 源码中的模板方法模式——AsyncTask解析
               </a>
             
@@ -562,7 +562,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/blog/2017/09/05/Android-源码中的装饰者模式/" rel="prev" title="Android 源码中的装饰者模式">
+              <a href="/2017/09/05/Android-源码中的装饰者模式/" rel="prev" title="Android 源码中的装饰者模式">
                 Android 源码中的装饰者模式 <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -709,7 +709,7 @@
 
           
             <div class="site-state-item site-state-posts">
-              <a href="/blog/archives">
+              <a href="/archives">
                 <span class="site-state-item-count">35</span>
                 <span class="site-state-item-name">日志</span>
               </a>
@@ -720,7 +720,7 @@
             
             
             <div class="site-state-item site-state-categories">
-              <a href="/blog/categories/index.html">
+              <a href="/categories/index.html">
                 <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">分类</span>
               </a>
@@ -731,7 +731,7 @@
             
             
             <div class="site-state-item site-state-tags">
-              <a href="/blog/tags/index.html">
+              <a href="/tags/index.html">
                 <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">标签</span>
               </a>
@@ -862,53 +862,53 @@
 
 
   
-  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
 
   
-  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
 
   
-  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
 
   
-  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
 
   
-  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
 
   
-  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
-
-
-  
-
-
-  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
-
-  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
-
-
-
-  
-  
-
-
-  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
-
-  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
-
-
-
-  
-  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
-<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
-
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
 
 
   
 
 
-  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
 
 
 
@@ -958,7 +958,7 @@
     if (search_path.length == 0) {
       search_path = "search.xml";
     }
-    var path = "/blog/" + search_path;
+    var path = "/" + search_path;
     // monitor main search box;
 
     function proceedsearch() {
