@@ -6,7 +6,8 @@
     <entry>
       <title><![CDATA[迁移到AndroidX]]></title>
       <url>https://timlin-pro.github.io/blog/2019/10/27/%E5%BF%AB%E9%80%9F%E8%BF%81%E7%A7%BB%E5%88%B0%20AndroidX/</url>
-      <content type="html"><![CDATA[<p>Android Studio 提供的 Migrate to AndroidX 功能不是特别完善，很多文件的包名替换不完整。可以通过自定义脚本来处理这个流程。分享一个方式。</p>
+      <content type="html"><![CDATA[<p>Android Studio 提供的 Migrate to AndroidX 功能不是特别完善，很多文件的包名替换不完整。可以通过自定义脚本来处理这个流程。</p>
+<a id="more"></a>
 <p>包名映射文件下载地址： <code>https://developer.android.com/topic/libraries/support-library/downloads/androidx-class-mapping.csv</code></p>
 <p>脚本文件：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env bash</div><div class="line"></div><div class="line">MAPPING_FILE=csv文件路径</div><div class="line">PROJECT_DIR=项目目录</div><div class="line"></div><div class="line">replace=&quot;&quot;</div><div class="line">while IFS=, read -r from to</div><div class="line">do</div><div class="line">	replace+=&quot;; s/$from/$to/g&quot;</div><div class="line">done &lt;&lt;&lt; &quot;$(cat $MAPPING_FILE)&quot;</div><div class="line">fd . $PROJECT_DIR -e kt -e java -e xml --print0 | xargs -0 gsed -i &quot;$replace&quot;</div></pre></td></tr></table></figure>
@@ -39,6 +40,7 @@
       <title><![CDATA[保险基础知识]]></title>
       <url>https://timlin-pro.github.io/blog/2019/05/26/%E4%BF%9D%E9%99%A9%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</url>
       <content type="html"><![CDATA[<h2 id="1、为什么要买保险？"><a href="#1、为什么要买保险？" class="headerlink" title="1、为什么要买保险？"></a>1、为什么要买保险？</h2><p>购买保险是为了减少预期以外的事件对被保险人的财务状况造成冲击，为受益人提供经济补偿减轻负担。<strong>用经济学原理来解释就是被保险人通过缴纳保费换取未来财务状况更大的确定性</strong>。</p>
+<a id="more"></a>
 <blockquote>
 <p>假设没买保险前，你未来财富现值的范围是 [-50 万元，200 万元]，有负值的原因可能是各种财富损失，比如家里大火，比如治病过程中支付的高额医疗费用；而通过购买保险，你的未来财富现值的范围可能变成 [80 万，190 万]，虽然最大值因为要交保费而变小了，但是波动范围更加确定了（这个例子中波动范围从 250 万缩小到 110 万，所以未来更确定了)。</p>
 </blockquote>
