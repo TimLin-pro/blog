@@ -4,6 +4,38 @@
   
     
     <entry>
+      <title><![CDATA[迁移到AndroidX]]></title>
+      <url>https://timlin-pro.github.io/blog/2019/10/27/%E5%BF%AB%E9%80%9F%E8%BF%81%E7%A7%BB%E5%88%B0%20AndroidX/</url>
+      <content type="html"><![CDATA[<p>Android Studio 提供的 Migrate to AndroidX 功能不是特别完善，很多文件的包名替换不完整。可以通过自定义脚本来处理这个流程。分享一个方式。</p>
+<p>包名映射文件下载地址： <code>https://developer.android.com/topic/libraries/support-library/downloads/androidx-class-mapping.csv</code></p>
+<p>脚本文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env bash</div><div class="line"></div><div class="line">MAPPING_FILE=csv文件路径</div><div class="line">PROJECT_DIR=项目目录</div><div class="line"></div><div class="line">replace=&quot;&quot;</div><div class="line">while IFS=, read -r from to</div><div class="line">do</div><div class="line">	replace+=&quot;; s/$from/$to/g&quot;</div><div class="line">done &lt;&lt;&lt; &quot;$(cat $MAPPING_FILE)&quot;</div><div class="line">fd . $PROJECT_DIR -e kt -e java -e xml --print0 | xargs -0 gsed -i &quot;$replace&quot;</div></pre></td></tr></table></figure>
+<p>注：mac 需要安装 fd 和 gnu-sed</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">brew install fd # fd 是 find 命令的替代品</div><div class="line">brew install gnu-sed</div></pre></td></tr></table></figure>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li><a href="https://gist.github.com/dlew/5db1b780896bbc6f542e7c00a11db6a0" target="_blank" rel="noopener">https://gist.github.com/dlew/5db1b780896bbc6f542e7c00a11db6a0</a></li>
+<li><a href="https://gist.github.com/dudeinthemirror/cb4942e0ee5c3df0fcb678d1798e1d4d" target="_blank" rel="noopener">https://gist.github.com/dudeinthemirror/cb4942e0ee5c3df0fcb678d1798e1d4d</a></li>
+<li><a href="https://developer.android.com/jetpack/androidx/migrate" target="_blank" rel="noopener">迁移到 AndroidX</a></li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
+]]></content>
+      
+        <categories>
+            
+            <category> Android </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> Android </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[保险基础知识]]></title>
       <url>https://timlin-pro.github.io/blog/2019/05/26/%E4%BF%9D%E9%99%A9%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</url>
       <content type="html"><![CDATA[<h2 id="1、为什么要买保险？"><a href="#1、为什么要买保险？" class="headerlink" title="1、为什么要买保险？"></a>1、为什么要买保险？</h2><p>购买保险是为了减少预期以外的事件对被保险人的财务状况造成冲击，为受益人提供经济补偿减轻负担。<strong>用经济学原理来解释就是被保险人通过缴纳保费换取未来财务状况更大的确定性</strong>。</p>
