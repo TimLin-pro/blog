@@ -87,18 +87,18 @@
 
 
 
-<meta name="description" content="前面已经讲过了 RxJava 的订阅原理。 使用RxJava 可以非常方便地进行切换线程操作，那么线程调度原理是怎么样的呢？ 本次我们将探索RxJava2.x线程切换的实现原理。 以一个例子开始 打印出 hello world。 123456789101112Observable.create((ObservableOnSubscribe&amp;lt;String&amp;gt;) emitter -&amp;gt;">
+<meta name="description" content="前面已经讲过了 RxJava 的订阅原理。 使用RxJava 可以非常方便地进行切换线程操作，那么线程调度原理是怎么样的呢？ 本次我们将探索RxJava2.x线程切换的实现原理。 每一个订阅的代码块，都跑在一个 runnable 上面？ 以一个例子开始 打印出 hello world。 123456789101112Observable.create((ObservableOnSubscribe&amp;">
 <meta name="keywords" content="框架原理">
 <meta property="og:type" content="website">
 <meta property="og:title" content="RxJava 线程切换原理">
 <meta property="og:url" content="https://timlin-pro.github.io/blog/to do/RxJava-线程切换原理.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
-<meta property="og:description" content="前面已经讲过了 RxJava 的订阅原理。 使用RxJava 可以非常方便地进行切换线程操作，那么线程调度原理是怎么样的呢？ 本次我们将探索RxJava2.x线程切换的实现原理。 以一个例子开始 打印出 hello world。 123456789101112Observable.create((ObservableOnSubscribe&amp;lt;String&amp;gt;) emitter -&amp;gt;">
+<meta property="og:description" content="前面已经讲过了 RxJava 的订阅原理。 使用RxJava 可以非常方便地进行切换线程操作，那么线程调度原理是怎么样的呢？ 本次我们将探索RxJava2.x线程切换的实现原理。 每一个订阅的代码块，都跑在一个 runnable 上面？ 以一个例子开始 打印出 hello world。 123456789101112Observable.create((ObservableOnSubscribe&amp;">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-08-02T17:09:39.439Z">
+<meta property="og:updated_time" content="2019-11-09T09:34:26.926Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RxJava 线程切换原理">
-<meta name="twitter:description" content="前面已经讲过了 RxJava 的订阅原理。 使用RxJava 可以非常方便地进行切换线程操作，那么线程调度原理是怎么样的呢？ 本次我们将探索RxJava2.x线程切换的实现原理。 以一个例子开始 打印出 hello world。 123456789101112Observable.create((ObservableOnSubscribe&amp;lt;String&amp;gt;) emitter -&amp;gt;">
+<meta name="twitter:description" content="前面已经讲过了 RxJava 的订阅原理。 使用RxJava 可以非常方便地进行切换线程操作，那么线程调度原理是怎么样的呢？ 本次我们将探索RxJava2.x线程切换的实现原理。 每一个订阅的代码块，都跑在一个 runnable 上面？ 以一个例子开始 打印出 hello world。 123456789101112Observable.create((ObservableOnSubscribe&amp;">
 
 
 
@@ -305,6 +305,7 @@
       <p>前面已经讲过了 RxJava 的订阅原理。</p>
 <p>使用RxJava 可以非常方便地进行切换线程操作，那么线程调度原理是怎么样的呢？</p>
 <p>本次我们将探索RxJava2.x线程切换的实现原理。</p>
+<p>每一个订阅的代码块，都跑在一个 runnable 上面？</p>
 <p>以一个例子开始</p>
 <p>打印出 <code>hello world</code>。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">Observable.create((ObservableOnSubscribe&lt;String&gt;) emitter -&gt; &#123;</div><div class="line">    emitter.onNext(<span class="string">"hello "</span>);</div><div class="line">    emitter.onNext(<span class="string">"world"</span>);</div><div class="line">&#125;)</div><div class="line">        .subscribeOn(Schedulers.single())<span class="comment">//订阅线程为 single</span></div><div class="line">        .observeOn(Schedulers.io())<span class="comment">//下游的观察者切换到 io 线程</span></div><div class="line">        .subscribe(s -&gt; &#123;</div><div class="line">            System.out.println(<span class="string">"currentThread is "</span> + Thread.currentThread());</div><div class="line">            System.out.println(<span class="string">"receive msg "</span> + s);</div><div class="line">        &#125;, throwable -&gt; &#123;</div><div class="line">            System.out.println(<span class="string">"error: "</span> + throwable);</div><div class="line">        &#125;);</div></pre></td></tr></table></figure>
@@ -492,7 +493,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">37</span>
+                <span class="site-state-item-count">38</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -503,7 +504,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">27</span>
+                <span class="site-state-item-count">28</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -514,7 +515,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
@@ -567,7 +568,7 @@
         <div class="copyright" >
   
   &copy; 
-  <span itemprop="copyrightYear">2019</span>
+  <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
