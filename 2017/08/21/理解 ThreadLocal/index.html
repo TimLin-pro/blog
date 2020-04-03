@@ -98,7 +98,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/31853072-84517b72-b6b5-11e7-84f1-0a51baaa05a2.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30096800-004b9f36-930d-11e7-9c27-c7f17619c3a7.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30096799-0047aeee-930d-11e7-8ac5-1927aadeab2d.png">
-<meta property="og:updated_time" content="2018-04-15T11:51:15.863Z">
+<meta property="og:updated_time" content="2020-04-03T06:24:11.085Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解 ThreadLocal">
 <meta name="twitter:description" content="ThreadLocal 是什么？ThreadLocal 是一个线程内部的数据存储类，通过它可以在指定的线程中存储数据，数据存储后，只有在指定线程中才能获取到存储的数据，对于其他线程来说则无法获取到数据。 为什么要使用 ThreadLocal？从定义我们知道 ThreadLocal 是一个用于存储本线程内部数据的类。假设没有 ThreadLocal 的话，每个 Thread 中可以输入自己的一个本地">
@@ -399,7 +399,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  3,589
+                  3,640
                 </span>
               
 
@@ -520,14 +520,17 @@
 <h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>如果一个对象的引用被多个线程持有，那么即使该对象存在 ThreadLocalMap 中也不是线程的本地变量。</p>
 <p>首先，ThreadLocal 不是用来解决共享对象的多线程访问问题的，一般情况下，通过 <code>ThreadLocal.set()</code> 到线程中的对象是该线程自己使用的对象，其他线程是不需要访问的，也访问不到的。各个线程中访问的是不同的对象。 </p>
 <p>也就是说，其他线程能否访问，还要看你的 set 进去的对象引用是否被其他线程持有。 如果两个线程都存入同一个对象引用，那就会有线程共享问题。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>我们总结 ThreadLocal 具体是怎么一步一步去为每一个线程创建一个~线程私有变量~的：</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><blockquote>
+<p>ThreadLocal 通过操作 Thread 中的一个 map（ <code>ThreadLocal.ThreadLocalMap</code>），来实现在 Therad 中添加一个逻辑上的成员变量。</p>
+</blockquote>
+<p>我们总结 ThreadLocal 具体是怎么一步一步去为每一个线程创建一个~线程私有变量~的：</p>
 <ul>
 <li>首先，在每个线程 Thread 内部有一个 <code>ThreadLocal.ThreadLocalMap</code> 类型的成员变量 threadLocals，这个 threadLocals 就是用来存储~线程私有变量的~，键值（key）为当前 ThreadLocal 变量，值 value 为~线程的私有变量~（即 T 类型的变量）。</li>
 <li>初始时，在 Thread 里面，threadLocals 为空，当通过 ThreadLocal 变量调用 get() 方法或者 set() 方法，就会对 Thread 类中的 threadLocals 进行初始化，并且以当前 ThreadLocal 变量为 key，以 ThreadLocal 要保存的~线程私有变量~为 value，存到 threadLocals 中。<ul>
 <li>注意，如果是 先调用 get() 方法而不是 set() 方法的话，会返回 null</li>
 </ul>
 </li>
-<li>然后在当前线程里面，如果要使用~该线程私有变量~，就可以通过 get 方法在 threadLocals 里面查找。</li>
+<li>然后在当前线程里面，如果要使用~该线程私有变量~，就可以通过 get 方法在 当前线程的<code>ThreadLocal.ThreadLocalMap</code>  中查找。</li>
 </ul>
 <h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
 <li><a href="http://www.iteye.com/topic/103804" target="_blank" rel="noopener">正确理解 ThreadLocal</a></li>
@@ -536,6 +539,7 @@
 <li><a href="http://www.cnblogs.com/dolphin0520/p/3920407.html" target="_blank" rel="noopener">Java并发编程：深入剖析ThreadLocal</a></li>
 <li><a href="http://www.jianshu.com/p/95291228aff7" target="_blank" rel="noopener">Android关于ThreadLocal的思考和总结</a></li>
 <li><a href="http://vence.github.io/2016/05/28/threadlocal-info/" target="_blank" rel="noopener">深入理解ThreadLocal</a></li>
+<li><a href="https://www.jianshu.com/p/e0eb1f6a151a" target="_blank" rel="noopener">从需求的角度去理解ThreadLocal及源码解析</a></li>
 </ul>
 <p>如果本文中有不正确的结论、说法，请大家指出，共同探讨，共同进步，谢谢!</p>
 
