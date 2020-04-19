@@ -95,12 +95,12 @@
 <meta property="og:site_name" content="Tim&#39;s Track">
 <meta property="og:description" content="概述api、provided、compile、implementation 都是 gradle 添加依赖时的选项，不同的选项表示不同的依赖关系。 其中 api、implementation 是 Gradle 3.4 引入的新的依赖配置，用来代替 compile 依赖配置。其中 api 和以前的 compile 依赖配置是一样的。使用 api/compile 的依赖方式，会向外界暴露本模块所依赖的库">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNc79gy1fsme3uaov4j30g20bsjrl.jpg">
-<meta property="og:updated_time" content="2019-08-08T05:04:31.758Z">
+<meta property="og:image" content="https://timlin-pro.github.io/blog/2018/06/24/gradle-中api-provided-compile-implementation-之间的区别/gradle-中api-provided-compile-implementation-之间的区别.assets/007S8ZIlgy1gdzip6gwfcj30c808zdfz.jpg">
+<meta property="og:updated_time" content="2020-04-19T16:21:05.410Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="gradle 中 api provided compile implementation 之间的区别">
 <meta name="twitter:description" content="概述api、provided、compile、implementation 都是 gradle 添加依赖时的选项，不同的选项表示不同的依赖关系。 其中 api、implementation 是 Gradle 3.4 引入的新的依赖配置，用来代替 compile 依赖配置。其中 api 和以前的 compile 依赖配置是一样的。使用 api/compile 的依赖方式，会向外界暴露本模块所依赖的库">
-<meta name="twitter:image" content="https://ws3.sinaimg.cn/large/006tNc79gy1fsme3uaov4j30g20bsjrl.jpg">
+<meta name="twitter:image" content="https://timlin-pro.github.io/blog/2018/06/24/gradle-中api-provided-compile-implementation-之间的区别/gradle-中api-provided-compile-implementation-之间的区别.assets/007S8ZIlgy1gdzip6gwfcj30c808zdfz.jpg">
 
 
 
@@ -437,7 +437,9 @@
 <a id="more"></a>
 <h2 id="解决了什么问题？"><a href="#解决了什么问题？" class="headerlink" title="解决了什么问题？"></a>解决了什么问题？</h2><p>为什么要做这样的修改呢？使用 <code>implementation</code> 依赖配置，可以显著减少构建的时间。</p>
 <p>考虑这样的场景，有如下六个模块：</p>
-<p><img src="https://ws3.sinaimg.cn/large/006tNc79gy1fsme3uaov4j30g20bsjrl.jpg" alt="依赖示意图"></p>
+<div align="center"><img src="gradle-中api-provided-compile-implementation-之间的区别.assets/007S8ZIlgy1gdzip6gwfcj30c808zdfz.jpg" alt="" width="450"></div>
+
+
 <p>D、E、F 三个模块都依赖了 Lib 库。</p>
 <p>假设 D、E、F 三个模块都以 <code>implementation</code> 的方式引用 Lib 库，那么上层的 A，B，C 三个模块<strong>在编译期</strong>都无法引用到 Lib 库中的内容。因此当 Lib 发生变化的时候，只有 D E F 这三个模块需要重新编译，A,B,C 则不需要（因为 DEF 三个模块对外的接口都没有改变）。</p>
 <p>假设 D、E、F 三个模块都以 <code>compile/api</code>  的方式引用 Lib 库（对外暴露了自己引用的库的接口），那么无论上层的 A，B，C 三个模块对 D、E、F 模块的依赖是 compile、api 方式还是 implementation 方式，它们（A、B、C）都可以引用到 Lib 库中的内容。这种情况下当 Lib 发生变化的时候，A B C D E F 这三个模块都需要重新编译。</p>
