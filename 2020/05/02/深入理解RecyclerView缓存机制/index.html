@@ -71,7 +71,7 @@
 <link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="原理分析,Android 进阶,设计模式," />
+  <meta name="keywords" content="Hexo, NexT" />
 
 
 
@@ -87,20 +87,28 @@
 
 
 
-<meta name="description" content="解决、解耦的钥匙——观察者模式定义观察者模式定义了对象间一种一对多的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并被自动更新。 使用场景 关联行为场景 需要注意的是，关联行为是可拆分的，而不是“组合”关系   事件多级触发场景 跨系统的消息交换场景，如消息队列、事件总线的处理机制。">
-<meta name="keywords" content="原理分析,Android 进阶,设计模式">
+<meta name="description" content="使用 ScrollView 的时候，它的所有子 view 都会一次性被加载出来。而正确使用 RecyclerView 可以做到按需加载，按需绑定，并实现复用。本文主要分析 RecyclerView 缓存复用的原理。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android源码中的观察者模式">
-<meta property="og:url" content="https://timlin-pro.github.io/blog/2017/08/09/Android源码中的观察者模式/index.html">
+<meta property="og:title" content="深入理解 RecyclerView 缓存机制">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/2020/05/02/深入理解RecyclerView缓存机制/index.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
-<meta property="og:description" content="解决、解耦的钥匙——观察者模式定义观察者模式定义了对象间一种一对多的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并被自动更新。 使用场景 关联行为场景 需要注意的是，关联行为是可拆分的，而不是“组合”关系   事件多级触发场景 跨系统的消息交换场景，如消息队列、事件总线的处理机制。">
+<meta property="og:description" content="使用 ScrollView 的时候，它的所有子 view 都会一次性被加载出来。而正确使用 RecyclerView 可以做到按需加载，按需绑定，并实现复用。本文主要分析 RecyclerView 缓存复用的原理。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://user-images.githubusercontent.com/16668676/29015194-a1c0db10-7b7f-11e7-99a0-437680f88188.png">
-<meta property="og:updated_time" content="2018-04-15T11:59:16.804Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-RecyclerView.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-预测动画问题.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-预布局.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/remove_itemwithou.gif">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/remove_item_predictive-20200502223349463.gif">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/scrap-example-.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/hiddenview.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/stable.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/hasstableid.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-RecyclerViewpool-reuse.png">
+<meta property="og:updated_time" content="2020-05-03T04:51:55.388Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android源码中的观察者模式">
-<meta name="twitter:description" content="解决、解耦的钥匙——观察者模式定义观察者模式定义了对象间一种一对多的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并被自动更新。 使用场景 关联行为场景 需要注意的是，关联行为是可拆分的，而不是“组合”关系   事件多级触发场景 跨系统的消息交换场景，如消息队列、事件总线的处理机制。">
-<meta name="twitter:image" content="https://user-images.githubusercontent.com/16668676/29015194-a1c0db10-7b7f-11e7-99a0-437680f88188.png">
+<meta name="twitter:title" content="深入理解 RecyclerView 缓存机制">
+<meta name="twitter:description" content="使用 ScrollView 的时候，它的所有子 view 都会一次性被加载出来。而正确使用 RecyclerView 可以做到按需加载，按需绑定，并实现复用。本文主要分析 RecyclerView 缓存复用的原理。">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-RecyclerView.png">
 
 
 
@@ -128,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="https://timlin-pro.github.io/blog/2017/08/09/Android源码中的观察者模式/"/>
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/2020/05/02/深入理解RecyclerView缓存机制/"/>
 
 
 
 
 
-  <title> Android源码中的观察者模式 | Tim's Track </title>
+  <title> 深入理解 RecyclerView 缓存机制 | Tim's Track </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -297,7 +305,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2017/08/09/Android源码中的观察者模式/">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/05/02/深入理解RecyclerView缓存机制/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Tim Lin">
@@ -318,7 +326,7 @@
             
             
               
-                Android源码中的观察者模式
+                深入理解 RecyclerView 缓存机制
               
             
           </h1>
@@ -333,8 +341,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-09T09:20:49+08:00">
-                2017-08-09
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-02T17:21:53+08:00">
+                2020-05-02
               </time>
             
 
@@ -344,50 +352,6 @@
           </span>
 
           
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/原理分析/" itemprop="url" rel="index">
-                    <span itemprop="name">原理分析</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/原理分析/Android-进阶/" itemprop="url" rel="index">
-                    <span itemprop="name">Android 进阶</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/原理分析/Android-进阶/设计模式/" itemprop="url" rel="index">
-                    <span itemprop="name">设计模式</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
 
           
             
@@ -395,7 +359,7 @@
 
           
           
-             <span id="/blog/2017/08/09/Android源码中的观察者模式/" class="leancloud_visitors" data-flag-title="Android源码中的观察者模式">
+             <span id="/blog/2020/05/02/深入理解RecyclerView缓存机制/" class="leancloud_visitors" data-flag-title="深入理解 RecyclerView 缓存机制">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -419,7 +383,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,512
+                  3,340
                 </span>
               
 
@@ -435,7 +399,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  6
+                  12
                 </span>
               
             </div>
@@ -454,73 +418,131 @@
       
 
       
-        <h1 id="解决、解耦的钥匙——观察者模式"><a href="#解决、解耦的钥匙——观察者模式" class="headerlink" title="解决、解耦的钥匙——观察者模式"></a>解决、解耦的钥匙——观察者模式</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>观察者模式定义了对象间一种<strong>一对多</strong>的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并被自动更新。</p>
-<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><ul>
-<li>关联行为场景<ul>
-<li>需要注意的是，关联行为是可拆分的，而不是“组合”关系</li>
-</ul>
-</li>
-<li>事件多级触发场景</li>
-<li>跨系统的消息交换场景，如消息队列、事件总线的处理机制。</li>
-</ul>
+        <p>使用 ScrollView 的时候，它的所有子 view 都会一次性被加载出来。而正确使用 RecyclerView 可以做到按需加载，按需绑定，并实现复用。本文主要分析 RecyclerView 缓存复用的原理。</p>
 <a id="more"></a>
-<h2 id="UML-类图"><a href="#UML-类图" class="headerlink" title="UML 类图"></a>UML 类图</h2><p>UML 类图如下所示：<br><img src="https://user-images.githubusercontent.com/16668676/29015194-a1c0db10-7b7f-11e7-99a0-437680f88188.png" alt="uml"></p>
-<p>四个角色：</p>
+<h2 id="从缓存获取-ViewHolder-流程概览"><a href="#从缓存获取-ViewHolder-流程概览" class="headerlink" title="从缓存获取 ViewHolder 流程概览"></a>从缓存获取 ViewHolder 流程概览</h2><p>从缓存获取的大致流程如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-RecyclerView.png" alt="缓存获取流程"></p>
+<p>说明：</p>
+<p>在创建 ViewHolder 之前，RecyclerView 会先从缓存中尝试获取是否有符合要求的 ViewHolder，详见 <code>Recycler#tryGetViewHolderForPositionByDeadline</code> 方法</p>
 <ul>
-<li>Subject 抽象主题（抽象的被观察者）。把所有观察者对象的引用保存在一个集合里，每个主题可以有任意数量的观察者，提供接口供添加和删除观察者对象。</li>
-<li>ConcreteSubject 具体主题（具体的被观察者）。将有关状态存入具体观察者对象，在具体主题的内部实现发生改变时，给所有注册过的观察者发出通知</li>
-<li>Observer 抽象观察者。定义一个更新接口，用来接收主题更改时做出相应的操作（比如更新自身的状态）</li>
-<li>ConcreteObserver 具体观察者（实现抽象观察者所定义的更新接口，以便在主题状态更改时更新自身的状态）</li>
+<li>第一次，尝试从 mChangedScrap 中获取。<ul>
+<li>只有在 mState.isPreLayout() 为 true 时，也就是预布局阶段，才会做这次尝试。</li>
+<li>「预布局」的概念会在介绍。</li>
 </ul>
-<h2 id="Android-ListView-的观察者模式"><a href="#Android-ListView-的观察者模式" class="headerlink" title="Android ListView 的观察者模式"></a>Android ListView 的观察者模式</h2><p>ListView 和 RecyclerView 在 Android 中都占据着很重要的地位。</p>
-<p>使用这两个组件时，总免不了数据更新的情况：当要更新数据时我们通常都会调用 <code>Adapter.notifyDataSetChanged()</code>，这其中的原理又是怎么样的呢？</p>
-<p>下面以 ListView 作为一个栗子，看看其中的具体实现是怎么样的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">public void notifyDataSetChanged() &#123;</div><div class="line">    mDataSetObservable.notifyChanged();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">public void notifyChanged() &#123;</div><div class="line">    synchronized(mObservers) &#123;</div><div class="line">        // since onChanged() is implemented by the app, it could do anything, including</div><div class="line">        // removing itself from &#123;@link mObservers&#125; - and that could cause problems if</div><div class="line">        // an iterator is used on the ArrayList &#123;@link mObservers&#125;.</div><div class="line">        // to avoid such problems, just march thru the list in the reverse order.</div><div class="line">        for (int i = mObservers.size() - 1; i &gt;= 0; i--) &#123;</div><div class="line">            mObservers.get(i).onChanged();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<ul>
-<li>notifyDataSetChanged 方法会调用  <code>DataSetObservable.notifyChanged()</code> 方法,notifyChanged() 内部会遍历调用观察者的 onChanged() 方法。通知数据更新。</li>
-<li>但是观察者又是什么时候注册的呢？</li>
-</ul>
-<p>以下为 setAdapter 的方法的具体实现：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public void setAdapter(ListAdapter adapter) &#123;</div><div class="line">    //如果 已经有 Adapter 存在，先解除注册</div><div class="line">    if (mAdapter != null &amp;&amp; mDataSetObserver != null) &#123;</div><div class="line">        mAdapter.unregisterDataSetObserver(mDataSetObserver);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    resetList();</div><div class="line">    mRecycler.clear();</div><div class="line"></div><div class="line">    if (mHeaderViewInfos.size() &gt; 0|| mFooterViewInfos.size() &gt; 0) &#123;</div><div class="line">        mAdapter = wrapHeaderListAdapterInternal(mHeaderViewInfos, mFooterViewInfos, adapter);</div><div class="line">    &#125; else &#123;</div><div class="line">        mAdapter = adapter;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    mOldSelectedPosition = INVALID_POSITION;</div><div class="line">    mOldSelectedRowId = INVALID_ROW_ID;</div><div class="line"></div><div class="line">    // AbsListView#setAdapter will update choice mode states.</div><div class="line">    super.setAdapter(adapter);</div><div class="line"></div><div class="line">    if (mAdapter != null) &#123;</div><div class="line">        mAreAllItemsSelectable = mAdapter.areAllItemsEnabled();</div><div class="line">        mOldItemCount = mItemCount;</div><div class="line">        mItemCount = mAdapter.getCount();</div><div class="line">        checkFocus();</div><div class="line">        // 构建一个 AdapterDataSetObserver </div><div class="line">        mDataSetObserver = new AdapterDataSetObserver();</div><div class="line">        mAdapter.registerDataSetObserver(mDataSetObserver);//注册观察者</div><div class="line"></div><div class="line">        mRecycler.setViewTypeCount(mAdapter.getViewTypeCount());</div><div class="line"></div><div class="line">        int position;</div><div class="line">        if (mStackFromBottom) &#123;</div><div class="line">            position = lookForSelectablePosition(mItemCount - 1, false);</div><div class="line">        &#125; else &#123;</div><div class="line">            position = lookForSelectablePosition(0, true);</div><div class="line">        &#125;</div><div class="line">        setSelectedPositionInt(position);</div><div class="line">        setNextSelectedPositionInt(position);</div><div class="line"></div><div class="line">        if (mItemCount == 0) &#123;</div><div class="line">            // Nothing selected</div><div class="line">            checkSelectionChanged();</div><div class="line">        &#125;</div><div class="line">    &#125; else &#123;</div><div class="line">        mAreAllItemsSelectable = true;</div><div class="line">        checkFocus();</div><div class="line">        // Nothing selected</div><div class="line">        checkSelectionChanged();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    requestLayout();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>通过源码可以看到，setAdapter 方法内部会构建一个 <code>AdapterDataSetObserver</code> ，然后注册为观察者。我们还可以看到注册的时候是通过 Adapter 来注册的。</p>
-<p>Adapter 接口中声明了注册和解注册的方法签名。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">public interface Adapter &#123;</div><div class="line">    /**</div><div class="line">     * Register an observer that is called when changes happen to the data used by this adapter.</div><div class="line">     *</div><div class="line">     * @param observer the object that gets notified when the data set changes.</div><div class="line">     */</div><div class="line">    void registerDataSetObserver(DataSetObserver observer);</div><div class="line"></div><div class="line">    /**</div><div class="line">     * Unregister an observer that has previously been registered with this</div><div class="line">     * adapter via &#123;@link #registerDataSetObserver&#125;.</div><div class="line">     *</div><div class="line">     * @param observer the object to unregister.</div><div class="line">     */</div><div class="line">    void unregisterDataSetObserver(DataSetObserver observer);</div><div class="line">    //代码省略</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>而 BaseAdapter 实现了 ListAdapter 接口，ListAdapter 接口又继承自 Adapter 接口。<br>BaseAdapter 中注册方法和解除注册方法的具体实现：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">public void registerDataSetObserver(DataSetObserver observer) &#123;</div><div class="line">    mDataSetObservable.registerObserver(observer);</div><div class="line">&#125;</div><div class="line"></div><div class="line">public void unregisterDataSetObserver(DataSetObserver observer) &#123;</div><div class="line">    mDataSetObservable.unregisterObserver(observer);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>BaseAdapter 中注册方法和解除注册方法的具体实现都是通过 mDataSetObservable 来完成的。查看一下 DataSetObservable 的具体实现。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">public class DataSetObservable extends Observable&lt;DataSetObserver&gt; &#123;</div><div class="line">    public void notifyChanged() &#123;</div><div class="line">        synchronized(mObservers) &#123;</div><div class="line">            for (int i = mObservers.size() - 1; i &gt;= 0; i--) &#123;</div><div class="line">                mObservers.get(i).onChanged();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    public void notifyInvalidated() &#123;</div><div class="line">        synchronized (mObservers) &#123;</div><div class="line">            for (int i = mObservers.size() - 1; i &gt;= 0; i--) &#123;</div><div class="line">                mObservers.get(i).onInvalidated();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>该类继承了 <code>android.database</code> 包下的 Observable 类，而 Observable 类中存有所有观察者的引用，以及注册和解注册方法。</p>
-<p>ListView 中的 onChange 方法具体实现又是什么样的?</p>
-<ul>
-<li>还记得前面我们说 Observer 是如何注册的吗？注册时，我们构建的是 AdapterDataSetObserver。</li>
-<li>该类是 AbsListView 的内部类。<ul>
-<li>AbsListView.AdapterDataSetObserver 继承自 AdapterView<listadapter>.AdapterDataSetObserver </listadapter></li>
-<li>onChange 方法的主要逻辑都在 AdapterDataSetObserver 中</li>
+</li>
+<li>第二次，getScrapOrHiddenOrCachedHolderForPosition() 获得 ViewHolder。<ul>
+<li>尝试从 1. mAttachedScrap 2.mHiddenViews 3.mCachedViews 中查找 ViewHolder<ul>
+<li>其中 mAttachedScrap 和 mCachedViews 都是 Recycler 的成员变量</li>
+<li>如果成功获得 ViewHolder 则检验其有效性，<ul>
+<li>若<strong>检验失败则将其回收</strong>到 RecyclerViewPool 中</li>
+<li>检验成功可以直接使用</li>
 </ul>
 </li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">class AdapterDataSetObserver extends DataSetObserver &#123;</div><div class="line">    //代码省略 ...</div><div class="line">    @Override</div><div class="line">    public void onChanged() &#123;</div><div class="line">        mDataChanged = true;</div><div class="line">        mOldItemCount = mItemCount;</div><div class="line">        mItemCount = getAdapter().getCount();</div><div class="line"></div><div class="line">        // Detect the case where a cursor that was previously invalidated has</div><div class="line">        // been repopulated with new data.</div><div class="line">        if (AdapterView.this.getAdapter().hasStableIds() &amp;&amp; mInstanceState != null</div><div class="line">                &amp;&amp; mOldItemCount == 0 &amp;&amp; mItemCount &gt; 0) &#123;</div><div class="line">            AdapterView.this.onRestoreInstanceState(mInstanceState);</div><div class="line">            mInstanceState = null;</div><div class="line">        &#125; else &#123;</div><div class="line">            rememberSyncState();</div><div class="line">        &#125;</div><div class="line">        checkFocus();</div><div class="line">        requestLayout();</div><div class="line">    &#125;</div><div class="line">    //代码省略 ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>onChange 方法中，会获取当前 Adapter 中的数据集的新数量，方法的最后调用 ListView 的 requestLayout() 方法重新进行布局。</p>
-<p>从上面的分析中，我们可以看到</p>
-<ul>
-<li>AbsListView 是抽象的观察者</li>
-<li>ListView 是具体的观察者</li>
-<li>Adapter 接口是抽象的被观察者</li>
-<li>BaseAdapter 是具体的被观察者，其内部实际上是通过 <code>android.database</code> 包下的 Observerable 来实现注册和监听的。</li>
-</ul>
-<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><ul>
-<li>AdapterView 中有一个 AdapterDataSetObserver 内部类，</li>
-<li>在 ListView 中设置 Adapter（即调用 ListView 的 setAdapter 方法）时，其内部会构建一个 AdapterDataSetObserver，并注册到 Adapter 中。可见该场景中 ListView 扮演一个观察者角色。</li>
-<li>而 Adapter 中有一个数据集可观察者 DataSetObserable。即一个被观察者。</li>
-<li>数据集发生变化时，开发者手动调用 Adapter.notifyDataSetChanged 方法，notifyDataSetChanged 会调用 <code>DataSetObserverable.notifyChanged()</code><ul>
-<li>notifyChanged() 方法会遍历所有观察者，并调用观察者的 <code>onChanged</code> 方法，</li>
-<li>onChanged 会获取 Adapter 中数据集的新数量，同时会调用 View.requestLayout 方法通知 ListView 更新布局，刷新用户界面。</li>
-</ul>
 </li>
 </ul>
-<p>虽然 RecyclerView 直接继承自 ViewGroup，而不是 AdapterView ，但是更新列表数据集方法的内部也是通过观察者模式来实现的。只是在其中多提供了单个数据或者指定范围数据更新等回调接口，供开发者使用。感兴趣的同学可以去看看 RecyclerView 中观察者模式的实现。</p>
-<p>作者水平有限，疏漏之处，恳请指出。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li>《Android 源码设计模式解析与实战》 第十二章 </li>
+</li>
+<li>第三次，如果给 Adapter 设置了 stableId，调用 getScrapOrCachedViewForId 尝试获取 ViewHolder。<ul>
+<li>跟第二次的区别在于，之前是根据 position 查找，现在是根据 id 查找</li>
 </ul>
+</li>
+<li>第四次，mViewCacheExtension 不为空的话，则调用 ViewCacheExtension#getViewForPositionAndType 方法尝试获取 <strong>View</strong><ul>
+<li>注：ViewCacheExtension 是由开发者设置的，默认情况下为空，一般我们也不会设置。这层缓存大部分情况下可以忽略。</li>
+</ul>
+</li>
+<li>第五次。尝试从 RecyclerViewPool 中获取，相比较于 mCachedViews，从 mRecyclerPool 中成功获取 ViewHolder 对象后并没有做合法性和 item 位置校验，只检验 viewType 是否一致。<ul>
+<li>从 RecyclerViewPool 中取出来的 ViewHolder 需要重新执行 bind 才能使用。</li>
+</ul>
+</li>
+<li>如果上面五次尝试都失败了，调用 RecyclerView.Adapter#createViewHolder 创建一个新的 ViewHolder</li>
+<li>最后根据 ViewHolder 的状态，确定是否需要调用 bindViewHolder 进行数据绑定。</li>
+</ul>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><h3 id="预布局、预测动画是什么？"><a href="#预布局、预测动画是什么？" class="headerlink" title="预布局、预测动画是什么？"></a>预布局、预测动画是什么？</h3><p>理解「预布局」需要先了解「预测动画」。考虑这样一个场景：</p>
+<p>用户有 A、B、C 三个 item，A，B 刚好显示在屏幕中，这个时候，用户把 B 删除了，那么最终 C 会显示在 B 原来的位置</p>
+<p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-预测动画问题.png" alt=""></p>
+<p>如果 C 从底部平滑地滑动到之前 B 的位置将会更符合直觉。但是要做到这点实际上没那么简单。因为我们只知道 C 最终的位置，但是不知道 C 的起始位置在哪里，无法确定 C 应该从哪里滑动过来。如果根据最终的状态，就断定 C 应该要从底部滑动过来的话，很可能是有问题的。因为在其他 LayoutManager 中，它可能是从侧面或者是其他地方滑动过来的。</p>
+<p>那根据原状态与最终状态之间的差异，能不能得出我们应该执行什么样的切换动画呢？答案依然是 no。因为在原状态中，C 根本就不存在。（这个时候，我们并不知道，B 要被删除了，如果把 C 给加载出来，很可能是一种资源浪费。）</p>
+<p>设计 RecyclerView 的工程师是这么解决的。当 Adapter 发生变化的时候，RecyclerView 会让 LayoutManager 进行两次布局。</p>
+<ul>
+<li>第一次是<strong>预布局</strong>。将之前原状态 下的 item 都布局出来。并且根据 Adapter 的 notify 信息，我们知道哪些 item 即将变化了，所以可以<strong>加载出另外的 View</strong>。在上述例子中，因为知道 B 已经被删除了，所以可以<strong>把屏幕之外的 C 也加载出来</strong>。</li>
+<li>第二个，最终的布局，也就是变化完成之后的布局。</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-预布局.png" alt="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-%E9%A2%84%E5%B8%83%E5%B1%80.png"></p>
+<p>这样只要比较前后布局的变化，就能得出应该执行什么动画了。</p>
+<p>这种负责执行动画的 view 在原布局或新布局中不存在的动画，就称为<strong>预测动画</strong>。</p>
+<p><strong>预布局</strong>是实现预测动画的一个步骤。</p>
+<p>下面两个动图展示了普通动画与预测动画效果的区别：</p>
+<p>普通动画 👇</p>
+<p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/remove_itemwithou.gif" alt=""></p>
+<p>预测动画 👇</p>
+<p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/remove_item_predictive-20200502223349463.gif" alt=""></p>
+<p>关于预测动画，感兴趣的同学可以进一步阅读<a href="http://frogermcs.github.io/recyclerview-animations-androiddevsummit-write-up/" target="_blank" rel="noopener">这篇文章</a>。</p>
+<h3 id="关于-Scrap"><a href="#关于-Scrap" class="headerlink" title="关于 Scrap"></a>关于 Scrap</h3><p>Scrap 缓存列表（mChangedScrap、mAttachedScrap）是 RecyclerView 最先查找 ViewHolder 地方，它跟 RecyclerViewPool 或者 ViewCache 有很大的区别。</p>
+<p>mChangedScrap 和 mAttachedScrap 只在布局阶段使用。其他时候它们是空的。布局完成之后，这两个缓存中的 viewHolder，会移到 mCacheView 或者 RecyclerViewPool 中。</p>
+<p>当 LayoutManager 开始布局的时候（预布局或者是最终布局），当前布局中的所有 view，都会被 dump 到 scrap 中（具体实现可见 <code>LinearLayoutManager#onLayoutChildren() 方法中调用了 detachAndScrapAttachedViews()</code> ），然后 LayoutManager 挨个地取回 view，除非 view 发生了什么变化，否则它会马上从 scrap 中回到原来的位置。</p>
+<p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/scrap-example-.png" alt="img"></p>
+<p>以上图为例，我们删除掉 b，调用 notifyItemRemove 方法，触发重新布局，这时 a,b,c 都会被 dump 到 scrap 中，然后 LayoutManager  会从 scrap 中取回  a 和 c。</p>
+<p>偏个题，这个时候，b 去哪了？ RecyclerView 看到 b 没有出现在最终的布局中，会 unscrap 它，让它执行一个消失的动画然后隐藏。动画执行完之后，b 被放到 RecyclerViewPool 中。</p>
+<p>为什么 LayoutManager 需要先执行 detach，然后再重新 attach 这些 view，而不是只移除哪些变化的子 view 呢？Scrap 缓存列表的存在，是为了隔离 LayoutManager 和 RecyclerView.Recycler 之间的关注点/职责。LayoutManager 不需要知道哪一个子 view 应该保留 或者是 应该被回收到 pool 亦或者其他什么地方。这是 Recycler 的职责。</p>
+<p>除了在布局时不为空外，还有另一个与 scrap 有关的规律：所有 scrap 的 view 都会跟 RecyclerView 分离。ViewGroup 中的 attachView 和 detachView 方法跟 addView 和 removeView 方法很像，但是不会触发请求布局会重绘的事件。它们只是从 ViewGroup 的子 view 列表中删除对应的子 view，并将该子 view 的 parent 设置为 null。detached 状态必须是临时，后面紧随着 attach 或者 remove 事件</p>
+<p>如果在计算一个新布局的时候，已经添加了一堆子 view，可以放心的将它们全部 detach ，Recyclerview 就是这么做的。</p>
+<h3 id="Attached-vs-Changed-scrap"><a href="#Attached-vs-Changed-scrap" class="headerlink" title="Attached vs Changed scrap"></a>Attached vs Changed scrap</h3><p>Recycler 类中，我们可以看到两个单独的 scrap 容器: mAttachedScrap 和 mChangedScrap。为什么需要两个呢？</p>
+<p>ViewHolder 只有在满足下面情况才会被添加到 mChangedScrap：当它关联的 item 发生了变化（notifyItemChanged 或者 notifyItemRangeChanged 被调用），并且 ItemAnimator 调用 ViewHolder#canReuseUpdatedViewHolder 方法时，返回了 false。否则，ViewHolder 会被添加到AttachedScrap 中。</p>
+<p>canReuseUpdatedViewHolder 返回 “false” 表示我们要执行用一个 view 替换另一个 view 的动画，例如淡入淡出动画。 “true”表示动画在 view 内部发生。</p>
+<p>mAttachedScrap 在 整个布局过程中都能使用，但是 changed scrap — 只能在预布局阶段使用。</p>
+<p>这是有道理的：在布局后，新的 ViewHolder 应该替换掉“改变了的”视图，因此 AttachedScrap 在布局后是没有用的。 更改动画执行完成后，change scrap 将按预期方式转存到 pool 中</p>
+<p>默认的 ItemAnimator 可以在 3 种情况下重用更新的 ViewHolder：</p>
+<ul>
+<li>调用了 setSupportsChangeAnimations(false)。</li>
+<li>调用了 notifyDataSetChanged 而不是 notifyItemChanged 或 notifyItemRangeChanged 。</li>
+<li>提供了这样的更改 payload：adapter.notifyItemChanged(index，anyObject)。</li>
+</ul>
+<p>最后一种情况显示了一种很好的方法，当只想更改一些内部元素时，可以避免创建/绑定新的 ViewHolder。</p>
+<h3 id="Hidden-Views-是什么？"><a href="#Hidden-Views-是什么？" class="headerlink" title="Hidden Views 是什么？"></a>Hidden Views 是什么？</h3><p>前面提到在第二次尝试获取 ViewHolder 的时候，有一个子步骤会从 hidden view 中搜索，这里的 hidden view 指的是什么？「hidden view」指的是那些正在从 RecyclerView 边界中脱离的 view。为了让这些 view 正确地执行对应的分离动画，它们仍然作为 RecyclerView 的子 view 被保留下来。</p>
+<p>站在 LayoutManager 的角度，这些 view 已经不存在了，因此不应该被包含在计算里面。比如 在部分 view 正在执行消失动画的过程中，调用 LayoutManager#getChildAt 方法，这些 view 不算在下标里面。来自 LayoutManager 的所有对 getChildAt()、getChildCount()、addView() 等的方法调用 在应用到实际的可回收view 之前，都要通过 ChildHelper 处理，ChildHelper 的职责是重新计算非隐藏的子 view 列表和完整的子 view 列表之间的索引。</p>
+<p>请记住，我们正在搜索要提供给 LayoutManager 的视图，<strong>但是 LayoutManager 不应了解隐藏 View</strong>！</p>
+<p>举一个实际的🌰：这种让人费解的“从隐藏的 view 弹跳”（bouncing from hidden views）机制对于处理下面这种情况而言是很有必要的。 考虑这种场景，我们插入一个 item ，然后在插入动画完成之前，马上删除该 item：</p>
+<p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/hiddenview.png" alt="img"></p>
+<p>我们想要看到的是 b 从 c 移除时的位置开始向上平移。 但是在那个时候，b 是一个隐藏的 view！ 如果我们忽略了它（“隐藏”的 b），那会导致在现有 b 下面创建一个新的 b。更糟糕的是，这两个 view 会重叠，因为 新的 b 会往上，旧的 b 会往下。 为了避免这种错误，在搜索 ViewHolder 的较早步骤之一中，RecyclerView 会询问 ChildHelper 是否具有合适的 hidden view。 所谓「合适」，表示这个 view 跟我们需要的位置相关联，并具有正确的 view type，并且这个 view 的被隐藏的原因不是为了移除掉它（我们不应该让被移除的 view 复活）</p>
+<p>如果有这样的 view ，RecyclerView 会将其返回到 LayoutManager 并将其添加到 preLayout 中以标记应从其进行动画处理的位置（详见 recordAnimationInfoIfBouncedHiddenView 方法）。 </p>
+<p>什么？在 布局前后 添加内容不应该是 LayoutManager 的职责吗？怎么现在 RecyclerView 也在往 preLayout 中添加view？  是的，这种机制看起来有点职责部分，但这是也说明我们有必要了解它。</p>
+<h3 id="Stable-Id-的作用是什么？"><a href="#Stable-Id-的作用是什么？" class="headerlink" title="Stable Id 的作用是什么？"></a>Stable Id 的作用是什么？</h3><p>理解 stable Id 特性的最重要的一个点是，它只会在调用 notifyDataSetChanged 方法之后，影响 RecyclerView 的行为。</p>
+<p>如果调用 notifyDataSetChanged 的时候，Adapter 并没有设置 hasStableId，RecyclerView 不知道 发生了什么，哪一些东西变化了，所以，它假设所有的东西都变了，每一个 ViewHolder 都是无效的，因此应该把它们放到 RecyclerViewPool 而不是 scrap 中。</p>
+<p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/stable.png" alt="img"></p>
+<p>如果有 Stable Id，那那将会是像下面这样：</p>
+<p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/hasstableid.png" alt="img"></p>
+<p>ViewHolder 会进入 scrap 而不是 pool 中。然后会通过特定的 Id（Adapter 中的 getItemId 获取到的 id）而不是 postion 到 scrap 中查找 ViewHolder。</p>
+<p>好处是什么？</p>
+<ol>
+<li>不会导致 RecyclerViewPool 溢出，因此非必须情况下，不需要创建新的 ViewHolder。之前的 ViewHolder 会重新绑定，因为 Id 没有变化不代表内容没有变化</li>
+<li>最大好处的好处是 支持动画。上面移动 item4 到 item6 的位置。正常情况下，我们需要调用 notifyItemMoved(4,6) 才能得到一个移动动画。但是通过 stable id，调用 notifyDataSetChanged 也能支持这一点。因为 RecyclerView 可以看到特定 id 的 view 在新旧布局的上的位置，<ul>
+<li>要注意的是，这里的动画只支持简单的动画，预测动画无法支持。 如果我们在新布局中看到一些 ID，而在旧布局中没有，那么我们如何知道它是新插入的 item 还是从某处移入的 item，在后一种情况下它究竟是从哪里来的呢？ 通常，这些问题的答案会在预布局中找到，根据适配器的更改，该布局已超出 RecyclerView 的范围，但现在这种情况下， 我们不知道这些更改具体是什么</li>
+</ul>
+</li>
+</ol>
+<p>总体而言，stable id 的使用场景似乎比较有限。 不过，还是有这样一个使用场景：如果是从 ListView 迁移到 RecyclerView，将所有 notifyDataSetChanged 调用，都转换为特定更改的通知可能会很痛苦。 在这种情况下，stable id 可以提供给你提供简单的 RecyclerView 动画。</p>
+<h2 id="缓存优化实践"><a href="#缓存优化实践" class="headerlink" title="缓存优化实践"></a>缓存优化实践</h2><ul>
+<li><p>尽量使用 notifyItemXxx 方法进行细粒度的通知更新，而不是 notifyDatasetChanged</p>
+<ul>
+<li>如果变更前后是两个数据集，无法确定具体哪一些数据项变化了，可以考虑使用 <a href="https://developer.android.google.cn/reference/androidx/recyclerview/widget/DiffUtil" target="_blank" rel="noopener">DiffUtil</a> 。</li>
+<li>如果数据集较大，建议结合使用 <a href="https://developer.android.google.cn/reference/androidx/recyclerview/widget/AsyncListDiffer" target="_blank" rel="noopener">AsyncListDiffer</a> 在子线程做 diff 运算。</li>
+</ul>
+</li>
+<li><p>如果特定 viewType 的 item 只有一个，可以通过 <code>RecyclerView#getRecycledViewPool()#setMaxRecycledViews(viewType,1);</code> 来调整缓存区的大小，减少内存占用</p>
+</li>
+<li><p>如果特定 viewType 的 item 特别多，但是不得不通过 notifyDataSetChange 方法更新数据，可以通过下面这种方式，在变更前调大缓存，变更完成后，调小缓存。这样布局变化也可以最大程度地复用已有的 ViewHolder。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">mRecyclerView.getRecycledViewPool().setMaxRecycledViews(<span class="number">0</span>, 屏幕显示的item总数+<span class="number">7</span> );</div><div class="line">mAdapter.notifyDataSetChanged();</div><div class="line"><span class="keyword">new</span> Handler().post(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        mRecyclerView.getRecycledViewPool()</div><div class="line">                .setMaxRecycledViews(<span class="number">0</span>, <span class="number">5</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+</li>
+<li><p>如果 RecyclerView 中的每个 item 都是一个 RecyclerView， 并且子 RecyclerView 的 item type 相同可以通过 RecyclerView#setRecycledViewPool(); 方法，实现缓存池的复用。<img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-RecyclerViewpool-reuse.png" alt=""></p>
+</li>
+</ul>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li><a href="https://android.jlelse.eu/anatomy-of-recyclerview-part-1-a-search-for-a-viewholder-404ba3453714" target="_blank" rel="noopener">https://android.jlelse.eu/anatomy-of-recyclerview-part-1-a-search-for-a-viewholder-404ba3453714</a></li>
+<li><a href="http://www.programmersought.com/article/4558924504/" target="_blank" rel="noopener">http://www.programmersought.com/article/4558924504/</a></li>
+<li><a href="https://juejin.im/post/5b79a0b851882542b13d204b" target="_blank" rel="noopener">https://juejin.im/post/5b79a0b851882542b13d204b</a></li>
+<li><a href="https://juejin.im/post/5c696ba9e51d457f136d24ff" target="_blank" rel="noopener">https://juejin.im/post/5c696ba9e51d457f136d24ff</a></li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
 
       
     </div>
@@ -548,16 +570,6 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/blog/tags/原理分析/" rel="tag"># 原理分析</a>
-          
-            <a href="/blog/tags/Android-进阶/" rel="tag"># Android 进阶</a>
-          
-            <a href="/blog/tags/设计模式/" rel="tag"># 设计模式</a>
-          
-        </div>
-      
 
       
         
@@ -567,8 +579,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2017/07/28/Toast 原理浅析/" rel="next" title="Toast 原理">
-                <i class="fa fa-chevron-left"></i> Toast 原理
+              <a href="/blog/2020/03/20/RxJava中switchMap和flapMap-有何区别？/" rel="next" title="RxJava中switchMap和flapMap 有何区别？">
+                <i class="fa fa-chevron-left"></i> RxJava中switchMap和flapMap 有何区别？
               </a>
             
           </div>
@@ -576,10 +588,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/blog/2017/08/16/Android 中子线程真的不能更新UI吗/" rel="prev" title="Android 中子线程真的不能更新 UI 吗？">
-                Android 中子线程真的不能更新 UI 吗？ <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -793,7 +801,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#解决、解耦的钥匙——观察者模式"><span class="nav-text">解决、解耦的钥匙——观察者模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#定义"><span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用场景"><span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UML-类图"><span class="nav-text">UML 类图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-ListView-的观察者模式"><span class="nav-text">Android ListView 的观察者模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#从缓存获取-ViewHolder-流程概览"><span class="nav-text">从缓存获取 ViewHolder 流程概览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-text">问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#预布局、预测动画是什么？"><span class="nav-text">预布局、预测动画是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关于-Scrap"><span class="nav-text">关于 Scrap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Attached-vs-Changed-scrap"><span class="nav-text">Attached vs Changed scrap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hidden-Views-是什么？"><span class="nav-text">Hidden Views 是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Stable-Id-的作用是什么？"><span class="nav-text">Stable Id 的作用是什么？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存优化实践"><span class="nav-text">缓存优化实践</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
             
 
           </div>
