@@ -87,18 +87,18 @@
 
 
 
-<meta name="description" content="Android 中子线程真的不能更新 UI 吗？2020-04-18  基于 2017-08-16 的内容更新。 先说结论：Android 中子线程在满足一定的条件下可以更新 UI。  在 ViewRootImpl 还没创建出来之前  UI 修改的操作没有线程限制。   在 ViewRootImpl 创建完成之后  保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个">
+<meta name="description" content="Android 中子线程真的不能更新 UI 吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。  在 ViewRootImpl 还没创建出来之前 UI 修改的操作没有线程限制。   在 ViewRootImpl 创建完成之后 保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个线程即可。也就是说，要在同一个线程调用 ViewManager#add">
 <meta name="keywords" content="原理分析,探究">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 中更新 UI 的线程限制问题探究">
 <meta property="og:url" content="https://timlin-pro.github.io/blog/2020/04/18/Android 中更新 UI 的线程限制问题探究/index.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
-<meta property="og:description" content="Android 中子线程真的不能更新 UI 吗？2020-04-18  基于 2017-08-16 的内容更新。 先说结论：Android 中子线程在满足一定的条件下可以更新 UI。  在 ViewRootImpl 还没创建出来之前  UI 修改的操作没有线程限制。   在 ViewRootImpl 创建完成之后  保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个">
+<meta property="og:description" content="Android 中子线程真的不能更新 UI 吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。  在 ViewRootImpl 还没创建出来之前 UI 修改的操作没有线程限制。   在 ViewRootImpl 创建完成之后 保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个线程即可。也就是说，要在同一个线程调用 ViewManager#add">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-05-23T16:19:35.573Z">
+<meta property="og:updated_time" content="2020-05-23T16:27:25.638Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 中更新 UI 的线程限制问题探究">
-<meta name="twitter:description" content="Android 中子线程真的不能更新 UI 吗？2020-04-18  基于 2017-08-16 的内容更新。 先说结论：Android 中子线程在满足一定的条件下可以更新 UI。  在 ViewRootImpl 还没创建出来之前  UI 修改的操作没有线程限制。   在 ViewRootImpl 创建完成之后  保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个">
+<meta name="twitter:description" content="Android 中子线程真的不能更新 UI 吗？先说结论：Android 中子线程在满足一定的条件下可以更新 UI。  在 ViewRootImpl 还没创建出来之前 UI 修改的操作没有线程限制。   在 ViewRootImpl 创建完成之后 保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个线程即可。也就是说，要在同一个线程调用 ViewManager#add">
 
 
 
@@ -406,7 +406,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  2,378
+                  2,389
                 </span>
               
 
@@ -441,23 +441,18 @@
       
 
       
-        <h1 id="Android-中子线程真的不能更新-UI-吗？"><a href="#Android-中子线程真的不能更新-UI-吗？" class="headerlink" title="Android 中子线程真的不能更新 UI 吗？"></a>Android 中子线程真的不能更新 UI 吗？</h1><p>2020-04-18  基于 2017-08-16 的内容更新。</p>
-<p>先说结论：Android 中子线程在满足一定的条件下可以更新 UI。</p>
+        <h2 id="Android-中子线程真的不能更新-UI-吗？"><a href="#Android-中子线程真的不能更新-UI-吗？" class="headerlink" title="Android 中子线程真的不能更新 UI 吗？"></a>Android 中子线程真的不能更新 UI 吗？</h2><p>先说结论：Android 中子线程在满足一定的条件下可以更新 UI。</p>
 <ul>
-<li><p>在 ViewRootImpl 还没创建出来之前</p>
-<ul>
+<li>在 ViewRootImpl 还没创建出来之前<ul>
 <li>UI 修改的操作没有线程限制。</li>
 </ul>
 </li>
-<li><p>在 ViewRootImpl 创建完成之后</p>
-<ol>
-<li><p>保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个线程即可。也就是说，要在同一个线程调用 ViewManager#addView 和 ViewManager#updateViewLayout 的方法。</p>
-<ul>
+<li>在 ViewRootImpl 创建完成之后<ol>
+<li>保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个线程即可。也就是说，要在同一个线程调用 ViewManager#addView 和 ViewManager#updateViewLayout 的方法。<ul>
 <li>注：ViewManager 是一个接口，WindowManger 接口继承了这个接口，我们通常都是通过 WindowManger（具体实现为 WindowMangerImpl） 进行 view 的 add remove update 操作的。</li>
 </ul>
 </li>
-<li><p>对应的线程需要创建 Looper 并且调用 Looper#loop 方法，开启消息循环。</p>
-</li>
+<li>对应的线程需要创建 Looper 并且调用 Looper#loop 方法，开启消息循环。</li>
 </ol>
 </li>
 </ul>
@@ -526,6 +521,7 @@
 <li><a href="https://www.zybuluo.com/natsumi/note/736165" target="_blank" rel="noopener">互联网笔记 Android 中子线程真的不能更新 UI 吗？</a></li>
 <li><a href="https://www.zhihu.com/question/24764972/answer/36053366" target="_blank" rel="noopener">Android 只在 UI 主线程修改 UI，是个谎言吗？ 为什么这段代码能完美运行？</a></li>
 </ul>
+<p>2020/04/18  在 2017/08/16 的内容基础上新增了一个示例，以及总结。</p>
 <p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源。谢谢！</p>
 
       
@@ -797,7 +793,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android-中子线程真的不能更新-UI-吗？"><span class="nav-text">Android 中子线程真的不能更新 UI 吗？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#一个栗子："><span class="nav-text">一个栗子：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分析"><span class="nav-text">分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ViewRootImpl-何时被创建？"><span class="nav-text">ViewRootImpl 何时被创建？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一个在子线程更新-UI-的栗子："><span class="nav-text">一个在子线程更新 UI 的栗子：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结："><span class="nav-text">总结：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#下次如果有人问你-Android-中子线程真的不能更新-UI-吗？-你可以这么回答："><span class="nav-text">下次如果有人问你 Android 中子线程真的不能更新 UI 吗？ 你可以这么回答：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#有同学可能会问，保证上述条件-1-成立，不就可以避免-checkThread-时候抛出异常了吗？为什么还需要开启消息循坏？"><span class="nav-text">有同学可能会问，保证上述条件 1 成立，不就可以避免 checkThread 时候抛出异常了吗？为什么还需要开启消息循坏？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用子线程更新-UI-有实际应用场景吗？"><span class="nav-text">使用子线程更新 UI 有实际应用场景吗？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Android-中子线程真的不能更新-UI-吗？"><span class="nav-text">Android 中子线程真的不能更新 UI 吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一个栗子："><span class="nav-text">一个栗子：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分析"><span class="nav-text">分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ViewRootImpl-何时被创建？"><span class="nav-text">ViewRootImpl 何时被创建？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一个在子线程更新-UI-的栗子："><span class="nav-text">一个在子线程更新 UI 的栗子：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结："><span class="nav-text">总结：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#下次如果有人问你-Android-中子线程真的不能更新-UI-吗？-你可以这么回答："><span class="nav-text">下次如果有人问你 Android 中子线程真的不能更新 UI 吗？ 你可以这么回答：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#有同学可能会问，保证上述条件-1-成立，不就可以避免-checkThread-时候抛出异常了吗？为什么还需要开启消息循坏？"><span class="nav-text">有同学可能会问，保证上述条件 1 成立，不就可以避免 checkThread 时候抛出异常了吗？为什么还需要开启消息循坏？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用子线程更新-UI-有实际应用场景吗？"><span class="nav-text">使用子线程更新 UI 有实际应用场景吗？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料与学习资源推荐"><span class="nav-text">参考资料与学习资源推荐</span></a></li></ol></div>
             
 
           </div>

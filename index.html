@@ -575,7 +575,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  2,378
+                  2,389
                 </span>
               
 
@@ -611,23 +611,18 @@
 
       
         
-          <h1 id="Android-中子线程真的不能更新-UI-吗？"><a href="#Android-中子线程真的不能更新-UI-吗？" class="headerlink" title="Android 中子线程真的不能更新 UI 吗？"></a>Android 中子线程真的不能更新 UI 吗？</h1><p>2020-04-18  基于 2017-08-16 的内容更新。</p>
-<p>先说结论：Android 中子线程在满足一定的条件下可以更新 UI。</p>
+          <h2 id="Android-中子线程真的不能更新-UI-吗？"><a href="#Android-中子线程真的不能更新-UI-吗？" class="headerlink" title="Android 中子线程真的不能更新 UI 吗？"></a>Android 中子线程真的不能更新 UI 吗？</h2><p>先说结论：Android 中子线程在满足一定的条件下可以更新 UI。</p>
 <ul>
-<li><p>在 ViewRootImpl 还没创建出来之前</p>
-<ul>
+<li>在 ViewRootImpl 还没创建出来之前<ul>
 <li>UI 修改的操作没有线程限制。</li>
 </ul>
 </li>
-<li><p>在 ViewRootImpl 创建完成之后</p>
-<ol>
-<li><p>保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个线程即可。也就是说，要在同一个线程调用 ViewManager#addView 和 ViewManager#updateViewLayout 的方法。</p>
-<ul>
+<li>在 ViewRootImpl 创建完成之后<ol>
+<li>保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个线程即可。也就是说，要在同一个线程调用 ViewManager#addView 和 ViewManager#updateViewLayout 的方法。<ul>
 <li>注：ViewManager 是一个接口，WindowManger 接口继承了这个接口，我们通常都是通过 WindowManger（具体实现为 WindowMangerImpl） 进行 view 的 add remove update 操作的。</li>
 </ul>
 </li>
-<li><p>对应的线程需要创建 Looper 并且调用 Looper#loop 方法，开启消息循环。</p>
-</li>
+<li>对应的线程需要创建 Looper 并且调用 Looper#loop 方法，开启消息循环。</li>
 </ol>
 </li>
 </ul>
