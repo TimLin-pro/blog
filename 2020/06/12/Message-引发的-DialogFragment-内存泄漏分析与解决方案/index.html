@@ -1,0 +1,1263 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="内存泄漏,源码分析," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 Dialog">
+<meta name="keywords" content="内存泄漏,源码分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Message 引发的 DialogFragment 内存泄漏分析与解决方案">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/2020/06/12/Message-引发的-DialogFragment-内存泄漏分析与解决方案/index.html">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 Dialog">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/LeakCanary 内存泄漏.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/DialogFragment%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F.png">
+<meta property="og:updated_time" content="2020-06-12T14:50:58.456Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Message 引发的 DialogFragment 内存泄漏分析与解决方案">
+<meta name="twitter:description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 Dialog">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/LeakCanary 内存泄漏.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/2020/06/12/Message-引发的-DialogFragment-内存泄漏分析与解决方案/"/>
+
+
+
+
+
+  <title> Message 引发的 DialogFragment 内存泄漏分析与解决方案 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/06/12/Message-引发的-DialogFragment-内存泄漏分析与解决方案/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Message 引发的 DialogFragment 内存泄漏分析与解决方案
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-12T22:47:24+08:00">
+                2020-06-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2020/06/12/Message-引发的-DialogFragment-内存泄漏分析与解决方案/" class="leancloud_visitors" data-flag-title="Message 引发的 DialogFragment 内存泄漏分析与解决方案">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  3,728
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  15
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？<br>A: ….是的，说来话长。</p>
+</blockquote>
+<p>长话短说：</p>
+<ol>
+<li>某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。</li>
+<li>DialogFragment#onActivityCreated 方法中，会调用 Dialog#setOnCancelListener 方法，将自身的引用作为 listener  参数传递给该方法</li>
+<li>Dialog#setOnCancelListener 方法内部，会尝试从 Message Pool 中获取一个 Message，取出的 Message 刚好是 MessageA，然后将传入的 Listener 实例赋值给 MessageA#obj。</li>
+<li>外部调用 cancel 的时候，Dialog 内部会将 MessageA <strong>拷贝</strong>一份，我们称它为 MessageB，然后将 MessageB 发送到消息队列中。</li>
+<li>DialogFragment 收到 onDestory 回调之后，LeakCanary 开始监听这个 DialogFragment 是否正常被回收，发现这个实例一直存在，dump 内存，分析引用链，报告内存泄漏问题。</li>
+</ol>
+<a id="more"></a>
+<p>具体细节介绍见下文👇</p>
+<h2 id="1、问题"><a href="#1、问题" class="headerlink" title="1、问题"></a>1、问题</h2><p>开发的时候， LeakCanary 报告了一个诡异的内存泄漏链。</p>
+<p>操作路径：app 显示 DialogFragment 然后点击外部使其消失，之后 LeakCanary 就报了如下问题：<br><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/LeakCanary 内存泄漏.png" alt="LeakCanary 报告的异常"></p>
+<p>从上面的截图 👆 可以看出：GCRoot 是 HandlerThread 正在执行的方法中的一个局部变量。这个局部变量强引用了一个 Message 对象，message 的 obj 字段又强引用了 NormalDialogFragment ，导致其调用了 onDestory 方法之后，也无法被回收。</p>
+<h2 id="2、分析"><a href="#2、分析" class="headerlink" title="2、分析"></a>2、分析</h2><p>注：本文中的「HandlerThread」泛指那些带有 Looper 并且开启了消息循环（调用了 Looper#loop）的线程</p>
+<p>DialogFragment 为啥会被一个 Message 的 obj 字段强引用？而且那还是一个被 HandlerThread 引用着的 Message。</p>
+<p>回顾一下我们正常显示 DialogFragment 的流程：1、实例化 DialogFragment，2、调用 DialogFragment#show 方法让其显示出来。这个流程中有可能导致 Fragment 被 Message 强引用吗？</p>
+<ul>
+<li>首先看 DialogFragment 的构造方法是一个空实现。排除。</li>
+<li>其次看 DialogFragment show 方法逻辑如 👇，也是正常的 Fragment 显示逻辑。排除。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">show</span><span class="params">(@NonNull FragmentManager manager, @Nullable String tag)</span> </span>&#123;</div><div class="line">  mDismissed = <span class="keyword">false</span>;</div><div class="line">  mShownByMe = <span class="keyword">true</span>;</div><div class="line">  FragmentTransaction ft = manager.beginTransaction();</div><div class="line">  ft.add(<span class="keyword">this</span>, tag);</div><div class="line">  ft.commit();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>难道是 show 过程的某个步骤中去获取了 Message？ 在 DialogFragment#onActivityCreated 方法中，可以看到</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onActivityCreated</span><span class="params">(@Nullable Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">  <span class="keyword">super</span>.onActivityCreated(savedInstanceState);</div><div class="line">  <span class="keyword">if</span> (!mShowsDialog) &#123;</div><div class="line">    <span class="keyword">return</span>;</div><div class="line">  &#125;</div><div class="line">  <span class="comment">//省略一些代码</span></div><div class="line">  mDialog.setCancelable(mCancelable);</div><div class="line">  mDialog.setOnCancelListener(<span class="keyword">this</span>);<span class="comment">//设置 cancel 监听器</span></div><div class="line">  mDialog.setOnDismissListener(<span class="keyword">this</span>);<span class="comment">//设置 dismiss 监听器</span></div><div class="line">  <span class="comment">//省略一些代码</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>以 Dialog#setOnCancelListener 方法为例 👇</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setOnCancelListener</span><span class="params">(@Nullable OnCancelListener listener)</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (mCancelAndDismissTaken != <span class="keyword">null</span>) &#123;</div><div class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(</div><div class="line">        <span class="string">"OnCancelListener is already taken by "</span></div><div class="line">        + mCancelAndDismissTaken + <span class="string">" and can not be replaced."</span>);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">if</span> (listener != <span class="keyword">null</span>) &#123;</div><div class="line">    <span class="comment">//Listener 不为 null，取出一条 message（会尝试先从 pool 中获取，如果没有消息才会 new 一个新的）  这是一个比较关键的点，后续会讲到</span></div><div class="line">    mCancelMessage = mListenersHandler.obtainMessage(CANCEL, listener);</div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line">    mCancelMessage = <span class="keyword">null</span>;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到，Dialog#setOnCancelListener 方法会从消息池中获取一条 message，并赋值给 Dialog 的 mCancelMessage 成员变量。</p>
+<p>这个 message 什么时候会用到？当 cancel 方法被调用的时候。下面看下 Dialog#cancel 方法</p>
+<p>Dialog#cancel 方法 👇</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cancel</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (!mCanceled &amp;&amp; mCancelMessage != <span class="keyword">null</span>) &#123;</div><div class="line">    mCanceled = <span class="keyword">true</span>;</div><div class="line">    <span class="comment">// Obtain a new message so this dialog can be re-used</span></div><div class="line">     <span class="comment">//复制一份，然后发送。这里为啥需要复制而不是用原来的消息？看官方的注释说，是为了 Dialog 能够被复用。（所谓「复用」应该是指，Dialog cancel 之后，再调用 show 还可以显示出来, 并且之前设置的监听都还有效）</span></div><div class="line">    Message.obtain(mCancelMessage).sendToTarget();</div><div class="line">  &#125;</div><div class="line">  dismiss();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>重点 👇👇👇</p>
+<blockquote>
+<p><strong>也就是说，我们调用 Dialog#setOnCancelListener 方法从消息池获取到的 Message 最终是不会被发送出去的。因此 Message#recycleUnchecked 方法不会被调用。</strong></p>
+</blockquote>
+<p>但是即使没有发送出去，也只是 Dialog 的一个成员变量呀，Dialog 销毁的时候，这个 message 应该也能被回收，不至于导致内存泄漏吧？</p>
+<p>再看回前面 LeakCanary 报出来的引用链，GCRoot 是一个 HandlerThread 中的局部变量。</p>
+<p><strong>Q:回顾一下 Android 的消息机制中，Message 是如何被使用的？</strong></p>
+<p>A:我们通过 Handler#postDelayed() 或者是 Message#sendToTarget 方法发送的消息，最终都会进入到 当前线程的 MessageQueue 中，然后 Looper#loop 方法不断地从队列中取出 Message，派发执行。当消息队列为空的时候，就会休眠。等到有新的 message 可以取出的时候，重新唤醒。</p>
+<p>Looper#loop 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">loop</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">final</span> Looper me = myLooper();</div><div class="line">  <span class="keyword">final</span> MessageQueue queue = me.mQueue;</div><div class="line">   <span class="comment">//省略一些代码</span></div><div class="line">  <span class="keyword">for</span> (;;) &#123;</div><div class="line">    Message msg = queue.next(); <span class="comment">// might block</span></div><div class="line">    <span class="comment">//省略一些代码</span></div><div class="line">    msg.target.dispatchMessage(msg);</div><div class="line">     <span class="comment">//省略一些代码</span></div><div class="line">    msg.recycleUnchecked();</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>正常情况下，msg 派发到目标对象之后，都会调用 msg.recycleUnchecked() 方法完成重置，放入消息池。</p>
+<p>难道<strong>执行 for 循环体中的一次迭代之后，msg 局部变量还是持有上一个迭代中的 Message 的强引用？</strong></p>
+<p>如果这个假设成立，那么上面的泄漏就说得通了。</p>
+<h3 id="2-1、-验证"><a href="#2-1、-验证" class="headerlink" title="2.1、 验证"></a>2.1、 验证</h3><p>咱们可以写一段类似的代码，然后用 javap 命令查看字节码验证一下。</p>
+<p>新建一个 Test.java 文件，添加如下代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> java.util.concurrent.BlockingQueue;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">loop</span><span class="params">(BlockingQueue&lt;String&gt; blockingQueue)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">      String msg = blockingQueue.take();</div><div class="line">      System.out.println(msg);</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>执行如下命令：</p>
+<blockquote>
+<p>javac Test.java<br>javap -v Test</p>
+</blockquote>
+<p>loop 方法对应的字节码如下 👇：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">static void loop(java.util.concurrent.BlockingQueue&lt;java.lang.String&gt;) throws java.lang.InterruptedException;</div><div class="line"> descriptor: (Ljava/util/concurrent/BlockingQueue;)V</div><div class="line"> flags: ACC_STATIC</div><div class="line"> Code:</div><div class="line">  stack=2, locals=2, args_size=1</div><div class="line">    0: aload_0  #加载 slot0 的参数  将第0个引用类型本地变量推送至栈顶，因为是静态方法，没有 this，因此，是方法参数列表中的第一个参数，也就是加载 BlockingQueue</div><div class="line">    1: invokeinterface #2,  1       // InterfaceMethod java/util/concurrent/BlockingQueue.take:()Ljava/lang/Object;</div><div class="line">    6: checkcast   #3          // class java/lang/String</div><div class="line">    9: astore_1  #将 blockingQueue.take(); 执行的结果（一个 String 类型的值）存到第一个 slot</div><div class="line">   10: getstatic   #4          // Field java/lang/System.out:Ljava/io/PrintStream;</div><div class="line">   13: aload_1  #  将第1个引用类型本地变量推送至栈顶</div><div class="line">   14: invokevirtual #5          // Method java/io/PrintStream.println:(Ljava/lang/String;)V</div><div class="line">   17: goto      0  #无条件跳转到第 0 行</div><div class="line">  LineNumberTable:</div><div class="line">   line 6: 0</div><div class="line">   line 7: 10</div><div class="line">   line 8: 17</div><div class="line">  StackMapTable: number_of_entries = 1</div><div class="line">   frame_type = 0 /* same */</div><div class="line"> Exceptions:</div><div class="line">  throws java.lang.InterruptedException</div><div class="line"> Signature: #18              // (Ljava/util/concurrent/BlockingQueue&lt;Ljava/lang/String;&gt;;)V</div></pre></td></tr></table></figure>
+<p>从上面的字节码可以看出，当一个迭代执行结束之后，首先会跳转会循环体的第一行，上面的例子中对应的就是 blockingQueue#take 这行代码。此时，局部变量中的 slot1，还是指向上一次迭代中的 String 变量。如果 blockingQueue 中已经没有元素了，这时就会一直等待下一个元素插入，而上一次迭代中的 String 变量虽然已经没有用了，但是因为被局部变量表引用着，无法被 GC。</p>
+<p>重点 👇👇👇</p>
+<blockquote>
+<p>回到我们的主线， Looper#loop 方法中 for 循环体中的第一行，queue.next(); 方法，当消息队列中没有消息的时候，这个调用会一直阻塞在那里。此时 msg 没有被重新赋值。因此，loop 方法的局部变量表中还是持有对上一个迭代中 message 实例的引用。</p>
+<p>虽然 loop 方法结尾执行了 msg.recycleUnchecked(); 方法，会将 message 中的字段都置为空值，但是，与此同时，它会将这个 message 放入到 pool 中。这个时候，message 已经开始「泄漏」了。</p>
+<p>再回到前面，DialogFragment#onActivityCreated 方法中，会调用 Dialog#setOnCancelListener 方法，该方法内部又会尝试从消息池中取一个 message。如果刚好取到的 message 是被某个 MessageQueue 为空的 handlerThread 的 loop 方法 （对应的栈帧中的局部变量表）所引用着的，那么 DialogFragment 销毁的时候，LeakCanary 就会报告说内存泄漏产生了。</p>
+</blockquote>
+<p>重点 👆👆👆</p>
+<p>如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/DialogFragment%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F.png" alt="DialogFragment内存泄漏"></p>
+<h3 id="2-2、复现"><a href="#2-2、复现" class="headerlink" title="2.2、复现"></a>2.2、复现</h3><p>Q:看上面的描述，这个内存泄漏要触发的条件还是比较严苛的，有什么复现路径吗？</p>
+<p>A:因为这个泄漏跟 message 复用有很大关系。要复现这个问题，我们可以先看下消息池中的 message message#recycleUnchecked 方法以及 Message#obtain 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">recycleUnchecked</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="comment">//省略一些代码</span></div><div class="line">  <span class="keyword">synchronized</span> (sPoolSync) &#123;</div><div class="line">    <span class="keyword">if</span> (sPoolSize &lt; MAX_POOL_SIZE) &#123;</div><div class="line">      next = sPool;</div><div class="line">      <span class="comment">//相当于插入队头</span></div><div class="line">      sPool = <span class="keyword">this</span>;</div><div class="line">      sPoolSize++;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Message <span class="title">obtain</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">synchronized</span> (sPoolSync) &#123;</div><div class="line">    <span class="keyword">if</span> (sPool != <span class="keyword">null</span>) &#123;</div><div class="line">     <span class="comment">//取出队首的第一个元素</span></div><div class="line">      Message m = sPool;</div><div class="line">      sPool = m.next;</div><div class="line">      m.next = <span class="keyword">null</span>;</div><div class="line">      m.flags = <span class="number">0</span>; <span class="comment">// clear in-use flag</span></div><div class="line">      sPoolSize--;</div><div class="line">      <span class="keyword">return</span> m;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> <span class="keyword">new</span> Message();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>从 👆 两个方法可以看出：</p>
+<ol>
+<li>Message 回收的时候，会插入回收池列表的第一个元素</li>
+<li>Message 重用的时候，会取出回收池链表的第一个元素</li>
+</ol>
+<p><strong>也就是说，取出的 message 一般是最新插入的。</strong>因此，可以尝试使用如下代码进行复现。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> : <span class="type">AppCompatActivity</span></span>() &#123;</div><div class="line">  <span class="comment">//新建一个名为 BackgroundThread 的HandlerThread</span></div><div class="line">  <span class="keyword">private</span> <span class="keyword">val</span> background = HandlerThread(<span class="string">"BackgroundThread"</span>)</div><div class="line">    .apply &#123;</div><div class="line">      start()</div><div class="line">    &#125;</div><div class="line">  <span class="keyword">private</span> <span class="keyword">val</span> backgroundHandler = Handler(background.looper)</div><div class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onCreate</span><span class="params">(savedInstanceState: <span class="type">Bundle</span>?)</span></span> &#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState)</div><div class="line">    setContentView(R.layout.activity_main)</div><div class="line">    mBtnShowNormalDialogFragment.setOnClickListener &#123;</div><div class="line">      <span class="comment">//往 通过 backgroundHandler 往 background HandlerThread 中的 MessageQueue 插入一条 msg</span></div><div class="line">      backgroundHandler.post(Runnable &#123;</div><div class="line">       <span class="comment">//调用 runOnUiThread，往主线程的 MessageQueue 插入一条 msg。因为当前线程并非主线程，因此会往主线程队列中 post 一个 Message(这个 message 回先尝试从 pool 中取，大概率会取到 backgroundHandler 刚刚执行完被回收的 message ）</span></div><div class="line">        runOnUiThread &#123;</div><div class="line">          <span class="keyword">val</span> fragment = NormalDialogFragment()</div><div class="line">          fragment.apply &#123;</div><div class="line">            show(supportFragmentManager, <span class="string">"NormalFragment"</span>)</div><div class="line">          &#125;</div><div class="line">        &#125;</div><div class="line">      &#125;)</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行之后，点击使 DialogFragment 消失，等待 10s 左右，LeakCanary 可能就会报告内存泄漏问题了。</p>
+<h3 id="2-3、message-内存泄漏的影响"><a href="#2-3、message-内存泄漏的影响" class="headerlink" title="2.3、message 内存泄漏的影响"></a>2.3、message 内存泄漏的影响</h3><p>Q：泄漏的内存是否会不断增长？是短暂泄漏还是长时间的泄漏？</p>
+<ul>
+<li><p>存在增长的可能性，但是是有上限的。 - 增长的上限主要看 应用中有多少个之前执行过 Message 但是目前队列为空的带有 Looper 的 Thread，这种类型的 Thread 数目越多，Message 泄漏的概率就越高。 - 忽略那些不是通过继承 HandlerThread 实现的 带 Looper 的 Thread。TODO app 常驻的</p>
+</li>
+<li><p>主要影响的是类似于 Dialog 这种从消息池中获取了 Message 但是一直没有调用 Message#recycle 方法的情况。这种情况下，需要等待相应的线程有新的 Message 入队列并且被取出之后，才会释放。 - 如果有调用 recycle，即使 message 一直被另一个线程的 Looper#loop 方法 局部引用着，真正用到这条 message 被执行完，也会调用 Message#recycleUnchecked 方法将 消息的内容清除掉。</p>
+</li>
+</ul>
+<h2 id="3、解决方案"><a href="#3、解决方案" class="headerlink" title="3、解决方案"></a>3、解决方案</h2><h3 id="3-1、系统侧"><a href="#3-1、系统侧" class="headerlink" title="3.1、系统侧"></a>3.1、系统侧</h3><ul>
+<li>Android 官方消息机制中， Java 层的代码中应该在 Looper#loop 方法的末尾，将 msg 变量置为 null。</li>
+<li>ART、Dalvik 中当引用变量无效时，可以将对应的 slot 置为 null</li>
+</ul>
+<h3 id="3-2、App-侧"><a href="#3-2、App-侧" class="headerlink" title="3.2、App 侧"></a>3.2、App 侧</h3><p>相对通用的解决方案</p>
+<ol>
+<li>如果是 library 的开发者，自己开发的 library 使用到了 HandlerThread，想防止自己的库中的 HandlerThread 引发类似的内存泄漏问题，可以将 handlerThread 的 looper 传递给下面的 flushStackLocalLeaks 方法。</li>
+</ol>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * 接收 handlerThread 的 looper</div><div class="line"> * */</div><div class="line"><span class="function"><span class="keyword">fun</span> <span class="title">flushStackLocalLeaks</span><span class="params">(looper: <span class="type">Looper</span>)</span></span> &#123;</div><div class="line">  <span class="keyword">val</span> handler = Handler(looper)</div><div class="line">  handler.post &#123;</div><div class="line">    <span class="comment">//当队列闲置的时候，就给它发送空的 message，以确保不会发生 message 内存泄漏</span></div><div class="line">    Looper.myQueue().addIdleHandler &#123;</div><div class="line">      handler.sendMessageDelayed(handler.obtainMessage(), <span class="number">1000</span>)</div><div class="line">      <span class="comment">//返回 true，不会自动移除</span></div><div class="line">      <span class="keyword">return</span><span class="symbol">@addIdleHandler</span> <span class="literal">true</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>针对 app，可以通过 Thread.getAllStackTraces().keys 方法获取所有的线程。迭代遍历，判断线程是否为 HandlerThread，如果是，则调用上面的 flushStackLocalLeaks 方法。采用这种方案要注意的点是，要注意调用时机，确保调用的时候所有的 HandlerThread 都已经启动了，不然会有遗漏的情况。</li>
+</ol>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">Thread.getAllStackTraces().keys.*forEach* &#123; thread -&gt;</div><div class="line">  <span class="keyword">if</span> (thread <span class="keyword">is</span> HandlerThread &amp;&amp; thread.isAlive) &#123;</div><div class="line">    <span class="comment">//添加 IdleHandler</span></div><div class="line">    flushStackLocalLeaks(thread.looper)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>但是这种方案也存在不足的地方：</p>
+<ul>
+<li>App 中可能存在带有 Looper 和 MessageQueue 的 Thread 但又不是通过继承 HandlerThread 来实现的，需要用更通用的判断方式。 Looper 是存在 Thread 的 threadLocalMap 里面的，仅通过线程实例对象，并不是很好获取。</li>
+<li>系统版本限制。 Looper#getQueue 方法是 API Level 23 才添加的 ，也就是说，直接用这种方式无法涵盖 &lt;= Android 5.1 版本的系统。<ul>
+<li>Looper#myQueue 方法没有 API 限制，但是它只能拿到当前线程的 queue，没法通过线程实例去获取 queue</li>
+<li>针对版本 &lt; 6.0 的手机，可以考虑通过反射获取 Looper#mQueue 字段解决</li>
+</ul>
+</li>
+</ul>
+<p>只针对 Dialog/DialogFragment 泄漏的解决方案：</p>
+<p>在保证 Dialog 原有的复用功能正常运行的前提下：有两个思路：</p>
+<ol>
+<li><p>思路：从 pool 中取出的 message 有可能是被其他某个 HandlerThread 引用着的，那我们不要从 pool 中取消息，而是直接 new Message 不就没有这个问题了吗？</p>
+<ul>
+<li>查看 Dialog 源码 mCancelMessage mDismissMessage mShowMessage 访问权限都是 private 的，虽然可以通过继承重写 setOnXxxListener 方法，但是不使用反射的话，无法为 mCancelMessage 赋值。<ul>
+<li>反射有点 hack，我们优先看看是否有别的方案。</li>
+<li>Dialog 中还有 Dialog#setCancelMessage、以及 setDismissMessage 方法，可以实现对 cancelMessage 和 dismissMessage 赋值，但是没有 setShowMessage 这样的方法。这种方式覆盖不全面。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>另一种思路，切断引用链</p>
+<ul>
+<li>定义一个继承自 Dialog 的 AvoidLeakDialog 重写 setOnDismissListener setOnShowListener setOnCancelListener 方法，将传入的 Listener 包装一层。同时为了避免 Listener 变量因为仅被弱引用者，导致在 GC 的时候被提前回收，还应该添加在 重写的 Dialog 中添加三个成员变量，存储对应 Listener 的值。然后定义一个 DialogFragment 的子类，AvoidfLeakDialogFragment，重写 onCreateDialog 方法，返回自定义的 Dialog。</li>
+</ul>
+</li>
+</ol>
+<p>以 setOnShowListener 方法为例，包装类如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">WrappedShowListener</span></span>(delegate: DialogInterface.OnShowListener?) :</div><div class="line">  DialogInterface.OnShowListener &#123;</div><div class="line">  <span class="keyword">private</span> <span class="keyword">var</span> weakRef = WeakReference(delegate)</div><div class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onShow</span><span class="params">(dialog: <span class="type">DialogInterface</span>?)</span></span> &#123;</div><div class="line">    weakRef.<span class="keyword">get</span>()?.onShow(dialog)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>最终代码：</p>
+<ul>
+<li><a href="https://github.com/TimLin1024/MessageMemoryLeakSample/blob/master/app/src/main/java/com/timlin/messagememoryleaksample/AvoidLeakDialog.kt" target="_blank" rel="noopener">AvoidLeakDialog</a></li>
+<li><a href="https://github.com/TimLin1024/MessageMemoryLeakSample/blob/master/app/src/main/java/com/timlin/messagememoryleaksample/AvoidLeakedDialogFragment.kt" target="_blank" rel="noopener">AvoidLeakFragment</a></li>
+</ul>
+<p><strong>附：其他解决方案</strong></p>
+<p>square 以及其他网上的文章中，有一种解决方案，是将设置给 Dialog 的 Listener 包装一层为 ClearOnDetachListener ，然后业务方调用 Dialog#show 方法之后，再去手动 clearOnDetach 方法。</p>
+<p>这种方法确实可以解决内存泄漏问题。但是存在这样的问题：在 dialog 调用 dimiss 方法之后，再调用 show 方法的话，原来设置的 Listener 就失效了。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * https://medium.com/square-corner-blog/a-small-leak-will-sink-a-great-ship-efbae00f9a0f</div><div class="line"> * square 的解决方案。View detach 的时候就将引用置为 null 了，</div><div class="line"> * 会导致 Dialog 重新显示的时候，原来设置的 Listener 收不到回调</div><div class="line"> *</div><div class="line"> * 在 show 之后，调用 clearOnDetach</div><div class="line"> * */</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ClearOnDetachListener</span></span>(<span class="keyword">private</span> <span class="keyword">var</span> delegate: DialogInterface.OnClickListener?) :</div><div class="line">  DialogInterface.OnClickListener &#123;</div><div class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onClick</span><span class="params">(dialog: <span class="type">DialogInterface</span>?, which: <span class="type">Int</span>)</span></span> &#123;</div><div class="line">    delegate?.onClick(dialog, which)</div><div class="line">  &#125;</div><div class="line">  <span class="function"><span class="keyword">fun</span> <span class="title">clearOnDetach</span><span class="params">(dialog: <span class="type">Dialog</span>)</span></span> &#123;</div><div class="line">    dialog.*window*?.*decorView*?.*viewTreeObserver*?.addOnWindowAttachListener(<span class="keyword">object</span> :</div><div class="line">      ViewTreeObserver.OnWindowAttachListener &#123;</div><div class="line">      <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onWindowDetached</span><span class="params">()</span></span> &#123;</div><div class="line">        Log.d(*TAG*, <span class="string">"onWindowDetached: "</span>)</div><div class="line">        delegate = <span class="literal">null</span></div><div class="line">      &#125;</div><div class="line">      <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onWindowAttached</span><span class="params">()</span></span> &#123;</div><div class="line">      &#125;</div><div class="line">    &#125;)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>使用方式</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">val</span> clearOnDetachListener =</div><div class="line">  ClearOnDetachListener(DialogInterface.OnClickListener **&#123;** dialog, which **-&gt; &#123;&#125; &#125;**)</div><div class="line"><span class="keyword">val</span> dialog = AlertDialog.Builder(<span class="keyword">this</span>)</div><div class="line">  .setPositiveButton(<span class="string">"sure"</span>, clearOnDetachListener)</div><div class="line">  .show()</div><div class="line">clearOnDetachListener.clearOnDetach(dialog)</div></pre></td></tr></table></figure>
+<h2 id="4、参考资料与学习资源推荐"><a href="#4、参考资料与学习资源推荐" class="headerlink" title="4、参考资料与学习资源推荐"></a>4、参考资料与学习资源推荐</h2><ul>
+<li><a href="https://medium.com/square-corner-blog/a-small-leak-will-sink-a-great-ship-efbae00f9a0f" target="_blank" rel="noopener">https://medium.com/square-corner-blog/a-small-leak-will-sink-a-great-ship-efbae00f9a0f</a></li>
+<li>《深入理解 Java 虚拟机》</li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/内存泄漏/" rel="tag"># 内存泄漏</a>
+          
+            <a href="/blog/tags/源码分析/" rel="tag"># 源码分析</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/05/29/为什么推荐使用notifyXxxChange方法更新RecyclerView？OC/" rel="next" title="为什么推荐使用notifyXxxChange方法更新RecyclerView？OC">
+                <i class="fa fa-chevron-left"></i> 为什么推荐使用notifyXxxChange方法更新RecyclerView？OC
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">41</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/TimLin1024" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、问题"><span class="nav-text">1、问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、分析"><span class="nav-text">2、分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1、-验证"><span class="nav-text">2.1、 验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2、复现"><span class="nav-text">2.2、复现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3、message-内存泄漏的影响"><span class="nav-text">2.3、message 内存泄漏的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、解决方案"><span class="nav-text">3、解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1、系统侧"><span class="nav-text">3.1、系统侧</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2、App-侧"><span class="nav-text">3.2、App 侧</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、参考资料与学习资源推荐"><span class="nav-text">4、参考资料与学习资源推荐</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>

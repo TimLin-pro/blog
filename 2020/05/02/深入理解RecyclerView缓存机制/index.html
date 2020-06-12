@@ -104,7 +104,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/stable.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/hasstableid.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-RecyclerViewpool-reuse.png">
-<meta property="og:updated_time" content="2020-05-03T04:51:55.388Z">
+<meta property="og:updated_time" content="2020-06-03T09:56:12.087Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解 RecyclerView 缓存机制">
 <meta name="twitter:description" content="使用 ScrollView 的时候，它的所有子 view 都会一次性被加载出来。而正确使用 RecyclerView 可以做到按需加载，按需绑定，并实现复用。本文主要分析 RecyclerView 缓存复用的原理。">
@@ -383,7 +383,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  3,340
+                  3,345
                 </span>
               
 
@@ -427,7 +427,7 @@
 <ul>
 <li>第一次，尝试从 mChangedScrap 中获取。<ul>
 <li>只有在 mState.isPreLayout() 为 true 时，也就是预布局阶段，才会做这次尝试。</li>
-<li>「预布局」的概念会在介绍。</li>
+<li>「预布局」的概念会在后面介绍。</li>
 </ul>
 </li>
 <li>第二次，getScrapOrHiddenOrCachedHolderForPosition() 获得 ViewHolder。<ul>
@@ -460,7 +460,7 @@
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><h3 id="预布局、预测动画是什么？"><a href="#预布局、预测动画是什么？" class="headerlink" title="预布局、预测动画是什么？"></a>预布局、预测动画是什么？</h3><p>理解「预布局」需要先了解「预测动画」。考虑这样一个场景：</p>
 <p>用户有 A、B、C 三个 item，A，B 刚好显示在屏幕中，这个时候，用户把 B 删除了，那么最终 C 会显示在 B 原来的位置</p>
 <p><img src="https://raw.githubusercontent.com/TimLin-pro/Graph/master/markdown/image-预测动画问题.png" alt=""></p>
-<p>如果 C 从底部平滑地滑动到之前 B 的位置将会更符合直觉。但是要做到这点实际上没那么简单。因为我们只知道 C 最终的位置，但是不知道 C 的起始位置在哪里，无法确定 C 应该从哪里滑动过来。如果根据最终的状态，就断定 C 应该要从底部滑动过来的话，很可能是有问题的。因为在其他 LayoutManager 中，它可能是从侧面或者是其他地方滑动过来的。</p>
+<p>如果 C 从底部平滑地滑动到之前 B 的位置将会更符合直觉。但是要做到这点实际上没那么简单。因为我们只知道 C 最终的位置，但是不知道 C 的起始位置在哪里，无法确定 C 应该从哪里滑动过来。如果根据最终的状态，就断定 C 应该要从底部滑动过来的话，很可能是有问题的。因为在其他类型的 LayoutManager 中，它可能是从侧面或者是其他地方滑动过来的。</p>
 <p>那根据原状态与最终状态之间的差异，能不能得出我们应该执行什么样的切换动画呢？答案依然是 no。因为在原状态中，C 根本就不存在。（这个时候，我们并不知道，B 要被删除了，如果把 C 给加载出来，很可能是一种资源浪费。）</p>
 <p>设计 RecyclerView 的工程师是这么解决的。当 Adapter 发生变化的时候，RecyclerView 会让 LayoutManager 进行两次布局。</p>
 <ul>
@@ -588,6 +588,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2020/05/29/为什么推荐使用notifyXxxChange方法更新RecyclerView？OC/" rel="prev" title="为什么推荐使用notifyXxxChange方法更新RecyclerView？OC">
+                为什么推荐使用notifyXxxChange方法更新RecyclerView？OC <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -733,7 +737,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">39</span>
+                <span class="site-state-item-count">41</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -755,7 +759,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">26</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

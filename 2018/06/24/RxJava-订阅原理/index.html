@@ -95,12 +95,12 @@
 <meta property="og:site_name" content="Tim&#39;s Track">
 <meta property="og:description" content="概述RxJava 是什么呢？根据RxJava在GitHub上给出的描述 RxJava – Reactive Extensions for the JVM – a library for composing asynchronous and event-based programs using observable sequences for the Java 大致意思是：一个可以在 JVM上 使用">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tNc79gy1fsmjkz2m4fj307n04qglj.jpg">
-<meta property="og:updated_time" content="2018-07-28T13:28:17.418Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/Observable%20%E5%8C%85%E8%A3%85.jpg">
+<meta property="og:updated_time" content="2020-05-30T16:44:50.955Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RxJava 订阅原理">
 <meta name="twitter:description" content="概述RxJava 是什么呢？根据RxJava在GitHub上给出的描述 RxJava – Reactive Extensions for the JVM – a library for composing asynchronous and event-based programs using observable sequences for the Java 大致意思是：一个可以在 JVM上 使用">
-<meta name="twitter:image" content="https://ws2.sinaimg.cn/large/006tNc79gy1fsmjkz2m4fj307n04qglj.jpg">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/Observable%20%E5%8C%85%E8%A3%85.jpg">
 
 
 
@@ -447,7 +447,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Calls the associated hook function.</div><div class="line"> * <span class="doctag">@param</span> &lt;T&gt; the value type</div><div class="line"> * <span class="doctag">@param</span> source the hook's input value</div><div class="line"> * <span class="doctag">@return</span> the value returned by the hook</div><div class="line"> */</div><div class="line"><span class="meta">@SuppressWarnings</span>(&#123; <span class="string">"rawtypes"</span>, <span class="string">"unchecked"</span> &#125;)</div><div class="line"><span class="meta">@NonNull</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">Observable&lt;T&gt; <span class="title">onAssembly</span><span class="params">(@NonNull Observable&lt;T&gt; source)</span> </span>&#123;</div><div class="line">    Function&lt;? <span class="keyword">super</span> Observable, ? extends Observable&gt; f = onObservableAssembly;</div><div class="line">    <span class="keyword">if</span> (f != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> apply(f, source);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> source;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>io.reactivex.plugins.RxJavaPlugins#onAssembly 方法中只是调用了相关的 hook 函数（如果有的话），然后返回原对象。</p>
 <p>创建的结果：ObservableOnSubsribe 外面包装了一层。如下图所示：</p>
-<p><img src="https://ws2.sinaimg.cn/large/006tNc79gy1fsmjkz2m4fj307n04qglj.jpg" alt="image-20180624202952875"></p>
+<p><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/Observable%20%E5%8C%85%E8%A3%85.jpg" alt="Observable 包装"></p>
 <h2 id="订阅过程"><a href="#订阅过程" class="headerlink" title="订阅过程"></a>订阅过程</h2><p>实例代码中在订阅之前我们先创建了一个 <code>observer</code> 对象。</p>
 <p>然后调用 <code>Observable#subscribe</code> 方法，将 <code>observer</code> 作为参数传递给该方法。</p>
 <p>点开看看 <code>Observable#subscribe</code> 方法的实现。</p>
@@ -671,7 +671,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">39</span>
+                <span class="site-state-item-count">41</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -693,7 +693,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">26</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

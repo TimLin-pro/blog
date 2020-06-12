@@ -87,18 +87,18 @@
 
 
 
-<meta name="description" content="一、不同类型 Map 的适用场景 如果需要使用的Map中的key无序，选择HashMap；   如果要求key有序，则选择TreeMap。   但是选择TreeMap就会有性能问题，因为TreeMap的get操作的时间复杂度是O(log(n))的，相比于HashMap的O(1)还是差不少的，   LinkedHashMap的出现就是为了平衡这些因素，使得 能够以O(1)时间复杂度增加查找元素，又能">
+<meta name="description" content="一、不同类型 Map 的适用场景 如果不关心 Map 中的 key 顺序，只是希望能够以 O(1) 的时间复杂度执行插入和查找操作。那么可以选择HashMap； 如果要求 key 有序，则选择TreeMap。   但是选择 TreeMap 就会有性能问题，因为 TreeMap 的 get 操作的时间复杂度是O(log(n))的，相比于 HashMap 的O(1)还是差不少的，   LinkedHa">
 <meta name="keywords" content="集合框架">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java 集合框架之 LinkedHashMap 工作原理">
 <meta property="og:url" content="https://timlin-pro.github.io/blog/2017/09/17/Java-集合框架之-LinkedHashMap-工作原理/index.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
-<meta property="og:description" content="一、不同类型 Map 的适用场景 如果需要使用的Map中的key无序，选择HashMap；   如果要求key有序，则选择TreeMap。   但是选择TreeMap就会有性能问题，因为TreeMap的get操作的时间复杂度是O(log(n))的，相比于HashMap的O(1)还是差不少的，   LinkedHashMap的出现就是为了平衡这些因素，使得 能够以O(1)时间复杂度增加查找元素，又能">
+<meta property="og:description" content="一、不同类型 Map 的适用场景 如果不关心 Map 中的 key 顺序，只是希望能够以 O(1) 的时间复杂度执行插入和查找操作。那么可以选择HashMap； 如果要求 key 有序，则选择TreeMap。   但是选择 TreeMap 就会有性能问题，因为 TreeMap 的 get 操作的时间复杂度是O(log(n))的，相比于 HashMap 的O(1)还是差不少的，   LinkedHa">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-18T11:28:09.174Z">
+<meta property="og:updated_time" content="2020-05-29T08:32:28.201Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 集合框架之 LinkedHashMap 工作原理">
-<meta name="twitter:description" content="一、不同类型 Map 的适用场景 如果需要使用的Map中的key无序，选择HashMap；   如果要求key有序，则选择TreeMap。   但是选择TreeMap就会有性能问题，因为TreeMap的get操作的时间复杂度是O(log(n))的，相比于HashMap的O(1)还是差不少的，   LinkedHashMap的出现就是为了平衡这些因素，使得 能够以O(1)时间复杂度增加查找元素，又能">
+<meta name="twitter:description" content="一、不同类型 Map 的适用场景 如果不关心 Map 中的 key 顺序，只是希望能够以 O(1) 的时间复杂度执行插入和查找操作。那么可以选择HashMap； 如果要求 key 有序，则选择TreeMap。   但是选择 TreeMap 就会有性能问题，因为 TreeMap 的 get 操作的时间复杂度是O(log(n))的，相比于 HashMap 的O(1)还是差不少的，   LinkedHa">
 
 
 
@@ -395,7 +395,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,736
+                  1,771
                 </span>
               
 
@@ -431,57 +431,53 @@
 
       
         <h2 id="一、不同类型-Map-的适用场景"><a href="#一、不同类型-Map-的适用场景" class="headerlink" title="一、不同类型 Map 的适用场景"></a>一、不同类型 Map 的适用场景</h2><ul>
-<li>如果需要使用的Map中的<strong>key无序</strong>，选择<code>HashMap</code>；</li>
-</ul>
+<li>如果不关心 Map 中的 key 顺序，只是希望能够以 O(1) 的时间复杂度执行插入和查找操作。那么可以选择<code>HashMap</code>；</li>
+<li><p>如果要求 <strong>key 有序</strong>，则选择<code>TreeMap</code>。 </p>
 <ul>
-<li><p>如果要求<strong>key有序</strong>，则选择<code>TreeMap</code>。 </p>
-<ul>
-<li>但是选择TreeMap就会有<strong>性能问题</strong>，因为TreeMap的get操作的时间复杂度是<code>O(log(n))</code>的，相比于HashMap的<code>O(1)</code>还是差不少的，</li>
+<li>但是选择 TreeMap 就会有<strong>性能问题</strong>，因为 TreeMap 的 get 操作的时间复杂度是<code>O(log(n))</code>的，相比于 HashMap 的<code>O(1)</code>还是差不少的，</li>
 </ul>
 </li>
-<li><p><code>LinkedHashMap</code>的出现就是为了平衡这些因素，使得 能够以<strong>O(1)时间复杂度增加查找元素，又能够保证key的有序性</strong> 此外，LinkedHashMap提供了两种key的顺序：</p>
-<ol>
+<li><code>LinkedHashMap</code>的出现就是为了平衡这些因素，使得 能够以<strong>O(1)时间复杂度增加查找元素，又能够保证 key 的有序性</strong> 此外，LinkedHashMap 提供了两种 key 的顺序：<ol>
 <li>按照访问顺序排序（access order）。可以使用这种顺序<strong>实现<code>LRU（Least Recently Used）</code>缓存</strong></li>
 </ol>
 <ul>
 <li>因为每次访问后的元素会被移到链表尾部，实现 LRU 只需要移除 链首元素 即可<ul>
 <li>「一次访问」的定义是什么？<ul>
-<li>put，putIfAbsent，get，getOrDefault，compute，computeIfAbsent，computeIfPresent或merge方法会导致访问相应的条目（假设它在调用完成后存在）。如果值被替换，替换方法只会导致条目的访问</li>
+<li>put，putIfAbsent，get，getOrDefault，compute，computeIfAbsent，computeIfPresent 或 merge 方法会导致访问相应的条目（假设它在调用完成后存在）。如果值被替换，替换方法只会导致条目的访问</li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 <ol>
-<li>按照插入顺序排序（insertion orde）。注：同一key的多次插入，并不会影响其顺序。</li>
+<li>按照插入顺序排序（insertion orde）。注：同一 key 的多次插入，并不会影响其顺序。<br>注：WeakHashMap 也可以用于实现缓存，二者的使用场景不同。WeakHashMap 无法像 LinkedHashMap 那样自定义淘汰规则，它的元素会在 gc 的发生的时候被清除。</li>
 </ol>
 </li>
 </ul>
-<p>注：WeakHashMap 也可以用于实现缓存，二者的使用场景不同。WeakHashMap无法像 LinkedHashMap 那样自定义淘汰规则，它的元素会在 gc 的发生的时候被清除。</p>
 <p>特别地，对 collection-view 的操作不会影响后台映射的迭代顺序。</p>
 <ul>
 <li>collection-view 是否类似于数据库的视图？</li>
 </ul>
-<h2 id="二、性能"><a href="#二、性能" class="headerlink" title="二、性能"></a>二、性能</h2><p>LinkedHashMap 提供了所有可选的Map操作，并允许使用null元素。与HashMap一样，假设散列函数能够正确地在桶之间分散元素，它为基本操作（添加，包含和删除）提供了恒定的性能。性能可能略低于HashMap的性能，这是因为<strong>维护链接列表的成本增加了</strong>，但有一个<strong>例外</strong>：对LinkedHashMap的collection-view的迭代需要时间<strong>与 map 的size 成比</strong>，而<strong>不关其capacity</strong>。迭代HashMap可能会更加昂贵，需要的时间<strong>与其capacity成正比</strong>。</p>
-<p>LinkedHashMap 有两个影响其性能的参数：初始容量和负载因子。它们的定义与HashMap完全相同。但请注意，对于此类，初始容量选择过高值对性能的影响不会像HashMap那么严重，因为此类的迭代时间不受容量影响，迭代只受到 size 的影响。</p>
-<h2 id="三、并发问题（fail-fast）"><a href="#三、并发问题（fail-fast）" class="headerlink" title="三、并发问题（fail-fast）"></a>三、并发问题（fail-fast）</h2><p>并发方式：推荐使用 <code>Map m = Collections.synchronizedMap(new LinkedHashMap(...));</code>进行包装。内部是使用一个内置锁，各个方法的实现只是加锁然后 调用原来的类。这最好在创建时就完成「包装操作」，以防止意外的不同步访问Map。</p>
+<h2 id="二、性能"><a href="#二、性能" class="headerlink" title="二、性能"></a>二、性能</h2><p>LinkedHashMap 提供了所有可选的 Map 操作，并允许使用 null 元素。与 HashMap 一样，假设散列函数能够正确地在桶之间分散元素，它为基本操作（添加，包含和删除）提供了恒定的性能。性能可能略低于 HashMap 的性能，这是因为<strong>维护链接列表的成本增加了</strong>，但有一个<strong>例外</strong>：对 LinkedHashMap 的 collection-view 的迭代需要时间<strong>与 map 的 size 成比</strong>，而<strong>不关其 capacity</strong>。迭代 HashMap 可能会更加昂贵，需要的时间<strong>与其 capacity 成正比</strong>。</p>
+<p>LinkedHashMap 有两个影响其性能的参数：初始容量和负载因子。它们的定义与 HashMap 完全相同。但请注意，对于此类，初始容量选择过高值对性能的影响不会像 HashMap 那么严重，因为此类的迭代时间不受容量影响，迭代只受到 size 的影响。</p>
+<h2 id="三、并发问题（fail-fast）"><a href="#三、并发问题（fail-fast）" class="headerlink" title="三、并发问题（fail-fast）"></a>三、并发问题（fail-fast）</h2><p>并发方式：推荐使用 <code>Map m = Collections.synchronizedMap(new LinkedHashMap(...));</code>进行包装。内部是使用一个内置锁，各个方法的实现只是加锁然后 调用原来的类。这最好在创建时就完成「包装操作」，以防止意外的不同步访问 Map。</p>
 <p>结构性修改（A structural modification ） 是指</p>
 <ul>
 <li><strong>添加或删除</strong>一个或多个映射的操作，</li>
-<li>在访问有序的LinkedHashMap的情况下会影响迭代顺序。</li>
-<li>在插入有序的LinkedHashMap 中，仅更改与已包含在映射中的键相关的值不是结构修改。</li>
-<li><strong>在 access-ordered 模式下的 LinkedHashMap中，仅通过get查询map就是一种结构修改</strong>。 </li>
+<li>在访问有序的 LinkedHashMap 的情况下会影响迭代顺序。</li>
+<li>在插入有序的 LinkedHashMap 中，仅更改与已包含在映射中的键相关的值不是结构修改。</li>
+<li><strong>在 access-ordered 模式下的 LinkedHashMap 中，仅通过 get 查询 map 就是一种结构修改</strong>。 </li>
 </ul>
-<p>迭代遍历过程中如果发现结构性修改问题（使用 iterater#remove 方法产生的结构性修改问题除外 ），马上抛出ConcurrentModificationException，以免造成更大的损失。</p>
+<p>迭代遍历过程中如果发现结构性修改问题（使用 iterater#remove 方法产生的结构性修改问题除外 ），马上抛出 ConcurrentModificationException，以免造成更大的损失。</p>
 <p>「快速失败」具体实现是怎么样的呢？每趟遍历完成之后都会调用 checkForComodification 方法进行检查</p>
 <p>java.util.ArrayList.Itr#checkForComodification</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">checkForComodification</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (modCount != expectedModCount)</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> ConcurrentModificationException();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="四、实现"><a href="#四、实现" class="headerlink" title="四、实现"></a>四、实现</h2><h3 id="节点数据结构"><a href="#节点数据结构" class="headerlink" title="节点数据结构"></a>节点数据结构</h3><p>主要基于HashMap的节点数据结构实现。</p>
+<h2 id="四、实现"><a href="#四、实现" class="headerlink" title="四、实现"></a>四、实现</h2><h3 id="节点数据结构"><a href="#节点数据结构" class="headerlink" title="节点数据结构"></a>节点数据结构</h3><p>主要基于 HashMap 的节点数据结构实现。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">HashMap</span>.<span class="title">Node</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</div><div class="line">    <span class="comment">//每个节点包含两个指针，指向前继节点与后继节点</span></div><div class="line">    Entry&lt;K,V&gt; before, after;</div><div class="line">    Entry(<span class="keyword">int</span> hash, K key, V value, Node&lt;K,V&gt; next) &#123;</div><div class="line">        <span class="keyword">super</span>(hash, key, value, next);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>双向链表实现的LinkedHshMap，所以每个节点须在HashMap的基础上添加指向前继节点与后继节点指针：before，after。</p>
+<p>双向链表实现的 LinkedHshMap，所以每个节点须在 HashMap 的基础上添加指向前继节点与后继节点指针：before，after。</p>
 <h3 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h3><p>HashMap 中定义了三个回调方法供 LinkedHashMap 重写。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Callbacks to allow LinkedHashMap post-actions</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">afterNodeAccess</span><span class="params">(Node&lt;K,V&gt; p)</span> </span>&#123; &#125;</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">afterNodeInsertion</span><span class="params">(<span class="keyword">boolean</span> evict)</span> </span>&#123; &#125;</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">afterNodeRemoval</span><span class="params">(Node&lt;K,V&gt; p)</span> </span>&#123; &#125;</div></pre></td></tr></table></figure>
-<p>LinkedHashMap继承于HashMap，重新实现了这3个函数，顾名思义这三个函数的作用分别是：<strong>节点访问后、节点插入后、节点移除后做一些事情</strong>。</p>
+<p>LinkedHashMap 继承于 HashMap，重新实现了这 3 个函数，顾名思义这三个函数的作用分别是：<strong>节点访问后、节点插入后、节点移除后做一些事情</strong>。</p>
 <h4 id="1-afterNodeRemoval"><a href="#1-afterNodeRemoval" class="headerlink" title="1.afterNodeRemoval"></a>1.afterNodeRemoval</h4><p>双向链表删除节点可以参考这样思路。</p>
 <p>假设 before —&gt;   p —&gt; after</p>
 <p>要删除 p</p>
@@ -489,7 +485,7 @@
 <p>else before.after = after</p>
 <h5 id="2-再处理-before-方向"><a href="#2-再处理-before-方向" class="headerlink" title="2.再处理 before 方向"></a>2.再处理 before 方向</h5><p>if p 为最后一个节点  <code>after == null</code>   <code>tail = before</code><br>else  after.before = before;</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">afterNodeRemoval</span><span class="params">(Node&lt;K,V&gt; e)</span> </span>&#123; <span class="comment">// unlink</span></div><div class="line">    LinkedHashMap.Entry&lt;K,V&gt; p =</div><div class="line">        (LinkedHashMap.Entry&lt;K,V&gt;)e, b = p.before, a = p.after;</div><div class="line">    p.before = p.after = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">if</span> (b == <span class="keyword">null</span>)</div><div class="line">        head = a;</div><div class="line">    <span class="keyword">else</span></div><div class="line">        b.after = a;</div><div class="line">    <span class="keyword">if</span> (a == <span class="keyword">null</span>)</div><div class="line">        tail = b;</div><div class="line">    <span class="keyword">else</span></div><div class="line">        a.before = b;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="2-afterNodeInsertion"><a href="#2-afterNodeInsertion" class="headerlink" title="2.afterNodeInsertion"></a>2.afterNodeInsertion</h4><p> evict参数有什么用？</p>
+<h4 id="2-afterNodeInsertion"><a href="#2-afterNodeInsertion" class="headerlink" title="2.afterNodeInsertion"></a>2.afterNodeInsertion</h4><p> evict 参数有什么用？</p>
 <ul>
 <li>if false, the table is in creation mode.<ul>
 <li>Creation mode 是什么？刚刚创建时的模式？</li>
@@ -512,11 +508,11 @@
 <h3 id="5-get"><a href="#5-get" class="headerlink" title="5.get"></a>5.get</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    Node&lt;K,V&gt; e;</div><div class="line">    <span class="keyword">if</span> ((e = getNode(hash(key), key)) == <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">if</span> (accessOrder)</div><div class="line">        afterNodeAccess(e);</div><div class="line">    <span class="keyword">return</span> e.value;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><code>get</code>函数重新实现并加入了<code>afterNodeAccess</code>来保证访问顺序</p>
 <h2 id="五、小结"><a href="#五、小结" class="headerlink" title="五、小结"></a>五、小结</h2><ol>
-<li>怎样保证插入顺序？ 使用前驱和后继指针，使得原来的HashMap有序，在<code>LinkedHashMap</code>中覆盖<code>HashMap</code>中<code>newNode</code> 方法，使得每次put数据时，新建的节点都是<code>LinkedHashMap.Entry&lt;K,v&gt;</code> 类型的，比普通的<code>HsahMap.Entry</code> 多一个前驱结点和一个后继节点，使用前驱和后继保证插入有序。</li>
+<li>怎样保证插入顺序？ 使用前驱和后继指针，使得原来的 HashMap 有序，在<code>LinkedHashMap</code>中覆盖<code>HashMap</code>中<code>newNode</code> 方法，使得每次 put 数据时，新建的节点都是<code>LinkedHashMap.Entry&lt;K,v&gt;</code> 类型的，比普通的<code>HsahMap.Entry</code> 多一个前驱结点和一个后继节点，使用前驱和后继保证插入有序。</li>
 <li>怎么样保证访问顺序？ 覆盖父类<code>HashMap</code>的<code>afterNodeAccess</code> 方法，使得每次访问后，都改变链表顺序。使得原链表按访问排序。将最新一次访问的节点放到链表的最后。</li>
 </ol>
 <h2 id="六、参考资料与学习资源推荐"><a href="#六、参考资料与学习资源推荐" class="headerlink" title="六、参考资料与学习资源推荐"></a>六、参考资料与学习资源推荐</h2><ul>
-<li><a href="https://my.oschina.net/hgfdoing/blog/634125" target="_blank" rel="noopener">重识java-LinkedHashMap</a></li>
+<li><a href="https://my.oschina.net/hgfdoing/blog/634125" target="_blank" rel="noopener">重识 java-LinkedHashMap</a></li>
 <li><a href="https://docs.oracle.com/javase/8/docs/api/java/util/LinkedHashMap.html" target="_blank" rel="noopener">官方文档</a></li>
 </ul>
 <p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
@@ -720,7 +716,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">39</span>
+                <span class="site-state-item-count">41</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -742,7 +738,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">26</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

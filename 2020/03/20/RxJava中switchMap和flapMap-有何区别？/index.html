@@ -95,13 +95,13 @@
 <meta property="og:site_name" content="Tim&#39;s Track">
 <meta property="og:description" content="flapMap 和 switchMap 都是 RxJava 中的转换操作符，都可以将上游的输入转换为一个数据源（比如 Observable）输出给下游。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://img.mubu.com/document_image/b9064af5-a131-423b-95c8-9e6653d3e42c-4072084.jpg">
-<meta property="og:image" content="https://img.mubu.com/document_image/5dccd09c-af63-4a6a-8bda-cfc7d4c30ad0-4072084.jpg">
-<meta property="og:updated_time" content="2020-03-19T16:55:28.468Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/switchMap">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/FlapMap">
+<meta property="og:updated_time" content="2020-06-12T14:53:29.221Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RxJava中switchMap和flapMap 有何区别？">
 <meta name="twitter:description" content="flapMap 和 switchMap 都是 RxJava 中的转换操作符，都可以将上游的输入转换为一个数据源（比如 Observable）输出给下游。">
-<meta name="twitter:image" content="https://img.mubu.com/document_image/b9064af5-a131-423b-95c8-9e6653d3e42c-4072084.jpg">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/switchMap">
 
 
 
@@ -461,10 +461,10 @@
 </ul>
 <h2 id="大理石图"><a href="#大理石图" class="headerlink" title="大理石图"></a>大理石图</h2><ul>
 <li><p>switchMap ；因为在发出第二个绿色方块之前，上游输入一个 深蓝色珠子，因此第二个绿色方块之前被丢弃</p>
-<p><img src="https://img.mubu.com/document_image/b9064af5-a131-423b-95c8-9e6653d3e42c-4072084.jpg" alt="img"></p>
+<p><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/switchMap" alt="img"></p>
 </li>
 <li><p>flatMap，虽然深蓝色的珠子紧随绿色珠子，但是，第二个绿色方块也正常发送了出去，只不过，顺序乱了（这里的 「乱」指的是，第二个绿色方块没有在蓝色的第一个方块之前发出）</p>
-<p><img src="https://img.mubu.com/document_image/5dccd09c-af63-4a6a-8bda-cfc7d4c30ad0-4072084.jpg" alt="img"></p>
+<p><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/FlapMap" alt="img"></p>
 </li>
 </ul>
 <h2 id="小结："><a href="#小结：" class="headerlink" title="小结："></a>小结：</h2><ul>
@@ -683,7 +683,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">39</span>
+                <span class="site-state-item-count">41</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -705,7 +705,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">26</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
