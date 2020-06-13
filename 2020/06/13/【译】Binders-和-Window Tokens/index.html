@@ -1,0 +1,1150 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="原文链接：https://www.androiddesignpatterns.com/2013/07/binders-window-tokens.html  前言 Android 系统的核心设计目标之一是提供一个开放平台，这个平台不依赖中央机构来验证应用程序是不是真像它们对外宣称的那样运行。 为了实现这个目标，Android 使用应用程序沙箱以及 Linux 进程隔离 来防止应用程序以不受控制或">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【译】Binder 和 WindowToken">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/2020/06/13/【译】Binders-和-Window Tokens/index.html">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="原文链接：https://www.androiddesignpatterns.com/2013/07/binders-window-tokens.html  前言 Android 系统的核心设计目标之一是提供一个开放平台，这个平台不依赖中央机构来验证应用程序是不是真像它们对外宣称的那样运行。 为了实现这个目标，Android 使用应用程序沙箱以及 Linux 进程隔离 来防止应用程序以不受控制或">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-06-13T05:47:08.983Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【译】Binder 和 WindowToken">
+<meta name="twitter:description" content="原文链接：https://www.androiddesignpatterns.com/2013/07/binders-window-tokens.html  前言 Android 系统的核心设计目标之一是提供一个开放平台，这个平台不依赖中央机构来验证应用程序是不是真像它们对外宣称的那样运行。 为了实现这个目标，Android 使用应用程序沙箱以及 Linux 进程隔离 来防止应用程序以不受控制或">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/2020/06/13/【译】Binders-和-Window Tokens/"/>
+
+
+
+
+
+  <title> 【译】Binder 和 WindowToken | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/06/13/【译】Binders-和-Window Tokens/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                【译】Binder 和 WindowToken
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-13T13:13:38+08:00">
+                2020-06-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Android系统机制/" itemprop="url" rel="index">
+                    <span itemprop="name">Android系统机制</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2020/06/13/【译】Binders-和-Window Tokens/" class="leancloud_visitors" data-flag-title="【译】Binder 和 WindowToken">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  2,512
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  9
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>原文链接：<a href="https://www.androiddesignpatterns.com/2013/07/binders-window-tokens.html" target="_blank" rel="noopener">https://www.androiddesignpatterns.com/2013/07/binders-window-tokens.html</a></p>
+</blockquote>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><ul>
+<li>Android 系统的核心设计目标之一是提供一个开放平台，这个平台不依赖中央机构来验证应用程序是不是真像它们对外宣称的那样运行。 为了实现这个目标，Android 使用应用程序<strong>沙箱</strong>以及 <strong>Linux 进程隔离</strong> 来防止应用程序以不受控制或者不安全的方式访问系统或其他应用程序 。 选择该体系结构时要同时考虑开发人员和设备用户：双方都不需要为此采用额外的步骤来 保护设备免受恶意应用程序的侵害。 系统应该帮我们自动处理好这一切。<a id="more"></a></li>
+<li>很长时间以来，我一直将这种安全看成是理所当然的，而没有完全了解它的实际运行方式。 但是最近我变得好奇了。 哪种机制能够阻止我干下面这些坏事呢。例如，欺骗系统让它释放另一个应用程序获取的唤醒锁，或者是把另一个应用程序的 Window 从屏幕隐藏掉？ 更普遍地，Android 的核心系统服务 是怎么实现既高效又安全地响应第三方应用程序发出的请求的？</li>
+<li>让我吃惊的是，几乎所有问题的答案都非常简单：Binder。 Binders 是 Android 体系结构的基石； 他们从开发人员那里抽象 IPC 的底层细节，让应用程序可以很简单地跟系统服务 以及其他远程服务组件进行通信。 但是 Binders 还有许多其他很酷的特性，它们以各种巧妙的方式在整个系统中得到了广泛使用，使框架能够更容易解决安全问题。 这篇文章主要详细介绍其中的一个特需特性——Binder Tokens</li>
+</ul>
+<h2 id="Binder-Tokens"><a href="#Binder-Tokens" class="headerlink" title="Binder Tokens"></a>Binder Tokens</h2><ul>
+<li>Binder 对象的一个有趣特性是，每个 binder 实例在系统中<strong>所有进程之间都保持唯一的身份</strong>，无论它跨越多少进程边界或到达何处。 这个功能是 Binder 内核驱动程序提供的，这个驱动程序分析每个 Binder 事务的内容，并为其看到的每个 Binder 对象分配一个唯一的 32 位整数值。 为了确保 Java 的==运算符遵守 Binder 唯一的，跨进程的对象标识协定，对 Binder 的对象引用的对待与其他对象的对待有所不同。 具体来说，每个 Binder 的对象引用都被分配了<ul>
+<li>1、指向同一进程中的 Binder 对象的虚拟内存地址，或者</li>
+<li>2、唯一的 32 位句柄（由 Binder 内核驱动程序分配），在不同的过程中指向 Binder 的虚拟内存地址。</li>
+</ul>
+</li>
+<li>Binder 内核驱动程序会为其看到的每个 Binder 维护本地地址到远程 Binder 句柄的映射（反之亦然），并为每个 Binder 的对象引用分配适当的值，以确保即使在远程进程中，equals 方法的行为能够符合预期</li>
+<li>Binder 拥有唯一对象身份。这一条规则使得它们可以用于特殊目的：<strong>作为共享的安全访问令牌。</strong><ul>
+<li>Binder 是全局唯一的，这意味着如果创建一个 Binder 对象，则没有其他人可以创建与它相等的一个对象，（世界上没有完全相同的两片叶子，也没有完全相同的两个 Binder 对象）。 因此，app framework 广泛使用 Binder token，以确保协作进程之间的安全交互：客户端可以创建一个 Binder 对象作为跟 server 进程共享的令牌，并且 server 进程可以用它来验证 客户端的请求，而不会被其他人欺骗</li>
+</ul>
+</li>
+</ul>
+<h2 id="WindowToken"><a href="#WindowToken" class="headerlink" title="WindowToken"></a>WindowToken</h2><ul>
+<li>如果你之前看 Android 中 View 类的官方文档，你可能偶然发现了 getWindowToken 方法，并且会好奇它的含义是什么。 顾名思义，window token 是 Binder tokens 的一种特殊类型，Window Manager 使用它来唯一地标识系统中的 Window 。 window token 对于安全性很重要，因为它们使恶意应用程序无法在其他应用程序的窗口上绘制。 window Manager 通过要求应用程序将它的 window token 作为每个添加或删除窗口的请求的参数来保证 上述问题不会发生。如果 token 不匹配，则 window manager 会拒绝该请求并抛出 BadTokenException 异常。 如果没有 window token ，则无法执行此必要的识别步骤，并且 window manager 将无法保护自己免受恶意应用程序的攻击</li>
+<li>看到这，你可能会想知道，实际开发中有哪些场景需要用到 window token。下面举几个例子 👇<ul>
+<li>1、当应用程序首次启动时，AMS 会创建一种特殊的窗口令牌，称为应用程序窗口令牌，它唯一地标识应用程序的顶级容器窗口。AMS 将此令牌同时提供给 app 和 WMS，并且应用程序每次要向屏幕添加新窗口时，都会将 token 发送给 WMS 。 这样可以确保应用程序和 WMS 之间的安全交互（让它无法在其他应用程序之上添加窗口），并使 AMS 可以轻松地直接向 WMS 发出请求。 例如，AMS 可以说“隐藏此令牌的所有窗口”，然后 WMS 将能够正确识别应关闭的一组窗口。</li>
+<li>2、实现自己的自定义 launcher 的开发人员可以通过调用 sendWallpaperCommand（IBinder windowToken，String action，int x，int y，int z，Bundle extras）方法与位于其后方的动态壁纸窗口进行交互。 为确保 launcher 以外的其他应用程序无法与动态壁纸进行交互，该框架要求开发人员将 window token 作为该方法的第一个参数传递。 如果 window token 未标识位于墙纸顶部的当前前景活动窗口，则将忽略该命令并打印警告</li>
+<li>3、应用程序可以通过调用 hideSoftInputFromWindow（IBinder windowToken，int flags）方法来要求 InputMethodManager 隐藏软键盘，但是必须提供窗口令牌作为请求的一部分。 如果令牌与当前接受输入的窗口所属的窗口令牌不匹配，则 InputMethodManager 将拒绝该请求。 这使得恶意应用程序无法强制关闭由另一个应用程序打开的软键盘</li>
+<li>4、手动将新 window 添加到屏幕上的应用程序（也就是调用 addView(View，WindowManager.LayoutParams) 方法）可能需要通过设置 WindowManager.LayoutParams.token 字段来指定其应用程序的 window token。 因为 getWindowManager() 方法会返回一个 WindowManager，它将自动为您设置令牌的值，所以大部分普通的应用程序都不太可能会这样做。 也就是说，如果将来在某个时候遇到需要从后台服务向屏幕添加 panel window 的场景，需要通过应用程序 window token 手动签署请求才能实现<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2></li>
+</ul>
+</li>
+</ul>
+<p>尽管 Binder Tokens 的存在对开发人员来说几乎是透明的，但是为了保障安全， Binder Token 在系统中被广泛应用。 Android 是一个大规模的协作进程分布式系统，它依赖于 Binder 对象在设备上所有进程之间都是唯一的。 Binder Tokens 是框架中各种交互 背后的驱动力，如果没有它们，那么 app 进程与系统进程之间的安全通信将很难实现。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ul>
+<li>1、这个文档实际上暗示了 Binders 可以这么用：“只需直接实例化一个原始的 Binder 对象，就可以把它用作可在各个进程之间共享的令牌。”<br><a href="https://developer.android.com/reference/android/os/Binder.html" target="_blank" rel="noopener">https://developer.android.com/reference/android/os/Binder.html</a></li>
+<li>2、在 frameworks/base/services/java/com/android/server 目录下 随机选择一个文件，这个文件很有可能会以某种形式使用 Binder token。另一个很酷的例子涉及状态栏、通知管理器和系统 UI。具体而言，StatusBarManagerService 维护一个 binder token 到 Notification 的全局映射。当 NotificationManagerService 向状态栏管理器（ status bar manager）请求向状态栏添加通知时，状态栏管理器会创建一个能够惟一标识这个 通知 的 binder token ，并将其传递给通知管理器和 SystemUI。由于这三个角色都知道通知的 binder token ，因此从那之后，对通知的任何更改(例如通知管理器取消通知，或者 SystemUI 检测到用户从屏幕上滑动了一个通知)都将首先经过 状态栏管理器。这使得三个系统服务更容易保持同步: 状态栏管理器可以负责集中所有关于当前应该显示哪些通知的信息，而不需要 SystemUI 和 notification manager 之间直接进行交互</li>
+<li>3、拥有 android.permission.SYSTEM_ALERT_WINDOW 权限（又称“从其他应用上绘图”权限）的应用程序是此规则的明显例外。 Facebook Messenger 和 DicePlayer 是两个流行的应用程序，需要此权限，并使用它在后台服务的其他应用程序之上添加窗口。Facebook Messenger 和 DicePlayer 是两个流行的应用程序，需要此权限，并使用它在后台服务的其他应用程序之上添加窗口</li>
+<li>4 。ActivityManagerService 是全局系统服务（在 System Server 进程中运行），它负责启动（和管理）新组件，例如“Activity 和 Service”。 它还涉及 维护内核中 low-memory handler 使用的 OOM 调整，权限，任务管理等</li>
+<li>5、你可以通过调用 getApplicationWindowToken() 来获得一个引用<br><a href="https://developer.android.com/reference/android/view/View#getApplicationWindowToken(" target="_blank" rel="noopener">https://developer.android.com/reference/android/view/View#getApplicationWindowToken(</a>)</li>
+<li>6、这个解释仅仅触及表面。有关 SurfaceFlinger、WindowManager 和应用程序之间如何交互的更详细的解释，请参阅本文。「SurfaceFlinger 和 Hardware Composer」一节的第三段简要地提到了传递给应用程序的 Binder 应用程序 window token。<br><a href="http://source.android.com/devices/graphics/architecture.htm" target="_blank" rel="noopener">http://source.android.com/devices/graphics/architecture.htm</a></li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/06/12/Message-引发的-DialogFragment-内存泄漏分析与解决方案/" rel="next" title="Message 引发的 DialogFragment 内存泄漏分析与解决方案">
+                <i class="fa fa-chevron-left"></i> Message 引发的 DialogFragment 内存泄漏分析与解决方案
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/TimLin1024" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Binder-Tokens"><span class="nav-text">Binder Tokens</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WindowToken"><span class="nav-text">WindowToken</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>

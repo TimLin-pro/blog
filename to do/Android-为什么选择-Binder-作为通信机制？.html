@@ -1,0 +1,963 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="1、Binder 本身是 C/S 架构的，这一点更符合Android 的系统架构。同时 Binder 使用面向对象的方式设计，进行一次远程过程调用就好像直接调用本地对象一样，异常方便。 2、性能以及易用性上更有优势：管道，消息队列，socket 的通信都需要两次数据拷贝，而 binder 只需要一次。  为什么需要拷贝？ 进程之间是相互隔离的。数据不共享。进程之间交互就得走 跨进程通信   只拷">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Android 为什么选择 Binder 作为通信机制？">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/to do/Android-为什么选择-Binder-作为通信机制？.html">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="1、Binder 本身是 C/S 架构的，这一点更符合Android 的系统架构。同时 Binder 使用面向对象的方式设计，进行一次远程过程调用就好像直接调用本地对象一样，异常方便。 2、性能以及易用性上更有优势：管道，消息队列，socket 的通信都需要两次数据拷贝，而 binder 只需要一次。  为什么需要拷贝？ 进程之间是相互隔离的。数据不共享。进程之间交互就得走 跨进程通信   只拷">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://img.mubu.com/document_image/8bdbad3c-9cc0-411f-9ce9-7c157f2c786a-4072084.jpg">
+<meta property="og:image" content="https://img.mubu.com/document_image/db05c80f-c022-4954-9d37-b25b7432f1f5-4072084.jpg">
+<meta property="og:image" content="https://img.mubu.com/document_image/e19dd92f-d1af-4a22-86b7-d4b0cd7e933b-4072084.jpg">
+<meta property="og:image" content="https://img.mubu.com/document_image/e993fa24-4550-4630-8532-61fdc8484c7f-4072084.jpg">
+<meta property="og:updated_time" content="2020-06-12T16:32:08.711Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 为什么选择 Binder 作为通信机制？">
+<meta name="twitter:description" content="1、Binder 本身是 C/S 架构的，这一点更符合Android 的系统架构。同时 Binder 使用面向对象的方式设计，进行一次远程过程调用就好像直接调用本地对象一样，异常方便。 2、性能以及易用性上更有优势：管道，消息队列，socket 的通信都需要两次数据拷贝，而 binder 只需要一次。  为什么需要拷贝？ 进程之间是相互隔离的。数据不共享。进程之间交互就得走 跨进程通信   只拷">
+<meta name="twitter:image" content="https://img.mubu.com/document_image/8bdbad3c-9cc0-411f-9ce9-7c157f2c786a-4072084.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/to do/Android-为什么选择-Binder-作为通信机制？.html"/>
+
+
+
+
+
+  <title>
+  
+
+  
+    Android 为什么选择 Binder 作为通信机制？ | Tim's Track
+  
+</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left  ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+  <header class="post-header">
+
+	<h1 class="post-title" itemprop="name headline">Android 为什么选择 Binder 作为通信机制？</h1>
+
+
+
+</header>
+
+    
+    
+      <ul>
+<li>1、Binder 本身是 C/S 架构的，这一点更符合Android 的系统架构。同时 Binder 使用面向对象的方式设计，进行一次远程过程调用就好像直接调用本地对象一样，异常方便。</li>
+<li><p>2、性能以及易用性上更有优势：管道，消息队列，socket 的通信都需要两次数据拷贝，而 <strong>binder 只需要一次</strong>。</p>
+<ul>
+<li>为什么需要拷贝？<ul>
+<li>进程之间是相互隔离的。数据不共享。进程之间交互就得走 跨进程通信</li>
+</ul>
+</li>
+<li><p>只拷贝一次是怎么做到的？使用 mmap？</p>
+<ul>
+<li>android 的 dev 文件夹下存在一个 binder 文件<br><img src="https://img.mubu.com/document_image/8bdbad3c-9cc0-411f-9ce9-7c157f2c786a-4072084.jpg" alt="img"></li>
+<li><p>如上图，可知，binder 驱动是一种虚拟的字符设备，这个文件中其实是定义了一套 binder 通信协议，负责建立进程间的 binder 通信，提供了数据包在进程之间传递的一系列地底层支持</p>
+</li>
+<li><p>注意：应用进程访问Binder驱动也是通过系统调用实现的</p>
+</li>
+<li><p>传统的 IPC 通信拷贝次数</p>
+<ul>
+<li><p>共享内存不需要copy性能够高，可是使用复杂</p>
+</li>
+<li><p>传统IPC机制通信流程【<strong>共享内存机制除外</strong>】</p>
+<ul>
+<li><p>首先，发送方进程通过系统调用将要发送的数据从用户空间 copy 到内核空间 缓存区中</p>
+</li>
+<li><p>接着接收方开辟一段内存空间，然后使用系统调用 将内核缓存区中的 数据 copy 到接收方的内存缓存区。</p>
+</li>
+<li><p>啊</p>
+<p><img src="https://img.mubu.com/document_image/db05c80f-c022-4954-9d37-b25b7432f1f5-4072084.jpg" alt="img"></p>
+</li>
+</ul>
+</li>
+<li><p>这种传统的方式存在两个问题</p>
+<ul>
+<li>需要执行两次拷贝操作</li>
+<li>接收方进程在接收数据之前，需要事先分配空间来存取数据，但不知道事先要分配多大的空间，这样就可能存在一种在空间上的浪费</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>为什么 Binder 通信只需要一次拷贝？</p>
+<ul>
+<li><p>Linux 使用的虚拟内存寻址方式，有如下特点</p>
+<ul>
+<li>1、用户空间的虚拟内存是映射到内存空间的</li>
+<li>2、对虚拟内存的读写实际上是对物理内存的读写，这个过程就是内存映射</li>
+<li>3、这个内存映射过程是通过系统调用（函数） mmap() 来实现的</li>
+</ul>
+</li>
+<li><p>Binder借助了内存映射的方法，在<strong>内核空间</strong>和<strong>接收方用户空间</strong>的<strong>数据缓存区之间做了一层内存映射</strong>，就相当于直接拷贝到了接收方用户空间的数据缓存区，从而减少了一次数据拷贝</p>
+<p><img src="https://img.mubu.com/document_image/e19dd92f-d1af-4a22-86b7-d4b0cd7e933b-4072084.jpg" alt="img"></p>
+</li>
+</ul>
+</li>
+<li><p>底层的具体实现</p>
+<p><a href="https://paul.pub/android-binder-driver/" target="_blank" rel="noopener">https://paul.pub/android-binder-driver/</a></p>
+<ul>
+<li><p>如图所示</p>
+<ul>
+<li><p>ps：内核空间和用户空间 映射到同一块物理内存。 内核空间是 binder 驱动直接操作的？</p>
+<p><img src="https://img.mubu.com/document_image/e993fa24-4550-4630-8532-61fdc8484c7f-4072084.jpg" alt="img"></p>
+</li>
+</ul>
+</li>
+<li><p>1、server 进程 启动之后 向 /dev/binder 设备调用 mmap</p>
+</li>
+<li><p>2、内核中的 binder_mmap 函数进行对应的处理：申请一块物理内存，然后<strong>在用户空间和内核空间同时进行映射。</strong></p>
+<ul>
+<li>binder 驱动? 分配一块内存，与 server 进程共用</li>
+</ul>
+</li>
+<li><p>3、客户端 通过 BINDER_WRITE_READ 命令发送请求，这个请求先到 binder 驱动中，（同时需要将数据从 客户端进程 的用户空间拷贝到内核空间）</p>
+<ul>
+<li>binder 驱动找到对应的节点， 确认内存是否足够，如果不够，先扩大。</li>
+</ul>
+</li>
+<li><p>4、binder 驱动通过 BR_TRANSACTION 通知 server 有人发送请求，Server 进行处理。</p>
+<ul>
+<li>由于这块内存也在 用户空间进行了映射，因此 server 进程的代码可以直接访问。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>内核和驱动的区别：</p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/30953314/what-is-difference-between-kernel-and-driver#:~:text=In general%2C drivers provide detail,more than managing hardware resources" target="_blank" rel="noopener">https://stackoverflow.com/questions/30953314/what-is-difference-between-kernel-and-driver#:~:text=In%20general%2C%20drivers%20provide%20detail,more%20than%20managing%20hardware%20resources</a>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>3、安全性。传统的 IPC 形式，无法得到对方的身份标识（UID/GID），在 binder ipc 中，这些身份标识是跟随调用过程而自动传递的。server 端 可以方便地识别客户端的身份，便于安全检查</p>
+<ul>
+<li>疑问：在 binder 和 windowToken 一文中，写到，因为 binder 是全局唯一的，所以可以作为安全 校验？不过这种说法应该只是一个条件之一</li>
+</ul>
+</li>
+</ul>
+<h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><ul>
+<li><a href="https://www.zhihu.com/question/39440766" target="_blank" rel="noopener">https://www.zhihu.com/question/39440766</a></li>
+</ul>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
+
+    
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/TimLin1024" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>
