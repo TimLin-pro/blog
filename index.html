@@ -799,7 +799,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,816
+                  1,812
                 </span>
               
 
@@ -835,10 +835,11 @@
 
       
         
-          <p>为什么我们在有数据刷新的时候推荐大家使用 notifyItemXxxChanged 等方法而不是使用 notifyDataSetChanged 方法呢？<br>因为</p>
+          <p>为什么我们在有数据刷新的时候推荐大家使用 notifyItemXxxChanged 等方法而不是使用 notifyDataSetChanged 方法呢？</p>
 <ul>
 <li>在调用 notifyDataSetChanged 方法后，所有的子 view （无论是否真的需要更新）都会被添加一个标记，<strong>这个标记导致它们最后都被缓存到 RecyclerPool 中</strong>，然后重新绑定数据。并且<strong>由于 RecyclerPool 有容量限制，如果不够最后就要重新创建新的视图了</strong>。</li>
-<li>但是使用 notifyItemXxxChanged 等方法会将 ViewHolder 缓存到 mChangedScrap 和 mAttachedScrap 中，这两个缓存是没有容量限制的，所以原有的 ViewHolder 可以得到最大程度的复用，基本不需要重新创建新的 ViewHolder，只是 mChangedScrap 中的视图需要重新执行 bind。
+<li>但是使用 notifyItemXxxChanged 等方法会将 ViewHolder 缓存到 mChangedScrap 和 mAttachedScrap 中，这两个缓存是没有容量限制的，所以原有的 ViewHolder 可以得到最大程度的复用，基本不需要重新创建新的 ViewHolder，只是 mChangedScrap 中的视图需要重新执行 bind。</li>
+</ul>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/blog/2020/05/29/源码角度分析，为什么推荐使用细粒度的通知方法更新RecyclerView？/" rel="contents">
