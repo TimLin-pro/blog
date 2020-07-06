@@ -97,7 +97,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/LeakCanary 内存泄漏.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/DialogFragment%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F.png">
-<meta property="og:updated_time" content="2020-06-12T14:50:58.456Z">
+<meta property="og:updated_time" content="2020-06-16T07:57:57.473Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Message 引发的 DialogFragment 内存泄漏分析与解决方案">
 <meta name="twitter:description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 Dialog">
@@ -527,7 +527,7 @@
 <ol>
 <li>针对 app，可以通过 Thread.getAllStackTraces().keys 方法获取所有的线程。迭代遍历，判断线程是否为 HandlerThread，如果是，则调用上面的 flushStackLocalLeaks 方法。采用这种方案要注意的点是，要注意调用时机，确保调用的时候所有的 HandlerThread 都已经启动了，不然会有遗漏的情况。</li>
 </ol>
-<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">Thread.getAllStackTraces().keys.*forEach* &#123; thread -&gt;</div><div class="line">  <span class="keyword">if</span> (thread <span class="keyword">is</span> HandlerThread &amp;&amp; thread.isAlive) &#123;</div><div class="line">    <span class="comment">//添加 IdleHandler</span></div><div class="line">    flushStackLocalLeaks(thread.looper)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">Thread.getAllStackTraces().keys.forEach &#123; thread -&gt;</div><div class="line">  <span class="keyword">if</span> (thread <span class="keyword">is</span> HandlerThread &amp;&amp; thread.isAlive) &#123;</div><div class="line">    <span class="comment">//添加 IdleHandler</span></div><div class="line">    flushStackLocalLeaks(thread.looper)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>但是这种方案也存在不足的地方：</p>
 <ul>
 <li>App 中可能存在带有 Looper 和 MessageQueue 的 Thread 但又不是通过继承 HandlerThread 来实现的，需要用更通用的判断方式。 Looper 是存在 Thread 的 threadLocalMap 里面的，仅通过线程实例对象，并不是很好获取。</li>
@@ -775,7 +775,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-count">44</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -786,7 +786,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-count">31</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -797,7 +797,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">28</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

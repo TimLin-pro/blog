@@ -1,0 +1,914 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本文基于 Glide 4.11.0  默认情况下，Glide 会在开始一个新的图片请求之前检查以下多级的缓存：  活动资源 (Active Resources) - 现在是否有另一个 View 正在展示这张图片？ 内存缓存 (Memory cache) - 该图片是否最近被加载过并仍存在于内存中？ 资源类型（Resource） - 该图片是否之前曾被解码、转换并写入过磁盘缓存？ 数据来源 (Dat">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Glide是如何进行图片缓存的？">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/to do/Glide是如何进行图片缓存的？.html">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="本文基于 Glide 4.11.0  默认情况下，Glide 会在开始一个新的图片请求之前检查以下多级的缓存：  活动资源 (Active Resources) - 现在是否有另一个 View 正在展示这张图片？ 内存缓存 (Memory cache) - 该图片是否最近被加载过并仍存在于内存中？ 资源类型（Resource） - 该图片是否之前曾被解码、转换并写入过磁盘缓存？ 数据来源 (Dat">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-06-20T09:30:11.949Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Glide是如何进行图片缓存的？">
+<meta name="twitter:description" content="本文基于 Glide 4.11.0  默认情况下，Glide 会在开始一个新的图片请求之前检查以下多级的缓存：  活动资源 (Active Resources) - 现在是否有另一个 View 正在展示这张图片？ 内存缓存 (Memory cache) - 该图片是否最近被加载过并仍存在于内存中？ 资源类型（Resource） - 该图片是否之前曾被解码、转换并写入过磁盘缓存？ 数据来源 (Dat">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/to do/Glide是如何进行图片缓存的？.html"/>
+
+
+
+
+
+  <title>
+  
+
+  
+    Glide是如何进行图片缓存的？ | Tim's Track
+  
+</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left  ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+  <header class="post-header">
+
+	<h1 class="post-title" itemprop="name headline">Glide是如何进行图片缓存的？</h1>
+
+
+
+</header>
+
+    
+    
+      <p>本文基于 Glide 4.11.0 </p>
+<p>默认情况下，Glide 会在开始一个新的图片请求之前检查以下多级的缓存：</p>
+<ol>
+<li>活动资源 (Active Resources) - 现在是否有另一个 View 正在展示这张图片？</li>
+<li>内存缓存 (Memory cache) - 该图片是否最近被加载过并仍存在于内存中？</li>
+<li>资源类型（Resource） - 该图片是否之前曾被解码、转换并写入过磁盘缓存？</li>
+<li>数据来源 (Data) - 构建这个图片的资源是否之前曾被写入过文件缓存？</li>
+</ol>
+<p>前两步检查图片是否在内存中，如果是则直接返回图片。后两步则检查图片是否在磁盘上，以便快速但异步地返回图片。</p>
+<p>com.bumptech.glide.load.engine.Engine#loadFromMemory</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Nullable</span></div><div class="line"><span class="keyword">private</span> EngineResource&lt;?&gt; loadFromMemory(</div><div class="line">    EngineKey key, <span class="keyword">boolean</span> isMemoryCacheable, <span class="keyword">long</span> startTime) &#123;</div><div class="line">  <span class="keyword">if</span> (!isMemoryCacheable) &#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">//从活跃资源中查找</span></div><div class="line">  EngineResource&lt;?&gt; active = loadFromActiveResources(key);</div><div class="line">  <span class="keyword">if</span> (active != <span class="keyword">null</span>) &#123;</div><div class="line">	<span class="comment">//省略一些代码</span></div><div class="line">    <span class="keyword">return</span> active;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">//从内存缓存中查找</span></div><div class="line">  EngineResource&lt;?&gt; cached = loadFromCache(key);</div><div class="line">  <span class="keyword">if</span> (cached != <span class="keyword">null</span>) &#123;</div><div class="line">	<span class="comment">//省略一些代码</span></div><div class="line">    <span class="keyword">return</span> cached;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>以 Engine#load  方法作为分析起点，Glide 加载图片逻辑。首先从 ActiveResource 中查找。然后到 LruCache 中查找；再之后会去 ResourceCache 磁盘缓存中查找，最后一次尝试，SOURCE_DATA 中查找。四层缓存都没有命中，才会走网络请求 下载图片。</p>
+<p>也就是说有两级内存缓存，还有两级磁盘缓存。</p>
+<p>内存缓存</p>
+<ul>
+<li>ActiveResource  活跃资源正在使用中</li>
+<li>LruCache  内存缓存</li>
+</ul>
+<p>磁盘缓存</p>
+<ul>
+<li>transform 之后图片</li>
+<li>下载的源图片</li>
+</ul>
+<h3 id="缓存的意义"><a href="#缓存的意义" class="headerlink" title="缓存的意义"></a>缓存的意义</h3><p>空间换时间。</p>
+<a id="more"></a>
+<h3 id="为什么内存缓存要分为两层呢？"><a href="#为什么内存缓存要分为两层呢？" class="headerlink" title="为什么内存缓存要分为两层呢？"></a>为什么内存缓存要分为两层呢？</h3><p>对这个问题困惑了许久，在glide 的 github 仓库 <a href="https://github.com/bumptech/glide/issues/3401" target="_blank" rel="noopener">issue</a> 中，有一个简要的说明：</p>
+<ul>
+<li>ActiveResource 是正在被至少一个 Target 使用的一组资源集合。 内存缓存中只包含那些 目前没有被任何 Target 使用的资源。</li>
+<li>再看到 Glide 对 Component Callback 的监听，做出的操作，内</li>
+<li><p>区分开来的好处是，当内存不足的时候，内存缓存中的内容直接清除就行了</p>
+<ul>
+<li>那也可以在 get 之后 就直接把资源从 cache 中移除，用完了再 put 回去嘛。</li>
+<li>这样的话，正在被使用的资源就无法再被 复用了，比如在一个列表加载两张相同的图片，如果不维护一个 ActiveResource 的话，查找那些已经被复用的资源就会特别麻烦。</li>
+</ul>
+</li>
+<li></li>
+</ul>
+<h3 id="内存缓存具体缓存了什么？"><a href="#内存缓存具体缓存了什么？" class="headerlink" title="内存缓存具体缓存了什么？"></a>内存缓存具体缓存了什么？</h3><h3 id="两级磁盘缓存的区别"><a href="#两级磁盘缓存的区别" class="headerlink" title="两级磁盘缓存的区别"></a>两级磁盘缓存的区别</h3><p>一组是 transform 处理过的，</p>
+<p>一组是原图</p>
+<p>key 不同</p>
+<h3 id="磁盘缓存的具体实现"><a href="#磁盘缓存的具体实现" class="headerlink" title="磁盘缓存的具体实现"></a>磁盘缓存的具体实现</h3><h3 id="Glide-默认的缓存配置"><a href="#Glide-默认的缓存配置" class="headerlink" title="Glide 默认的缓存配置"></a>Glide 默认的缓存配置</h3><h3 id="Glide-默认的缓存大小，为什么选择这个值？"><a href="#Glide-默认的缓存大小，为什么选择这个值？" class="headerlink" title="Glide 默认的缓存大小，为什么选择这个值？"></a>Glide 默认的缓存大小，为什么选择这个值？</h3><p>初始化（一般是在页面首次用到 Glide 时会触发初始化） Glide 时，会通过 GlideBuilder#build 方法创建 glide 实例，如果 memorySizeCalculator 为空，则创建一个 MemorySizeCalculator 实例</p>
+<ul>
+<li>由此决定 内存缓存的大小，arrayPool 、BitmapPool 的大小</li>
+<li><p>一加 5T 6+64G 版本</p>
+<ul>
+<li>内存缓存 16MB</li>
+<li>BitmapPool 8MB</li>
+<li>arrayPool 2MB</li>
+</ul>
+</li>
+<li><p>磁盘缓存大小 默认是 250MB<br>详见 DiskCache.Factory#DEFAULT_DISK_CACHE_SIZE</p>
+</li>
+</ul>
+<h3 id="Glide-如何清理磁盘缓存？"><a href="#Glide-如何清理磁盘缓存？" class="headerlink" title="Glide 如何清理磁盘缓存？"></a>Glide 如何清理磁盘缓存？</h3><p>Glide 的</p>
+<h3 id="Glide-缓存命中率？"><a href="#Glide-缓存命中率？" class="headerlink" title="Glide 缓存命中率？"></a>Glide 缓存命中率？</h3><h3 id="Glide-的-Bitmap-缓存"><a href="#Glide-的-Bitmap-缓存" class="headerlink" title="Glide 的 Bitmap 缓存"></a>Glide 的 Bitmap 缓存</h3><h3 id="下载完成之后是先返回还是先进行缓存"><a href="#下载完成之后是先返回还是先进行缓存" class="headerlink" title="下载完成之后是先返回还是先进行缓存"></a>下载完成之后是先返回还是先进行缓存</h3><h2 id="参考资料与学习资源推荐"><a href="#参考资料与学习资源推荐" class="headerlink" title="参考资料与学习资源推荐"></a>参考资料与学习资源推荐</h2><p><a href="http://bumptech.github.io/glide/doc/caching.html" target="_blank" rel="noopener">http://bumptech.github.io/glide/doc/caching.html</a></p>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
+
+    
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">44</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/TimLin1024" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>

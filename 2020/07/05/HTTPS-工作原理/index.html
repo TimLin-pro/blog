@@ -1,0 +1,1305 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="网络,安全," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="1、前言HTTP 协议设计目的很简单：就是为了传输超文本文件，那时候也没有很强的加密传输的数据需求。因此 HTTP 一直都是明文传输的。与此同时，HTTP 在「身份验证」和「完整性校验」这两点上也是比较欠缺的。 SSL(全称为 Secure Sockets Layer，安全套接层) 是 Netscape 公司在 90 年代开发设计出来的一套东西，主要是为了解决 HTTP 协议明文传输数据的问题。后">
+<meta name="keywords" content="网络,安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTPS 工作原理">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/2020/07/05/HTTPS-工作原理/index.html">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="1、前言HTTP 协议设计目的很简单：就是为了传输超文本文件，那时候也没有很强的加密传输的数据需求。因此 HTTP 一直都是明文传输的。与此同时，HTTP 在「身份验证」和「完整性校验」这两点上也是比较欠缺的。 SSL(全称为 Secure Sockets Layer，安全套接层) 是 Netscape 公司在 90 年代开发设计出来的一套东西，主要是为了解决 HTTP 协议明文传输数据的问题。后">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/SSL_handskake_by_cloundfare.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/tls1_2handShakeWireShark">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/possible-downgrade-attack-in-tls-1-2.png">
+<meta property="og:updated_time" content="2020-07-06T09:50:19.847Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HTTPS 工作原理">
+<meta name="twitter:description" content="1、前言HTTP 协议设计目的很简单：就是为了传输超文本文件，那时候也没有很强的加密传输的数据需求。因此 HTTP 一直都是明文传输的。与此同时，HTTP 在「身份验证」和「完整性校验」这两点上也是比较欠缺的。 SSL(全称为 Secure Sockets Layer，安全套接层) 是 Netscape 公司在 90 年代开发设计出来的一套东西，主要是为了解决 HTTP 协议明文传输数据的问题。后">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/SSL_handskake_by_cloundfare.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/2020/07/05/HTTPS-工作原理/"/>
+
+
+
+
+
+  <title> HTTPS 工作原理 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/07/05/HTTPS-工作原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                HTTPS 工作原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-05T17:46:04+08:00">
+                2020-07-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/网络/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2020/07/05/HTTPS-工作原理/" class="leancloud_visitors" data-flag-title="HTTPS 工作原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  4,456
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  16
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="1、前言"><a href="#1、前言" class="headerlink" title="1、前言"></a>1、前言</h2><p>HTTP 协议设计目的很简单：就是为了传输超文本文件，那时候也没有很强的加密传输的数据需求。因此 HTTP 一直都是明文传输的。与此同时，HTTP 在「身份验证」和「完整性校验」这两点上也是比较欠缺的。</p>
+<p>SSL(全称为 Secure Sockets Layer，安全套接层) 是 Netscape 公司在 90 年代开发设计出来的一套东西，主要是为了解决 HTTP 协议明文传输数据的问题。后来 SSL 慢慢成了事实上的标准，于是 IETF 就把 SSL 标准化了，名字叫做 TLS（全称 Transport Layer Security，传输层安全协议），TLS 1.0 其实就是 SSL 3.1。所以 SSL 和 TLS 经常被放在一起写成 SSL/TLS，因为这两个名词其实是同一个东西的在不同阶段的名称。</p>
+<p>HTTPS 并非是应用层的一种新协议，只是 HTTP 通讯接口部分用 SSL/TLS 协议代替，通常 HTTP 直接和 TCP 通信，当使用 TLS 时，则演变成先和 TLS 通信，再由 SSL 和 TCP 通信，也就是说 HTTPS 其实是身披 TLS 保护外衣的 HTTP。</p>
+<a id="more"></a>
+<p>有 HTTP 基础的同学，只要理解 SSL/TLS  也就理解了 HTTPS。</p>
+<p>结合上面所述 HTTP 的缺点，SSL/TLS 需要解决三大问题</p>
+<ol>
+<li>窃听风险（eavesdropping）：第三方可以获知通信内容。</li>
+<li>篡改风险（tampering）：第三方可以修改通信内容。</li>
+<li>冒充风险（pretending）：第三方可以冒充他人身份参与通信。</li>
+</ol>
+<p>其中，窃听风险可以通过<strong>加密</strong>来解决，篡改风险可以通过<strong>数字签名</strong>验证解决，冒充风险可以通过 CA 颁发的<strong>数字证书</strong>来解决。下面会依次介绍这几个概念。</p>
+<h2 id="2、前置知识"><a href="#2、前置知识" class="headerlink" title="2、前置知识"></a>2、前置知识</h2><h3 id="2-1、加密算法简介"><a href="#2-1、加密算法简介" class="headerlink" title="2.1、加密算法简介"></a>2.1、加密算法简介</h3><p>可逆的加密算法通常分为两大类，对称加密和非对称加密。</p>
+<ul>
+<li>对称加密中，加密和解密使用的是同一个密钥。<ul>
+<li>常见的对称加密算法有 DES、AES、RC</li>
+<li>优点：相对于非对称加密算法来说，加解密的效率更高。</li>
+<li>缺点：密钥管理和分发不是非常安全。在网络上传输加密文件时，如果采用对称式的加密算法就很难不把密钥告诉对方，而要把密钥告诉对方，就很可能被别窃听到。</li>
+</ul>
+</li>
+<li>非对称加密中，加密和解密使用不同的密钥。分为公钥和私钥。公钥是对外公布的，私钥仅有持有人自己知道。使用公钥对数据进行加密，只能通过私钥进行解密。使用私钥对数据进行加密，只能通过公钥进行解密。<ul>
+<li>常见的非对称加密算法有 RSA、ECC。</li>
+<li>优点：加密安全性高，公钥可以 避免密钥传输的安全性问题，</li>
+<li>缺点：加密效率低。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-2、消息摘要，数字签名，数字证书"><a href="#2-2、消息摘要，数字签名，数字证书" class="headerlink" title="2.2、消息摘要，数字签名，数字证书"></a>2.2、消息摘要，数字签名，数字证书</h3><ul>
+<li><p><strong>消息摘要</strong> ：对一段任意长度消息使用 hash 算法得到 固定长度的一个字符串</p>
+</li>
+<li><p><strong>数字签名</strong>：加密过后的消息摘要。这里的加密使用的是非对称加密。</p>
+<ul>
+<li>作用：<ul>
+<li>身份验证，能确定消息确实由发送方签名然后发出来的，因为加密需要用到发送方的私钥，这个私有只有发送方才有，因此别人假冒不了发送方的签名。</li>
+<li>消息的完整性验证。</li>
+</ul>
+</li>
+<li>使用流程<ul>
+<li>发送方<ul>
+<li>对消息进行 hash，得到消息摘要</li>
+<li>使用私钥对消息摘要进行加密得到数字签名</li>
+<li>即 <code>明文——&gt;hash运算——&gt;（固定长度的）摘要——&gt;私钥加密——&gt;数字签名</code></li>
+</ul>
+</li>
+<li>接收方<ul>
+<li>使用公钥对数字签名进行解密得到消息摘要 A</li>
+<li>对收到的消息进行 hash 得到「消息摘要 B」，与消息摘要 B 进行，如果 A 与 B 一致，那说明没有被篡改。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>你可能会问：<ul>
+<li>消息摘要为啥需要加密呢？不加密不行吗？<ul>
+<li>如果不对消息摘要进行加密，那么中间人/第三方 只需要同时修改 消息内容和 消息摘要，就能让接收方 验证通过，对篡改过的信息 信以为真。</li>
+<li>其实关键是加密的时候，使用的是发送方的私钥，私钥只有发送方才有，因此如果  使用公钥解密之后，可以验证通过，就能够说明内容是发送方发出的。</li>
+</ul>
+</li>
+<li>发送方直接使用私钥对要发送的消息进行加密不行吗？<ul>
+<li>接收方解密可以得到消息，但是存在被第三方恶意截断的可能性，无法保证完整性。</li>
+<li>比如，发送方发送了 「今天天气晴朗也不太热，我们去爬山吧」，可能被截断为「今天天气晴朗也不太热」</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>数字证书</strong>：采用 HTTPS 协议的服务器必须要有一套数字证书，可以是自己制作或者是找 CA 申请颁发证书。CA（证书中心）用自己的私钥，对相应网站的公钥和一些相关的信息一起加密，生成「数字证书」。</p>
+<ul>
+<li><p>对于请求方来说，它怎么能<strong>确定它所得到的公钥一定是从目标主机</strong>那里发送的，而且没有被篡改过呢? 亦或者请求的目标主机本身就是从事窃取用户信息的不正当行为呢？</p>
+<p>这时候，我们需要<strong>一个权威的值得信赖的第三方机构</strong> (一般是由政府机构审核并授权的机构) 来统一对外发送主机机构的公钥，只要请求方从这种机构获取公钥，就避免了上述问题</p>
+</li>
+<li><p>作用：身份验证，保证拿到的公钥确实是某个网站的，而不是伪造的。各大 CA 机构的公钥是默认安装在操作系统里的，所以不要安装来路不明的操作系统，否则相当于裸奔。</p>
+</li>
+<li><p>客户端是否能够信任这个站点的证书，首先取决于客户端程序是否导入了证书颁发者的根证书。如果是自己制作的证书需要客户端手动验证通过，才可以继续访问，而使用 CA 证书则不会弹出提示页面。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="3、TLS1-2-握手流程"><a href="#3、TLS1-2-握手流程" class="headerlink" title="3、TLS1.2 握手流程"></a>3、TLS1.2 握手流程</h2><p>前面提到，非对称加密在性能上不如对称加密，但是非对称加密的没有密钥分发上的问题，是否可以将两者结合起来呢？比如说，非对称加密用来传输对称加密密钥的参数，后续真正通信都通过对称加密来进行。</p>
+<p>SSL/TLS 握手是为了<strong>安全</strong>地协商出一份<strong>对称加密</strong>的秘钥，这个过程很有意思，下面我们一起来了解一下。</p>
+<p>借用 CloudFlare 的一个图（省略了部分细节，但是整体流程大致如下）</p>
+<p><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/SSL_handskake_by_cloundfare.png" alt=""></p>
+<p>借助 Wireshark 抓包直观还原握手流程：</p>
+<ul>
+<li>打开 WireShark，启动抓包</li>
+<li>然后在命令行中执行 <code>curl https://www.baidu.com</code> </li>
+<li>选中某一行，右键「追踪流」—&gt; 「TCP 流」</li>
+</ul>
+<p>得到下图👇</p>
+<p><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/tls1_2handShakeWireShark" alt="WireShark 抓包"></p>
+<p>流程说明：</p>
+<h3 id="1、通过-TCP-三次握手建立连接"><a href="#1、通过-TCP-三次握手建立连接" class="headerlink" title="1、通过 TCP 三次握手建立连接"></a>1、通过 TCP 三次握手建立连接</h3><h3 id="2、Client-Hello"><a href="#2、Client-Hello" class="headerlink" title="2、Client Hello"></a>2、Client Hello</h3><p>由于客户端 (如浏览器) 对一些加解密算法的支持程度不一样，但是在 TLS 协议传输过程中必须使用同一套加解密算法才能保证数据能够正常的加解密。因此在 TLS 握手阶段，客户端要首先告知服务器，自己支持哪些加密算法，所以客户端需要将本地支持的加密套件 (Cipher Suite) 的列表传送给服务器。除此之外，客户端还要产生一个随机数，这个随机数一方面需要在客户端保存，另一方面需要传给服务器，客户端的随机数后面会跟服务器的随机数、以及 pre-master 结合起来生成对称加密的密钥。<br>客户端需要提供如下信息:</p>
+<p>1、支持的协议版本，比如 TLS 1.2 版本 2、一个客户端生成的随机数（我们称之为 A），稍后用于生成 “对话密钥”3、支持的加密算法，比如 RSA 公钥加密 4、支持的压缩方法<br>PS：客户端发送的信息之中不包括服务器的域名，也就是说，理论上服务器只能包含一个网站，否则会分不清应该向客户端提供哪一个网站的提供的数字证书。这就是为什么通常一台服务器只能由一张数字证书的原因<br>对于虚拟主机的用户来说，这当然很不方便。2006 年，TLS 协议加入了 Server Name Indication 扩展，允许客户端向服务器提供它所请求的域名。然后客户端</p>
+<h3 id="3、Server-Hello"><a href="#3、Server-Hello" class="headerlink" title="3、Server Hello"></a>3、Server Hello</h3><p>服务端发送给客户端</p>
+<ul>
+<li>确定加密通信协议的版本，比如 TLS1.2。如果浏览器与服务器<strong>支持的版本不一致，服务器关闭加密通信</strong></li>
+<li>结合客户端发过来的 Cipher Suite 确定使用的加密算法。<ul>
+<li>比如 <code>TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</code>，就是使用 ECDHE 做密钥交换， AES-128 的 GCM 模式进行对称加密，同时以带 SHA-256 的 RSA 作为签名算法。</li>
+<li>使用 curl 命令 结合 WireShark 抓包查看 zhihu,com，baidu.com 发现这两个网站都是使用<code>TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</code>算法，也就是使用 AES-128 的 GCM 模式进行对称加密，同时以带 SHA-256 的 RSA 作为签名算法，用 ECDHE 做密钥交换的一整套协议。</li>
+</ul>
+</li>
+</ul>
+<h3 id="4、Certificate"><a href="#4、Certificate" class="headerlink" title="4、Certificate"></a>4、Certificate</h3><p>服务端发送给客户端（如果是双向验证的话，客户端也需要发送证书给服务端），接收方会进行证书验证，如果不通过的话，会中断握手流程。</p>
+<h3 id="5、Server-Key-Exchange"><a href="#5、Server-Key-Exchange" class="headerlink" title="5、Server Key Exchange"></a>5、Server Key Exchange</h3><p>服务端发送给客户端。加密密钥的参数</p>
+<ul>
+<li>假设使用的是 ECDHE，这里传输的内容有：椭圆曲线域参数，以及公钥的值。</li>
+</ul>
+<h3 id="6、-Server-Hello-Done"><a href="#6、-Server-Hello-Done" class="headerlink" title="6、 Server Hello Done"></a>6、 Server Hello Done</h3><ul>
+<li>服务器发送的，一般也和 Server Hello、Certificate 和 Server Key Exchange 在一个 TCP 报文中，介于 Server Hello 和 Server Hello 之间的是服务器想要给客户端的东西。所以这里面客户端没有发送 Client Hello Done</li>
+</ul>
+<p>通常，3~6 这个四个步骤会在一个 TCP 报文中。</p>
+<p>也就是说，服务端的一个 TCP 报文中，可能会包括</p>
+<ol>
+<li>协议的版本，比如 TLS1.2 版本，如果浏览器与服务器<strong>支持的版本不一致，服务器关闭加密通信</strong></li>
+<li>加密的算法</li>
+<li>随机数</li>
+<li>服务器证书</li>
+</ol>
+<p>除了上面这些信息，<strong>如果服务器需要确认客户端身份，就会再包含一项请求</strong>，要求客户端提供「客户端证书」。比如，金融机构往往只允许认证客户进入自己的网络，就会向正式客户提供 USB 密钥，里面包含了一张客户端证书。(以前经常用到的 U 盾。U 盾又叫作移动数字证书，它存放着你个人的数字证书，并不可读取。同样，银行也记录着你的数字证书)。</p>
+<h3 id="7、-Client-Key-Exchange"><a href="#7、-Client-Key-Exchange" class="headerlink" title="7、 Client Key Exchange"></a>7、 Client Key Exchange</h3><p>客户端收到了服务器的证书之后进行验证，如果验证通过了，会继续密钥协商的流程。</p>
+<ul>
+<li>客户端发送给服务端，一个随机数（称为 pre-master），使用服务端证书中的公钥对 pre-master 进行加密，然后发送给服务端。这一步之后，客户端和服务器就同时有了三个随机数，接着双方就用事先商定的加密方法，各自生成本次会话所用的同一把”会话密钥”。</li>
+</ul>
+<p>如果证书不是可信任机构颁布、或者证书中的域名和实际域名不一致、或者证书已经过期，就会向访问者显示一个警告，由其选择是否还要继续通信。<br>PS:验证证书主要根据服务端发过来的证书名称，在本地寻找其低级证书，并一级一级直到根证书，验证各级证书的合法性。</p>
+<h3 id="8、-Change-Cipher-Spec"><a href="#8、-Change-Cipher-Spec" class="headerlink" title="8、 Change Cipher Spec"></a>8、 Change Cipher Spec</h3><ul>
+<li>客户端或者服务器发送的，紧跟着 Key Exchange 发送，代表自己生成了新的密钥，通知对方随后将更换密钥，信息都将用双方商定的加密算法和密钥发送</li>
+</ul>
+<h3 id="9、-Encrypted-Handshake-Message"><a href="#9、-Encrypted-Handshake-Message" class="headerlink" title="9、 Encrypted Handshake Message"></a>9、 Encrypted Handshake Message</h3><ul>
+<li>客户端或者服务器发送的，也是紧跟着 Key Exchange 发送。这里是进行一下测试，一方用自己的刚刚生成的密钥加密一段固定的消息发送给对方，如果密钥协商正确无误的话，对方应该可以解密。这段加密内容的明文一般是协议中规定好的，双方都知道。</li>
+</ul>
+<h3 id="10-New-Session-Ticket"><a href="#10-New-Session-Ticket" class="headerlink" title="10. New Session Ticket"></a>10. New Session Ticket</h3><ul>
+<li>服务器发送的，属于 TLS handshake，服务器给客户端一个会话，用处就是在一段时间之内（超时时间到来之前），双方都以刚刚交换的密钥进行通信。从这以后，加密通信正式开始。</li>
+</ul>
+<h3 id="11-Application-Data"><a href="#11-Application-Data" class="headerlink" title="11. Application Data"></a>11. Application Data</h3><ul>
+<li>应用层的数据，是加密的，使用密钥交换协议协商出来的密钥加密。因为我们的 Wireshark 不知道服务器的私钥，所以这段通信是安全的，我们在 Wireshark 中也无法解密这段信息。</li>
+</ul>
+<h3 id="12-Encrypted-Alert"><a href="#12-Encrypted-Alert" class="headerlink" title="12. Encrypted Alert"></a>12. Encrypted Alert</h3><ul>
+<li>客户端或服务器发送的，意味着加密通信因为某些原因需要中断，警告对方不要再发送敏感的数据。</li>
+</ul>
+<h2 id="4、TLS1-3"><a href="#4、TLS1-3" class="headerlink" title="4、TLS1.3"></a>4、TLS1.3</h2><h3 id="1、TLS1-2-存在的问题"><a href="#1、TLS1-2-存在的问题" class="headerlink" title="1、TLS1.2 存在的问题"></a>1、TLS1.2 存在的问题</h3><p>整个握手流程需要 <strong>2-RTT</strong>，这在网络延迟较高的情况下是非常糟糕的，可能导致握手延迟增加几百毫秒。更糟糕的是，握手阶段的数据（如 <code>ServerHello</code> 阶段的信息），并不是加密的，中间人稍加利用，从中选择比较弱的加密算法，就可以带来降级攻击（Downgrade Attack）。</p>
+<p><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/possible-downgrade-attack-in-tls-1-2.png" alt="possible downgrade attack in tls 1.2"></p>
+<h3 id="2、TLS-1-3发展时间线"><a href="#2、TLS-1-3发展时间线" class="headerlink" title="2、TLS 1.3发展时间线"></a>2、TLS 1.3发展时间线</h3><ul>
+<li>2017年4月25日，nginx 1.13.0 发布，增加了 TLS 1.3 支持。</li>
+<li>2018年3月21日，IESG 批准了 TLS 1.3 草案。</li>
+<li>2018年4月17日，Chrome 66 默认开启了对 TLS 1.3 草案的支持。</li>
+<li>2018年5月9日，Firefox 60 默认开启了对 TLS 1.3 草案的支持。</li>
+<li>2018年8月10日，IETF 发布了 TLS 1.3 标准。</li>
+<li>2018年9月11日，OpenSSL 1.1.1 (LTS) 版本发布，提供 TLS 1.3 支持。TLS 1.3 超过 TLS 1.0 成为 Cloudflare 上使用率排名第二的 TLS 版本。</li>
+<li>2018年10月16日，Chrome 70 支持 TLS 1.3 正式标准。</li>
+<li>2018年10月23日，Firefox 63 支持 TLS 1.3 正式标准。</li>
+</ul>
+<h3 id="3、TLS1-3-的优点"><a href="#3、TLS1-3-的优点" class="headerlink" title="3、TLS1.3 的优点"></a>3、TLS1.3 的优点</h3><h4 id="更安全"><a href="#更安全" class="headerlink" title="更安全"></a>更安全</h4><p>TLS 1.3 在之前版本的基础上删除了那些不安全的加密算法，这些加密算法包括：</p>
+<ul>
+<li>RSA 密钥传输 —— 不支持前向安全性</li>
+<li>CBC 模式密码 —— 易受 BEAST 和 Lucky 13 攻击</li>
+<li>RC4 流密码 —— 在 HTTPS 中使用并不安全</li>
+<li>SHA-1 哈希函数 —— 建议以 SHA-2 取而代之</li>
+<li>任意 Diffie-Hellman 组—— CVE-2016-0701 漏洞</li>
+<li>输出密码 —— 易受 FREAK 和 LogJam 攻击</li>
+</ul>
+<h4 id="更快"><a href="#更快" class="headerlink" title="更快"></a>更快</h4><p>虽然电脑越变越快，但在互联网上传输数据耗费的时间依然受限于光速，所以两个节点间来回传输一次的时间（RTT）成为了限制协议性能的因素之一。TLS 1.3 只需要一个 RTT 就能完成握手，相比 TLS 1.2 省去了一个 RTT。并且 TLS 1.3 支持 「0-RTT」 模式，在该模式下客户端可以在握手的同时发送数据，极大地加快了页面的加载速度。TLS 1.3 还增加了 ChaCha20/Poly1305 支持，在不支持 AES 硬件指令的老设备上能提升加、解密性能。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">Client                                               Server</div><div class="line"></div><div class="line">ClientHello                  --------&gt;</div><div class="line">                                                ServerHello</div><div class="line">                                               Certificate*</div><div class="line">                                         ServerKeyExchange*</div><div class="line">                                        CertificateRequest*</div><div class="line">                             &lt;--------      ServerHelloDone</div><div class="line">Certificate*</div><div class="line">ClientKeyExchange</div><div class="line">CertificateVerify*</div><div class="line">[ChangeCipherSpec]</div><div class="line">Finished                     --------&gt;</div><div class="line">                                         [ChangeCipherSpec]</div><div class="line">                             &lt;--------             Finished</div><div class="line">Application Data             &lt;-------&gt;     Application Data</div></pre></td></tr></table></figure>
+<p>TLS 1.2 完整握手框架（来自 RFC 5246）👆</p>
+<p>使用 TLS 1.2 需要两次往返（ 2-RTT ）才能完成握手，然后才能发送请求。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">       Client                                           Server</div><div class="line"></div><div class="line">Key  ^ ClientHello</div><div class="line">Exch | + key_share*</div><div class="line">     | + signature_algorithms*</div><div class="line">     | + psk_key_exchange_modes*</div><div class="line">     v + pre_shared_key*       --------&gt;</div><div class="line">                                                  ServerHello  ^ Key</div><div class="line">                                                 + key_share*  | Exch</div><div class="line">                                            + pre_shared_key*  v</div><div class="line">                                        &#123;EncryptedExtensions&#125;  ^  Server</div><div class="line">                                        &#123;CertificateRequest*&#125;  v  Params</div><div class="line">                                               &#123;Certificate*&#125;  ^</div><div class="line">                                         &#123;CertificateVerify*&#125;  | Auth</div><div class="line">                                                   &#123;Finished&#125;  v</div><div class="line">                               &lt;--------  [Application Data*]</div><div class="line">     ^ &#123;Certificate*&#125;</div><div class="line">Auth | &#123;CertificateVerify*&#125;</div><div class="line">     v &#123;Finished&#125;              --------&gt;</div><div class="line">       [Application Data]      &lt;-------&gt;  [Application Data]</div></pre></td></tr></table></figure>
+<p>TLS 1.3 完整握手框架（来自 TLS 1.3 最新草案 ）👆<br>TLS 1.3 的握手不再支持静态的 RSA 密钥交换，这意味着必须使用带有前向安全的 Diffie-Hellman 进行全面握手。从上图可以看出，使用 TLS 1.3 协议只需要一次往返（ 1-RTT ）就可以完成握手。</p>
+<h2 id="5、总结"><a href="#5、总结" class="headerlink" title="5、总结"></a>5、总结</h2><p>HTTPS 通过 TLS 实现安全。TLS 在握手阶段完成了加密算法的选择以及加密密钥确认，同时对服务端进行了身份认证。握手完成后的通信会通过这个阶段商讨出的对称密钥进行加解密。</p>
+<p>由于需要比 HTTP 多一个 TLS 握手🤝协商密钥的流程，所以 HTTPS 比 HTTP 慢。</p>
+<h2 id="6、参考资料与学习资源推荐"><a href="#6、参考资料与学习资源推荐" class="headerlink" title="6、参考资料与学习资源推荐"></a>6、参考资料与学习资源推荐</h2><p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源。谢谢！</p>
+<ul>
+<li><a href="https://shunix.com/tls-handshake/" target="_blank" rel="noopener">TLS 握手过程</a></li>
+<li><a href="https://tools.ietf.org/html/rfc8446" target="_blank" rel="noopener">https://tools.ietf.org/html/rfc8446</a></li>
+<li><a href="https://www.giuem.com/tls-1-3-overview/" target="_blank" rel="noopener">https://www.giuem.com/tls-1-3-overview/</a></li>
+<li><a href="https://www.jianshu.com/p/efe44d4a7501" target="_blank" rel="noopener">https://www.jianshu.com/p/efe44d4a7501</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html</a></li>
+<li><a href="https://segmentfault.com/a/1190000014740303" target="_blank" rel="noopener">https://segmentfault.com/a/1190000014740303</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2011/08/what_is_a_digital_signature.html?from=singlemessage" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2011/08/what_is_a_digital_signature.html?from=singlemessage</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/32754315" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/32754315</a></li>
+<li><a href="https://juejin.im/post/5c21f5b16fb9a049d13229f0" target="_blank" rel="noopener">https://juejin.im/post/5c21f5b16fb9a049d13229f0</a></li>
+<li><a href="https://halfrost.com/https_tls1-2_handshake/" target="_blank" rel="noopener">HTTPS 温故知新（三） —— 直观感受 TLS 握手流程(上)</a></li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/网络/" rel="tag"># 网络</a>
+          
+            <a href="/blog/tags/安全/" rel="tag"># 安全</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/06/20/LruCache工作原理/" rel="next" title="LruCache工作原理">
+                <i class="fa fa-chevron-left"></i> LruCache工作原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">44</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/TimLin1024" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、前言"><span class="nav-text">1、前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、前置知识"><span class="nav-text">2、前置知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1、加密算法简介"><span class="nav-text">2.1、加密算法简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2、消息摘要，数字签名，数字证书"><span class="nav-text">2.2、消息摘要，数字签名，数字证书</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、TLS1-2-握手流程"><span class="nav-text">3、TLS1.2 握手流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、通过-TCP-三次握手建立连接"><span class="nav-text">1、通过 TCP 三次握手建立连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、Client-Hello"><span class="nav-text">2、Client Hello</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、Server-Hello"><span class="nav-text">3、Server Hello</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4、Certificate"><span class="nav-text">4、Certificate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5、Server-Key-Exchange"><span class="nav-text">5、Server Key Exchange</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6、-Server-Hello-Done"><span class="nav-text">6、 Server Hello Done</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7、-Client-Key-Exchange"><span class="nav-text">7、 Client Key Exchange</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8、-Change-Cipher-Spec"><span class="nav-text">8、 Change Cipher Spec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9、-Encrypted-Handshake-Message"><span class="nav-text">9、 Encrypted Handshake Message</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-New-Session-Ticket"><span class="nav-text">10. New Session Ticket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-Application-Data"><span class="nav-text">11. Application Data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-Encrypted-Alert"><span class="nav-text">12. Encrypted Alert</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、TLS1-3"><span class="nav-text">4、TLS1.3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、TLS1-2-存在的问题"><span class="nav-text">1、TLS1.2 存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、TLS-1-3发展时间线"><span class="nav-text">2、TLS 1.3发展时间线</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、TLS1-3-的优点"><span class="nav-text">3、TLS1.3 的优点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#更安全"><span class="nav-text">更安全</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更快"><span class="nav-text">更快</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、总结"><span class="nav-text">5、总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、参考资料与学习资源推荐"><span class="nav-text">6、参考资料与学习资源推荐</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>

@@ -100,7 +100,7 @@
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30509011-80b17200-9ad7-11e7-9244-2081c271c752.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/32106891-945e0bb2-bb5f-11e7-8d9e-be0b72d75ff2.png">
 <meta property="og:image" content="https://user-images.githubusercontent.com/16668676/30508637-9ff0e262-9ace-11e7-8a3a-608482184f5d.jpg">
-<meta property="og:updated_time" content="2018-04-15T12:01:28.909Z">
+<meta property="og:updated_time" content="2020-06-21T08:01:53.114Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java 内存模型与线程浅析">
 <meta name="twitter:description" content="硬件的效率与一致性多级缓存的作用：由于计算机的存储设备与处理器的运算速度有几个数量级的差距，所以为了提高处理器的利用率，现代计算机系统都不得不加入一层读写速度尽可能接近处理器运算速度的高速缓存(Cache)来作为内存与处理器之间的缓冲：将运算需要使用到的数据复制到缓存中，让运算能快速进行，当运算结束后再从缓存同步回内存之中，这样处理器就无须等待缓慢的内存读写了。 缓存虽然解决了速度差，但是也引入了">
@@ -412,7 +412,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  8,095
+                  8,140
                 </span>
               
 
@@ -428,7 +428,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  28
+                  29
                 </span>
               
             </div>
@@ -463,7 +463,7 @@
 <li>每条线程还有自己的<strong>工作内存</strong>(Working  Memory，可与前面讲的处理器高速缓存类比)，线程的工作内存中保存了被该线程使用到的变量的<strong>主内存副本拷贝</strong> [4]</li>
 <li>线程对变量的所有<strong>操作(读取、赋值等)都必须在==工作==内存中进行</strong>，而<strong>不能直接读写主内存中的变量</strong>。<ul>
 <li>干活要在操作线程中干。</li>
-<li>这个对象的引用、对象中某个在线程访问到的字段是有可能存在拷贝的，但不会有虚拟机实现成把整个对象拷<br>贝 A 一次。</li>
+<li>这个对象的引用、对象中某个在线程访问到的字段是有可能存在拷贝的，但不会有虚拟机实现成把整个对象拷贝一次。</li>
 </ul>
 </li>
 <li><strong>不同的线程</strong>之间也无法直接访问对方工作内存中的变量，<strong>线程间变量值的传递均需要通过主内存来完成</strong>。</li>
@@ -497,7 +497,7 @@
 </ul>
 </li>
 <li>一个新的变量只能在主内存中「诞生」，不允许在工作内存中直接使用一个未被初始化(load 或 assign)的变量，换句话说，就是对一个变量实施 use、store 操作之前，必须先执行过了 assign 和 load 操作。<ul>
-<li>​</li>
+<li></li>
 </ul>
 </li>
 <li>一个变量在同一个时刻<strong>只允许一条线程</strong>对其进行 lock 操作，但 lock 操作可以被同一条线程重复执行多次，多次执行 lock 后，只有执行相同次数的 unlock 操作，变量才会被解锁。<ul>
@@ -675,6 +675,9 @@
 <li>对某个变量执行了 assign 操作，必须把它同步回主内存。</li>
 </ul>
 <h3 id="volatile-关键字"><a href="#volatile-关键字" class="headerlink" title="volatile 关键字"></a>volatile 关键字</h3><p>保证可见性、禁止指令重排。</p>
+<ul>
+<li>可见性。将 read load use 三个原子操作变为一个原子操作。将 assign store write 三个原子操作变为一个原子操作。</li>
+</ul>
 <p>无法保证一致性。以多线程修改变量自增为例，当线程 A 读取了该变量(此时变量的值是正确的)但是还未进行 +1 操作，此变量的值被线程 B 执行了 +1 操作(更新后会通知所有线程，但是由于 线程 A 已经读取过该值了但是由还没有进行赋值操作，所以不会得到最新的值)，但是之后线程 A 会对旧值进行自增操作，导致结果错误。</p>
 <ul>
 <li>注：i++ 由 4 条字节码指令构成。从字节码层面解释：当 getStatic 指令把 race 的值(进行自增操作的变量)读取到操作栈顶时，volatile 保证 race 的值在此时是正确的，但是在执行 iconst_1、add 这些指令时，其他线程可能已经把  race 的值加大了，而在操作栈顶的值就变成了过期的数据，所以 putStatic 指令执行后就可能把较小的 race 值同步回主内存中。</li>
@@ -693,6 +696,7 @@
 <li><a href="https://tech.meituan.com/java-memory-reordering.html" target="_blank" rel="noopener">Java 内存访问重排序的研究</a></li>
 <li><a href="http://uule.iteye.com/blog/1100799" target="_blank" rel="noopener">线程状态的转换</a></li>
 <li><a href="https://segmentfault.com/a/1190000011458941" target="_blank" rel="noopener">从Java多线程可见性谈Happens-Before原则</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/java/j-jtp06197.html" target="_blank" rel="noopener">正确使用 Volatile 变量</a> </li>
 </ul>
 <p>若本文中有不正确的结论、说法，请大家指出，共同探讨，共同进步，谢谢!</p>
 
@@ -897,7 +901,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-count">44</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -908,7 +912,7 @@
             
             <div class="site-state-item site-state-categories">
               <a href="/blog/categories/index.html">
-                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-count">31</span>
                 <span class="site-state-item-name">分类</span>
               </a>
             </div>
@@ -919,7 +923,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/blog/tags/index.html">
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">28</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
