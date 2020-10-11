@@ -295,7 +295,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/10/11/View.post和Handler.post方法有区别吗/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Tim Lin">
@@ -317,8 +317,8 @@
             
               
                 
-                <a class="post-title-link" href="/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/" itemprop="url">
-                  View#post 和 Handler#post 方法有区别吗？
+                <a class="post-title-link" href="/blog/2020/10/11/View.post和Handler.post方法有区别吗/" itemprop="url">
+                  View.post和Handler.post方法有区别吗
                 </a>
               
             
@@ -352,7 +352,7 @@
 
           
           
-             <span id="/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/" class="leancloud_visitors" data-flag-title="View#post 和 Handler#post 方法有区别吗？">
+             <span id="/blog/2020/10/11/View.post和Handler.post方法有区别吗/" class="leancloud_visitors" data-flag-title="View.post和Handler.post方法有区别吗">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -413,20 +413,19 @@
       
         
           <h2 id="太长不看；先说结论："><a href="#太长不看；先说结论：" class="headerlink" title="太长不看；先说结论："></a>太长不看；先说结论：</h2><ul>
-<li><p>当 view 已经 attach 到 window 时，这两个方法没有区别</p>
-</li>
-<li><p>当 view 还没 attach 到 window 时</p>
-</li>
-<li><ul>
-<li>View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measure layout draw 流程。此时在 Runnable 中可以拿到正确的宽高。</li>
+<li>当 view 已经 attach 到 window 时，这两个方法没有区别</li>
+<li>当 view 还没 attach 到 window 时<ul>
+<li>View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measure layout draw 流程。此时在 Runnable 中可以拿到正确的宽高。<ul>
 <li>handler#post 方法，Runnable 会被直接添加到对应线程的 MessageQueue 中，然后被取出执行，跟 view 是否走完测量、布局、绘制 流程没有必然的联系，因此，可能会拿不到正确的宽高。</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 <p>也就是说，如果我们要获取某个 view （称为 viewA）的宽高，最好是通过 viewA#post 方法，不然很有可能因为 view 的测量、布局流程还没走完。导致拿到错误的宽高。</p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/" rel="contents">
+            <a class="btn" href="/blog/2020/10/11/View.post和Handler.post方法有区别吗/" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>

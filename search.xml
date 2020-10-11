@@ -4,16 +4,15 @@
   
     
     <entry>
-      <title><![CDATA[View#post 和 Handler#post 方法有区别吗？]]></title>
-      <url>https://timlin-pro.github.io/blog/2020/10/11/View#post%20%E5%92%8CHandler#post%20%E6%96%B9%E6%B3%95%E6%9C%89%E5%8C%BA%E5%88%AB%E5%90%97%EF%BC%9F/</url>
+      <title><![CDATA[View.post和Handler.post方法有区别吗]]></title>
+      <url>https://timlin-pro.github.io/blog/2020/10/11/View.post%E5%92%8CHandler.post%E6%96%B9%E6%B3%95%E6%9C%89%E5%8C%BA%E5%88%AB%E5%90%97/</url>
       <content type="html"><![CDATA[<h2 id="太长不看；先说结论："><a href="#太长不看；先说结论：" class="headerlink" title="太长不看；先说结论："></a>太长不看；先说结论：</h2><ul>
-<li><p>当 view 已经 attach 到 window 时，这两个方法没有区别</p>
-</li>
-<li><p>当 view 还没 attach 到 window 时</p>
-</li>
-<li><ul>
-<li>View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measure layout draw 流程。此时在 Runnable 中可以拿到正确的宽高。</li>
+<li>当 view 已经 attach 到 window 时，这两个方法没有区别</li>
+<li>当 view 还没 attach 到 window 时<ul>
+<li>View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measure layout draw 流程。此时在 Runnable 中可以拿到正确的宽高。<ul>
 <li>handler#post 方法，Runnable 会被直接添加到对应线程的 MessageQueue 中，然后被取出执行，跟 view 是否走完测量、布局、绘制 流程没有必然的联系，因此，可能会拿不到正确的宽高。</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -87,19 +87,17 @@
 
 
 
-<meta name="description" content="本文主要分析 RxJava 订阅 与线程切换的内部实现原理。">
+<meta name="description" content="太长不看；先说结论： 当 view 已经 attach 到 window 时，这两个方法没有区别 当 view 还没 attach 到 window 时 View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measur">
 <meta property="og:type" content="article">
-<meta property="og:title" content="RxJava-订阅与线程切换原理">
-<meta property="og:url" content="https://timlin-pro.github.io/blog/2020/07/06/RxJava-订阅与线程切换原理-1/index.html">
+<meta property="og:title" content="View.post和Handler.post方法有区别吗">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/2020/10/11/View.post和Handler.post方法有区别吗/index.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
-<meta property="og:description" content="本文主要分析 RxJava 订阅 与线程切换的内部实现原理。">
+<meta property="og:description" content="太长不看；先说结论： 当 view 已经 attach 到 window 时，这两个方法没有区别 当 view 还没 attach 到 window 时 View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measur">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/RxJavaSubscribeAndEmit">
-<meta property="og:updated_time" content="2020-07-08T15:28:27.140Z">
+<meta property="og:updated_time" content="2020-10-11T05:03:32.414Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="RxJava-订阅与线程切换原理">
-<meta name="twitter:description" content="本文主要分析 RxJava 订阅 与线程切换的内部实现原理。">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/RxJavaSubscribeAndEmit">
+<meta name="twitter:title" content="View.post和Handler.post方法有区别吗">
+<meta name="twitter:description" content="太长不看；先说结论： 当 view 已经 attach 到 window 时，这两个方法没有区别 当 view 还没 attach 到 window 时 View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measur">
 
 
 
@@ -127,13 +125,13 @@
 
 
 
-  <link rel="canonical" href="https://timlin-pro.github.io/blog/2020/07/06/RxJava-订阅与线程切换原理-1/"/>
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/2020/10/11/View.post和Handler.post方法有区别吗/"/>
 
 
 
 
 
-  <title> RxJava-订阅与线程切换原理 | Tim's Track </title>
+  <title> View.post和Handler.post方法有区别吗 | Tim's Track </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -296,7 +294,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/07/06/RxJava-订阅与线程切换原理-1/">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/10/11/View.post和Handler.post方法有区别吗/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Tim Lin">
@@ -317,7 +315,7 @@
             
             
               
-                RxJava-订阅与线程切换原理
+                View.post和Handler.post方法有区别吗
               
             
           </h1>
@@ -332,8 +330,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-06T18:28:35+08:00">
-                2020-07-06
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-11T12:31:28+08:00">
+                2020-10-11
               </time>
             
 
@@ -350,7 +348,7 @@
 
           
           
-             <span id="/blog/2020/07/06/RxJava-订阅与线程切换原理-1/" class="leancloud_visitors" data-flag-title="RxJava-订阅与线程切换原理">
+             <span id="/blog/2020/10/11/View.post和Handler.post方法有区别吗/" class="leancloud_visitors" data-flag-title="View.post和Handler.post方法有区别吗">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -374,7 +372,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  1,840
+                  1,542
                 </span>
               
 
@@ -390,7 +388,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  7
+                  6
                 </span>
               
             </div>
@@ -409,107 +407,90 @@
       
 
       
-        <p>本文主要分析 RxJava 订阅 与线程切换的内部实现原理。<br><a id="more"></a></p>
-<p>一般来说，使用 RxJava 都会通过链式调用。<br>日常的写法👇</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Observable.just(<span class="string">"A"</span>, <span class="string">"B"</span>, <span class="string">"C"</span>)</div><div class="line">        .subscribeOn(Schedulers.io())</div><div class="line">        .observeOn(Schedulers.single())</div><div class="line">        .subscribe(<span class="keyword">new</span> Observer&lt;String&gt;() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSubscribe</span><span class="params">(Disposable d)</span> </span>&#123;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(String s)</span> </span>&#123;</div><div class="line">            &#125;</div><div class="line">           </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onComplete</span><span class="params">()</span> </span>&#123;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div></pre></td></tr></table></figure>
-<p>为了方便说明和理解，我们上述将链式调用拆为如下👇等价的逐步调用</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//创建一个数据源</span></div><div class="line"><span class="keyword">final</span> Observable&lt;String&gt; stringObservable = Observable.just(<span class="string">"A"</span>, <span class="string">"B"</span>, <span class="string">"C"</span>);</div><div class="line"><span class="comment">//调用 subsribeOn，对数据源进行包装，得到一个 observableSubscribeOn</span></div><div class="line"><span class="keyword">final</span> Observable&lt;String&gt; observableSubscribeOn = stringObservable.subscribeOn(Schedulers.io());</div><div class="line"><span class="comment">//调用 observeOn，对上一步的 Observable 做一层包装，得到一个 observableObserveOn</span></div><div class="line"><span class="keyword">final</span> Observable&lt;String&gt; observableObserveOn = observableSubscribeOn.observeOn(Schedulers.single());</div><div class="line"><span class="comment">//创建一个观察者</span></div><div class="line"><span class="keyword">final</span> Observer&lt;String&gt; observer = <span class="keyword">new</span> Observer&lt;String&gt;() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSubscribe</span><span class="params">(Disposable d)</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(String s)</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onComplete</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line">&#125;;</div><div class="line"><span class="comment">//订阅</span></div><div class="line">observableObserveOn</div><div class="line">        .subscribe(observer);</div></pre></td></tr></table></figure>
-<h2 id="四个关键概念"><a href="#四个关键概念" class="headerlink" title="四个关键概念"></a>四个关键概念</h2><p>RxJava 中有四个关键概念</p>
+        <h2 id="太长不看；先说结论："><a href="#太长不看；先说结论：" class="headerlink" title="太长不看；先说结论："></a>太长不看；先说结论：</h2><ul>
+<li>当 view 已经 attach 到 window 时，这两个方法没有区别</li>
+<li>当 view 还没 attach 到 window 时<ul>
+<li>View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measure layout draw 流程。此时在 Runnable 中可以拿到正确的宽高。<ul>
+<li>handler#post 方法，Runnable 会被直接添加到对应线程的 MessageQueue 中，然后被取出执行，跟 view 是否走完测量、布局、绘制 流程没有必然的联系，因此，可能会拿不到正确的宽高。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>也就是说，如果我们要获取某个 view （称为 viewA）的宽高，最好是通过 viewA#post 方法，不然很有可能因为 view 的测量、布局流程还没走完。导致拿到错误的宽高。</p>
+<a id="more"></a>
+<p>注：「已经 attach 到 window」指的是已经执行完 View#dispatchAttachedToWindow 方法，也就是 View 的 <strong>mAttachInfo 成员变量值不为空。</strong></p>
+<h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>做需求开发的时候，需要对某个页面的 UI 进行改造，改造完之后发现，原本头部根据上下滑动的距离 透明度渐变的效果会偶现失效。</p>
+<p>渐变实现原理：使用纵向滑动的距离除以头部的高度得出透明度。</p>
+<p>因为是透明度失效，因此看下对应值是否正常。断点查看发现，当渐变效果失效的时候，头部的高度值为 0，该值作为除数，得到的结果是无限大，从而导致透明度渐变失效。</p>
+<p><strong>为什么拿到的高度会为 0 呢</strong>？ </p>
+<p>因为高度是通过 handler#post 方法，在 Runnable 中获取的。使用 handler#post 去获取 view 的宽度。此时 view 有可能还没有走完测量、布局流程，就会导致拿到的高度为 0，进而出现上下滑动，标题栏的透明度也不改变的 bug。</p>
+<p><strong>解决方案</strong></p>
+<p>将获取 view 高度的方式，从 hander#post 修改为 view#post 即可。</p>
+<h2 id="流程简析"><a href="#流程简析" class="headerlink" title="流程简析"></a>流程简析</h2><p>以下源码基于 API-29</p>
+<h3 id="1、View-post-方法"><a href="#1、View-post-方法" class="headerlink" title="1、View#post 方法"></a>1、View#post 方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">post</span><span class="params">(Runnable action)</span> </span>&#123;</div><div class="line">  <span class="keyword">final</span> AttachInfo attachInfo = mAttachInfo;</div><div class="line">  <span class="keyword">if</span> (attachInfo != <span class="keyword">null</span>) &#123;</div><div class="line">    <span class="keyword">return</span> attachInfo.mHandler.post(action);</div><div class="line">  &#125;</div><div class="line">  <span class="comment">// Postpone the runnable until we know on which thread it needs to run.</span></div><div class="line">  <span class="comment">// Assume that the runnable will be successfully placed after attach.</span></div><div class="line">  getRunQueue().post(action);</div><div class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果 mAttachInfo 不为空，那么直接使用其中的 mHandler ，调用其 post 方法。</p>
+<p>否则，调用 HandlerActionQueue#post 方法，将它添加到 HandlerActionQueue 中。</p>
+<p>HandlerActionQueue#post 方法最终会调用 postDelayed 方法</p>
+<p>HandlerActionQueue#postDelayed</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">postDelayed</span><span class="params">(Runnable action, <span class="keyword">long</span> delayMillis)</span> </span>&#123;</div><div class="line">  <span class="keyword">final</span> HandlerAction handlerAction = <span class="keyword">new</span> HandlerAction(action, delayMillis);</div><div class="line">  <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</div><div class="line">    <span class="keyword">if</span> (mActions == <span class="keyword">null</span>) &#123;</div><div class="line">      mActions = <span class="keyword">new</span> HandlerAction[<span class="number">4</span>];</div><div class="line">    &#125;</div><div class="line">    mActions = GrowingArrayUtils.append(mActions, mCount, handlerAction);</div><div class="line">    mCount++;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>看上面的实现，其实也比较简单，先新建一个 HandlerAction，将传入的 Runnable 包装起来，然后添加到 mActions 数组中。</p>
+<p><strong>可以看到这里仅仅是存储，什么时候会执行呢？</strong></p>
+<p>HandlerActionQueue#executeActions 会取出数组中的 HandlerAction 然后，调用 handler#postDelayed 将这些操作放到队列中执行</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">executeActions</span><span class="params">(Handler handler)</span> </span>&#123;</div><div class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</div><div class="line">        <span class="keyword">final</span> HandlerAction[] actions = mActions;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, count = mCount; i &lt; count; i++) &#123;</div><div class="line">            <span class="keyword">final</span> HandlerAction handlerAction = actions[i];</div><div class="line">            handler.postDelayed(handlerAction.action, handlerAction.delay);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        mActions = <span class="keyword">null</span>;</div><div class="line">        mCount = <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>HandlerActionQueue#executeActions 又是在什么时候调用的？</strong></p>
+<p>View#dispatchAttachedToWindow 方法中，会从 attachInfo 中取出 handler，然后调用 executeActions 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">dispatchAttachedToWindow</span><span class="params">(AttachInfo info, <span class="keyword">int</span> visibility)</span> </span>&#123;</div><div class="line">  mAttachInfo = info;</div><div class="line">  <span class="comment">//省略一些代码</span></div><div class="line">  <span class="comment">// Transfer all pending runnables.</span></div><div class="line">  <span class="keyword">if</span> (mRunQueue != <span class="keyword">null</span>) &#123;</div><div class="line">    mRunQueue**.executeActions(info.mHandler);</div><div class="line">    mRunQueue = <span class="keyword">null</span>;</div><div class="line">  &#125;</div><div class="line">  <span class="comment">//省略一些代码</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>dispatchAttachedToWindow 又是在什么时候调用的？</strong></p>
+<p>在 ViewRootImpl#performTraversals 方法中，会调用 DecorView#dispatchAttachedToWindow 方法，</p>
+<p>DecorView 继承自 FrameLayout，而 FrameLayout 继承自ViewGroup，ViewGroup  重写了该方法，也就是调用 ViewGroup#dispatchAttachedToWindow。一层一层派发，遍历调用布局树中的每一个 view的 dispatchAttachedToWindow ，完成赋值。</p>
+<p>ViewRootImpl#performTraversals</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">performTraversals</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="comment">// cache mView since it is used so much below...</span></div><div class="line">  <span class="keyword">final</span> View host = mView;</div><div class="line">  <span class="keyword">if</span> (mFirst) &#123;</div><div class="line">    <span class="comment">//省略一些代码</span></div><div class="line">    host.dispatchAttachedToWindow(mAttachInfo, <span class="number">0</span>);</div><div class="line">    mAttachInfo.mTreeObserver.dispatchOnWindowAttachedChange(<span class="keyword">true</span>);</div><div class="line">    dispatchApplyInsets(host);</div><div class="line">  &#125;</div><div class="line">  <span class="comment">//省略一些代码</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>注：上面方法中的 mView 其实是 DecorView。（可以看看 Activity#makeVisible 方法，该方法会调用 ViewRootImpl#setView 方法，将 DecorView 设置进来）</p>
+<h4 id="为什么使用-View-post，能够拿到-view-的宽高呢？"><a href="#为什么使用-View-post，能够拿到-view-的宽高呢？" class="headerlink" title="为什么使用 View#post，能够拿到 view 的宽高呢？"></a>为什么使用 View#post，能够拿到 view 的宽高呢？</h4><p>从 HandlerActionQueue#executeActions 的实现可以看到，这些 Runnable，最终也是通过 handler#postDelay 方法执行的。也就是说，它们也会被加入到对应线程的 MessageQueue 中，排队执行。</p>
+<p>此时，主线程执行到的是 performTraversals 方法，内部还会再去调用 performMeasure、performLayout、performDraw 三个方法。</p>
+<p>而 measure 和 layout 完成之后，view 的宽高也就确定了。</p>
+<p>由于我们的 Runnable 是在这个步骤之后才会被执行，所以，可以拿到正确的宽高。</p>
+<h4 id="ViewRootImpl-performTraversal-又是什么时候调用的？"><a href="#ViewRootImpl-performTraversal-又是什么时候调用的？" class="headerlink" title="ViewRootImpl#performTraversal 又是什么时候调用的？"></a>ViewRootImpl#performTraversal 又是什么时候调用的？</h4><p>我们看回 ViewRootImpl 中，其中有一个内部类 TraversalRunnable，在其 run 方法中会调用 doTraversal，doTraversal 内部会调用 performTraversals();  同时 ViewRootImpl 中 <strong>mTraversalRunnable 成员变量。</strong>在 scheduleTraversals 和 unscheduleTraversals 方法中会用到该成员变量</p>
+<p>大体流程如下：</p>
 <ul>
-<li>观察者：对事件进行响应的对象，在上面的代码中，我们创建一个 Observer 匿名内部类对象，即为例子中的观察者</li>
-<li>被观察者<ul>
-<li>产生事件的对象，也可以称为生产者，上面例子中的 Observable#just 返回的是一个 ObservableFromArray 对象，ObservableFromArray 继承自 Observable 抽象类，它就是例子中的被观察者</li>
+<li>当我们修改了 view 的属性，然后调用 invalidate 或者是 requestLayout 方法，都会触发 ViewRootImpl#scheduleTraversals，该方法内部有两个比较关键的调用<ol>
+<li><code>mHandler.getLooper().getQueue().postSyncBarrier();</code>  //插入消息屏障<ol>
+<li><code>mChoreographer.postCallback(Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);</code><ul>
+<li>mChoreographer#postCallback 最终调用到  postCallbackDelayedInterna ，该方法内部会将 mTraversalRunnable 添加到 Choreographer 的 CallbackQueue 中<ul>
+<li>最终调用到 DisplayEventReceiver#scheduleVsync 。相当于注册监听了一个 vsync 回调<ul>
+<li>当垂直同步信号回来调用到 Choreographer.FrameDisplayEventReceiver#onVsync，发送一条异步定时消息，最终会调用该类的 run 方法。<ul>
+<li>执行 FrameDisplayEventReceiver#run<ul>
+<li>触发 Choreographer#doFrame<ul>
+<li>doFrame 内部会取出 CallbackQueue 中的任务执行，比如我们之前的 mTraversalRunnable<ul>
+<li>然后触发 doTraversal<ul>
+<li>最后触发 performTraversal </li>
 </ul>
 </li>
-<li>事件：RxJava 中存在四种事件流：onSubscribe（订阅事件），onNext（正常事件），onError（异常事件），onComplete（完成事件：）。</li>
-<li>订阅：创建观察者与被观察者之间观察关系，对应着上述代码中的subscribe()方法</li>
 </ul>
-<h2 id="订阅的流程"><a href="#订阅的流程" class="headerlink" title="订阅的流程"></a>订阅的流程</h2><ul>
-<li>首先我们订阅的是一个内部包装了 N 层的 Observable。调用了最外层的 Observable 的 subsribe 方法之后，会触发往内层的 Observable#subscribeActual 逐层调用</li>
-<li>开头的例子中，数据源是 stringObservable，第一次调用 subscribeOn 的结果赋值给了 observableSubscribeOn，然后，调用observableSubscribeOn.observeOn 得到 observableObserveOn，最终调用 observableObserveOn#subsribe 方法，并将我们的 observer 作为参数传递进去。</li>
-<li>举一个例子，假设我们对数据源 Observable 进行了 10 次 subscribeOn 链式调用，那么数据源外面被 ObservableSubsribeOn 类包装了 10 层。在调用 subscribe 的时候，逐层往里面调用。</li>
-</ul>
-<p>Observable#subscribe</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@SchedulerSupport</span>(SchedulerSupport.NONE)</div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">subscribe</span><span class="params">(Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    <span class="comment">//省略一些代码</span></div><div class="line">    subscribeActual(observer);</div><div class="line">	  <span class="comment">//省略一些代码</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>ObservableObserveOn#subscribeActual</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">subscribeActual</span><span class="params">(Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (scheduler <span class="keyword">instanceof</span> TrampolineScheduler) &#123;</div><div class="line">        source.subscribe(observer);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        Scheduler.Worker w = scheduler.createWorker();</div><div class="line"></div><div class="line">        source.subscribe(<span class="keyword">new</span> ObserveOnObserver&lt;T&gt;(observer, w, delayError, bufferSize));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>上游是一个 ObservableSubscribeOn</p>
-<p>ObservableSubscribeOn#subscribeActual</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribeActual</span><span class="params">(<span class="keyword">final</span> Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    <span class="keyword">final</span> SubscribeOnObserver&lt;T&gt; parent = <span class="keyword">new</span> SubscribeOnObserver&lt;T&gt;(observer);</div><div class="line"></div><div class="line">    observer.onSubscribe(parent);</div><div class="line"></div><div class="line">    parent.setDisposable(scheduler.scheduleDirect(<span class="keyword">new</span> SubscribeTask(parent)));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>数据源是 ObservableFromArray</p>
-<p>ObservableFromArray#subscribeActual</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribeActual</span><span class="params">(Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    FromArrayDisposable&lt;T&gt; d = <span class="keyword">new</span> FromArrayDisposable&lt;T&gt;(observer, array);</div><div class="line">		<span class="comment">//回调 Observer 的方法</span></div><div class="line">    observer.onSubscribe(d);</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (d.fusionMode) &#123;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    d.run();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>ObservableFromArray. FromArrayDisposable#run</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">    T[] a = array;</div><div class="line">    <span class="keyword">int</span> n = a.length;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n &amp;&amp; !isDisposed(); i++) &#123;</div><div class="line">        T value = a[i];</div><div class="line">        <span class="keyword">if</span> (value == <span class="keyword">null</span>) &#123;</div><div class="line">            downstream.onError(<span class="keyword">new</span> NullPointerException(<span class="string">"The "</span> + i + <span class="string">"th element is null"</span>));</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">      	<span class="comment">//发送事件</span></div><div class="line">        downstream.onNext(value);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (!isDisposed()) &#123;</div><div class="line">        downstream.onComplete();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="事件传递的流程"><a href="#事件传递的流程" class="headerlink" title="事件传递的流程"></a>事件传递的流程</h2><ul>
-<li>我们在 subscribe 方法传入的 Observer 在订阅的过程中，会被一层一层地进行包装，每执行一个操作符，就会被包装一次，</li>
-<li>分发是，数据源的 onNext 传递给 包装的 Observer</li>
-</ul>
-<h2 id="订阅与事件传递小结"><a href="#订阅与事件传递小结" class="headerlink" title="订阅与事件传递小结"></a>订阅与事件传递小结</h2><p><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/RxJavaSubscribeAndEmit" alt="img"></p>
-<h2 id="线程切换原理"><a href="#线程切换原理" class="headerlink" title="线程切换原理"></a>线程切换原理</h2><h3 id="observeOn-原理"><a href="#observeOn-原理" class="headerlink" title="observeOn 原理"></a>observeOn 原理</h3><p>传递给 observeOn 的 调度器 ，RxJava 会将下游的 observer 包装一层，上游有事件派发下来的时候，会使用 scheduler#scheduleDirect 方法，在对应的线程调用下游的 observer#onNext 方法</p>
-<h3 id="subscribeOn-原理"><a href="#subscribeOn-原理" class="headerlink" title="subscribeOn 原理"></a>subscribeOn 原理</h3><p>传递给 subscribeOn 的 调度器 ，RxJava 会创建一个 ObservableSubscribeOn 将上游的 observable 包装一层，在 ObservableSubscribeOn#subscribeActual 方法中(外部调用subscribe 的时候，会触发这个方法），构造一个SubscribeOnObserver 包装下游的 Observer，同时会调用 Scheduler#scheduleDirect(Runnable) 方法 ，也就是真正订阅的时候，会通过 scheduler#scheduleDirect 方法，在对应的线程调用上游的 source.subscribe(parent);方法</p>
-<p>subscribeon 是不是只有第一次有效，会不会影响到下游的线程？</p>
-<ul>
-<li>最终表现的结果是只有第一次生效，但是呢，中间也有生效只是没有表现出来。</li>
-<li>每一轮订阅的 s.onSubscribe(parent); 还是会被影响的。</li>
-<li>也就是下游的onSubscribeon 方法的调用的线程取决于，</li>
-<li>线程变换后才会去调用 上游的订阅方法</li>
-<li>parent.setDisposable(scheduler.scheduleDirect(new SubscribeTask(parent))); } 这一句应用是 scheduler 的地方<ul>
-<li>在 run 方法中 会调用 ObservableSource#subscribe</li>
-</ul>
-</li>
-<li>上游传递事件给下游的时候，我们设置了 observeOn 的话，会通过 observeOn 中指定的 Scheduler 去运行 task</li>
-</ul>
-<p>线程切换 subscribeOn和ObserveOn是怎么实现线程调度的？ （RxJava 是如何使用我们传递的 Scheduler 参数的？）</p>
-<ul>
-<li><p>传递给 observeOn 的 调度器 ，RxJava 会将下游的 observer 包装一层，上游有事件派发下来的时候，会使用 scheduler#scheduleDirect 方法，在对应的线程调用下游的 observer#onNext 方法</p>
-</li>
-<li><p>传递给 subscribeOn 的 调度器 ，RxJava 会创建一个 ObservableSubscribeOn 将上游的 observable 包装一层，在 ObservableSubscribeOn#subscribeActual 方法中(外部调用subscribe 的时候，会触发这个方法），构造一个SubscribeOnObserver 包装下游的 Observer，同时会调用 Scheduler#scheduleDirect(Runnable) 方法 ，也就是真正订阅的时候，会通过 scheduler#scheduleDirect 方法，在对应的线程调用上游的 source.subscribe(parent);方法</p>
-<ul>
-<li>那这里的 observer 包装为 SubscribeOnObserver 似乎也不是必须要的呀？</li>
-</ul>
-</li>
-<li><p>subscribeon 是不是只有第一次有效，会不会影响到下游的线程？</p>
-<ul>
-<li>最终表现的结果是只有第一次生效，但是呢，中间也有生效只是没有表现出来。</li>
-<li>每一轮订阅的 s.onSubscribe(parent); 还是会被影响的。</li>
-<li>也就是下游的onSubscribeon 方法的调用的线程取决于，</li>
-<li>线程变换后才会去调用 上游的订阅方法</li>
-<li>parent.setDisposable(scheduler.scheduleDirect(new SubscribeTask(parent))); } 这一句应用是 scheduler 的地方<ul>
-<li>在 run 方法中 会调用 ObservableSource#subscribe</li>
-</ul>
-</li>
-<li>上游传递事件给下游的时候，我们设置了 observeOn 的话，会通过 observeOn 中指定的 Scheduler 去运行 task</li>
-</ul>
-</li>
-<li><p>其实把链式调用改为分开调用。可以发现，每一个操作符 函数返回值都是一个 Observable / Single/Flowable.</p>
-<ul>
-<li>以 Observable 为例，调用了 subscribeOn 之后，返回的是 ObservableSubscribeOn；调用observeOn ，返回的是 ObservableObserveOn。它们内部都重写了 subscribeActual 方法</li>
-</ul>
-</li>
-<li><p>小结：以 Observable 为例，调用了 subscribeOn 之后，返回的是 ObservableSubscribeOn，这个类继承了 Observable 抽象类。重写了 subsribeActual 方法，在该方法中会实现真正的订阅逻辑，通过 scheduler 将线程切换到目标线程，然后再调用 source#subsribe 方法</p>
-<ul>
-<li><p>真正的订阅是啥意思？还能有「假的订阅」？</p>
-</li>
-<li><p>订阅过程</p>
-<ul>
-<li>其实订阅的是一个包装过 N 层的 Observable，调用了 最外层的 Observable#subsribe 方法之后，会触发一层一层往内层的 Observable#subscribeActual 调用</li>
-<li>举一个例子，调用了 10 次 subscribeOn，那么数据源外面被ObservableSubsribeOn 类包装了 10 层</li>
-</ul>
-</li>
-<li><p>事件 传递</p>
-<ul>
-<li>我们在 subscribe 方法传入的 Observer 在订阅的过程中，会被一层一层地进行包装，每执行一个操作符，就会被包装一次，</li>
-<li>分发是，数据源的 onNext 传递给 包装的 Observer</li>
-</ul>
-</li>
-<li><p>我们订阅的 Observable 是一个包装了 N 层的 Observable，在调用 subscribe 方法的时候，它会一层一层往里面调用，直到最终的数据源</p>
 </li>
 </ul>
 </li>
 </ul>
-<pre><code>- 代码如下：
-</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+<p>注：插入消息屏障主要是为了让某些消息（比如 view Traversal 的消息）优先执行。</p>
+<h3 id="2、Handler-post-方法"><a href="#2、Handler-post-方法" class="headerlink" title="2、Handler#post 方法"></a>2、Handler#post 方法</h3><p>如果 View 已经 attach 到布局树里面了，那么效果跟 Handler#post  方法是一样的。</p>
+<p>Handler#post 原理比较简单，也就是设置对应的超时时间，加入到对应线程的 MessageQueue 中</p>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
+
       
     </div>
 
@@ -545,8 +526,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/blog/2020/07/05/HTTPS-工作原理/" rel="next" title="HTTPS 工作原理">
-                <i class="fa fa-chevron-left"></i> HTTPS 工作原理
+              <a href="/blog/2020/07/06/RxJava-订阅与线程切换原理-1/" rel="next" title="RxJava-订阅与线程切换原理">
+                <i class="fa fa-chevron-left"></i> RxJava-订阅与线程切换原理
               </a>
             
           </div>
@@ -554,10 +535,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/blog/2020/10/11/View.post和Handler.post方法有区别吗/" rel="prev" title="View.post和Handler.post方法有区别吗">
-                View.post和Handler.post方法有区别吗 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -771,7 +748,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#四个关键概念"><span class="nav-text">四个关键概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#订阅的流程"><span class="nav-text">订阅的流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#事件传递的流程"><span class="nav-text">事件传递的流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#订阅与事件传递小结"><span class="nav-text">订阅与事件传递小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程切换原理"><span class="nav-text">线程切换原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#observeOn-原理"><span class="nav-text">observeOn 原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#subscribeOn-原理"><span class="nav-text">subscribeOn 原理</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#太长不看；先说结论："><span class="nav-text">太长不看；先说结论：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题背景"><span class="nav-text">问题背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#流程简析"><span class="nav-text">流程简析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、View-post-方法"><span class="nav-text">1、View#post 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么使用-View-post，能够拿到-view-的宽高呢？"><span class="nav-text">为什么使用 View#post，能够拿到 view 的宽高呢？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ViewRootImpl-performTraversal-又是什么时候调用的？"><span class="nav-text">ViewRootImpl#performTraversal 又是什么时候调用的？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、Handler-post-方法"><span class="nav-text">2、Handler#post 方法</span></a></li></ol></li></ol></div>
             
 
           </div>
