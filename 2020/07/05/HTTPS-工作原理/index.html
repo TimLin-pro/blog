@@ -98,7 +98,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/SSL_handskake_by_cloundfare.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/tls1_2handShakeWireShark">
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/possible-downgrade-attack-in-tls-1-2.png">
-<meta property="og:updated_time" content="2020-07-06T09:50:19.847Z">
+<meta property="og:updated_time" content="2020-08-01T08:46:51.238Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HTTPS 工作原理">
 <meta name="twitter:description" content="1、前言HTTP 协议设计目的很简单：就是为了传输超文本文件，那时候也没有很强的加密传输的数据需求。因此 HTTP 一直都是明文传输的。与此同时，HTTP 在「身份验证」和「完整性校验」这两点上也是比较欠缺的。 SSL(全称为 Secure Sockets Layer，安全套接层) 是 Netscape 公司在 90 年代开发设计出来的一套东西，主要是为了解决 HTTP 协议明文传输数据的问题。后">
@@ -399,7 +399,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  4,456
+                  4,599
                 </span>
               
 
@@ -415,7 +415,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  16
+                  17
                 </span>
               
             </div>
@@ -602,6 +602,8 @@
 <p>TLS 1.3 完整握手框架（来自 TLS 1.3 最新草案 ）👆<br>TLS 1.3 的握手不再支持静态的 RSA 密钥交换，这意味着必须使用带有前向安全的 Diffie-Hellman 进行全面握手。从上图可以看出，使用 TLS 1.3 协议只需要一次往返（ 1-RTT ）就可以完成握手。</p>
 <h2 id="5、总结"><a href="#5、总结" class="headerlink" title="5、总结"></a>5、总结</h2><p>HTTPS 通过 TLS 实现安全。TLS 在握手阶段完成了加密算法的选择以及加密密钥确认，同时对服务端进行了身份认证。握手完成后的通信会通过这个阶段商讨出的对称密钥进行加解密。</p>
 <p>由于需要比 HTTP 多一个 TLS 握手🤝协商密钥的流程，所以 HTTPS 比 HTTP 慢。</p>
+<h3 id="附：HTTPS-能够防止抓包吗？"><a href="#附：HTTPS-能够防止抓包吗？" class="headerlink" title="附：HTTPS 能够防止抓包吗？"></a>附：HTTPS 能够防止抓包吗？</h3><p><strong>HTTPS</strong> 可以防止用户在不知情的情况下通信链路被监听，但是对于主动授信的抓包操作是不提供防护的，因为这个场景用户是已经对风险知情。</p>
+<p>一般来说默认信任的根证书都是系统/浏览器预装的。我们国内有不少盗版的 Windows 操作系统，这些系统内部可能预装了一些第三方的证书，这种情况下，就算用 HTTPS 通信，也有很高的泄漏风险。</p>
 <h2 id="6、参考资料与学习资源推荐"><a href="#6、参考资料与学习资源推荐" class="headerlink" title="6、参考资料与学习资源推荐"></a>6、参考资料与学习资源推荐</h2><p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问欢迎在下面评论区告诉我，请对问题描述尽量详细，以帮助我可以快速找到问题根源。谢谢！</p>
 <ul>
 <li><a href="https://shunix.com/tls-handshake/" target="_blank" rel="noopener">TLS 握手过程</a></li>
@@ -668,6 +670,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2020/07/06/RxJava-订阅与线程切换原理-1/" rel="prev" title="RxJava-订阅与线程切换原理">
+                RxJava-订阅与线程切换原理 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -813,7 +819,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">44</span>
+                <span class="site-state-item-count">46</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -881,7 +887,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、前言"><span class="nav-text">1、前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、前置知识"><span class="nav-text">2、前置知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1、加密算法简介"><span class="nav-text">2.1、加密算法简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2、消息摘要，数字签名，数字证书"><span class="nav-text">2.2、消息摘要，数字签名，数字证书</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、TLS1-2-握手流程"><span class="nav-text">3、TLS1.2 握手流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、通过-TCP-三次握手建立连接"><span class="nav-text">1、通过 TCP 三次握手建立连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、Client-Hello"><span class="nav-text">2、Client Hello</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、Server-Hello"><span class="nav-text">3、Server Hello</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4、Certificate"><span class="nav-text">4、Certificate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5、Server-Key-Exchange"><span class="nav-text">5、Server Key Exchange</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6、-Server-Hello-Done"><span class="nav-text">6、 Server Hello Done</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7、-Client-Key-Exchange"><span class="nav-text">7、 Client Key Exchange</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8、-Change-Cipher-Spec"><span class="nav-text">8、 Change Cipher Spec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9、-Encrypted-Handshake-Message"><span class="nav-text">9、 Encrypted Handshake Message</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-New-Session-Ticket"><span class="nav-text">10. New Session Ticket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-Application-Data"><span class="nav-text">11. Application Data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-Encrypted-Alert"><span class="nav-text">12. Encrypted Alert</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、TLS1-3"><span class="nav-text">4、TLS1.3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、TLS1-2-存在的问题"><span class="nav-text">1、TLS1.2 存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、TLS-1-3发展时间线"><span class="nav-text">2、TLS 1.3发展时间线</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、TLS1-3-的优点"><span class="nav-text">3、TLS1.3 的优点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#更安全"><span class="nav-text">更安全</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更快"><span class="nav-text">更快</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、总结"><span class="nav-text">5、总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、参考资料与学习资源推荐"><span class="nav-text">6、参考资料与学习资源推荐</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、前言"><span class="nav-text">1、前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、前置知识"><span class="nav-text">2、前置知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1、加密算法简介"><span class="nav-text">2.1、加密算法简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2、消息摘要，数字签名，数字证书"><span class="nav-text">2.2、消息摘要，数字签名，数字证书</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、TLS1-2-握手流程"><span class="nav-text">3、TLS1.2 握手流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、通过-TCP-三次握手建立连接"><span class="nav-text">1、通过 TCP 三次握手建立连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、Client-Hello"><span class="nav-text">2、Client Hello</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、Server-Hello"><span class="nav-text">3、Server Hello</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4、Certificate"><span class="nav-text">4、Certificate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5、Server-Key-Exchange"><span class="nav-text">5、Server Key Exchange</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6、-Server-Hello-Done"><span class="nav-text">6、 Server Hello Done</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7、-Client-Key-Exchange"><span class="nav-text">7、 Client Key Exchange</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8、-Change-Cipher-Spec"><span class="nav-text">8、 Change Cipher Spec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9、-Encrypted-Handshake-Message"><span class="nav-text">9、 Encrypted Handshake Message</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-New-Session-Ticket"><span class="nav-text">10. New Session Ticket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-Application-Data"><span class="nav-text">11. Application Data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-Encrypted-Alert"><span class="nav-text">12. Encrypted Alert</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、TLS1-3"><span class="nav-text">4、TLS1.3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、TLS1-2-存在的问题"><span class="nav-text">1、TLS1.2 存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、TLS-1-3发展时间线"><span class="nav-text">2、TLS 1.3发展时间线</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、TLS1-3-的优点"><span class="nav-text">3、TLS1.3 的优点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#更安全"><span class="nav-text">更安全</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更快"><span class="nav-text">更快</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、总结"><span class="nav-text">5、总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#附：HTTPS-能够防止抓包吗？"><span class="nav-text">附：HTTPS 能够防止抓包吗？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、参考资料与学习资源推荐"><span class="nav-text">6、参考资料与学习资源推荐</span></a></li></ol></div>
             
 
           </div>

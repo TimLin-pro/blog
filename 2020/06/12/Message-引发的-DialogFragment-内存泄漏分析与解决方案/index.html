@@ -87,20 +87,20 @@
 
 
 
-<meta name="description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 Dialog">
+<meta name="description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 androi">
 <meta name="keywords" content="内存泄漏,源码分析">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Message 引发的 DialogFragment 内存泄漏分析与解决方案">
 <meta property="og:url" content="https://timlin-pro.github.io/blog/2020/06/12/Message-引发的-DialogFragment-内存泄漏分析与解决方案/index.html">
 <meta property="og:site_name" content="Tim&#39;s Track">
-<meta property="og:description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 Dialog">
+<meta property="og:description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 androi">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/LeakCanary 内存泄漏.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/DialogFragment%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F.png">
-<meta property="og:updated_time" content="2020-06-16T07:57:57.473Z">
+<meta property="og:updated_time" content="2020-07-07T09:39:33.945Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Message 引发的 DialogFragment 内存泄漏分析与解决方案">
-<meta name="twitter:description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 Dialog">
+<meta name="twitter:description" content="Q:咋回事？正常使用 Dialog 和 DialogFragment 也有可能会导致内存泄漏？A: ….是的，说来话长。  长话短说：  某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。 androi">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/LeakCanary 内存泄漏.png">
 
 
@@ -398,7 +398,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  3,728
+                  3,734
                 </span>
               
 
@@ -439,7 +439,7 @@
 <p>长话短说：</p>
 <ol>
 <li>某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。</li>
-<li>DialogFragment#onActivityCreated 方法中，会调用 Dialog#setOnCancelListener 方法，将自身的引用作为 listener  参数传递给该方法</li>
+<li>androidx 包下的 DialogFragment#onActivityCreated 方法中，会调用 Dialog#setOnCancelListener、Dialog#setOnDismissListener 方法，将自身的引用作为 listener  参数传递给该方法</li>
 <li>Dialog#setOnCancelListener 方法内部，会尝试从 Message Pool 中获取一个 Message，取出的 Message 刚好是 MessageA，然后将传入的 Listener 实例赋值给 MessageA#obj。</li>
 <li>外部调用 cancel 的时候，Dialog 内部会将 MessageA <strong>拷贝</strong>一份，我们称它为 MessageB，然后将 MessageB 发送到消息队列中。</li>
 <li>DialogFragment 收到 onDestory 回调之后，LeakCanary 开始监听这个 DialogFragment 是否正常被回收，发现这个实例一直存在，dump 内存，分析引用链，报告内存泄漏问题。</li>
@@ -775,7 +775,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">44</span>
+                <span class="site-state-item-count">46</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>

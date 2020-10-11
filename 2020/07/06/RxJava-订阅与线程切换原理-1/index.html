@@ -1,0 +1,1195 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本文主要分析 RxJava 订阅 与线程切换的内部实现原理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxJava-订阅与线程切换原理">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/2020/07/06/RxJava-订阅与线程切换原理-1/index.html">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="本文主要分析 RxJava 订阅 与线程切换的内部实现原理。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/RxJavaSubscribeAndEmit">
+<meta property="og:updated_time" content="2020-07-08T15:28:27.140Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxJava-订阅与线程切换原理">
+<meta name="twitter:description" content="本文主要分析 RxJava 订阅 与线程切换的内部实现原理。">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/RxJavaSubscribeAndEmit">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/2020/07/06/RxJava-订阅与线程切换原理-1/"/>
+
+
+
+
+
+  <title> RxJava-订阅与线程切换原理 | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/07/06/RxJava-订阅与线程切换原理-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                RxJava-订阅与线程切换原理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-06T18:28:35+08:00">
+                2020-07-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2020/07/06/RxJava-订阅与线程切换原理-1/" class="leancloud_visitors" data-flag-title="RxJava-订阅与线程切换原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  1,840
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  7
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文主要分析 RxJava 订阅 与线程切换的内部实现原理。<br><a id="more"></a></p>
+<p>一般来说，使用 RxJava 都会通过链式调用。<br>日常的写法👇</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Observable.just(<span class="string">"A"</span>, <span class="string">"B"</span>, <span class="string">"C"</span>)</div><div class="line">        .subscribeOn(Schedulers.io())</div><div class="line">        .observeOn(Schedulers.single())</div><div class="line">        .subscribe(<span class="keyword">new</span> Observer&lt;String&gt;() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSubscribe</span><span class="params">(Disposable d)</span> </span>&#123;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(String s)</span> </span>&#123;</div><div class="line">            &#125;</div><div class="line">           </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onComplete</span><span class="params">()</span> </span>&#123;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div></pre></td></tr></table></figure>
+<p>为了方便说明和理解，我们上述将链式调用拆为如下👇等价的逐步调用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//创建一个数据源</span></div><div class="line"><span class="keyword">final</span> Observable&lt;String&gt; stringObservable = Observable.just(<span class="string">"A"</span>, <span class="string">"B"</span>, <span class="string">"C"</span>);</div><div class="line"><span class="comment">//调用 subsribeOn，对数据源进行包装，得到一个 observableSubscribeOn</span></div><div class="line"><span class="keyword">final</span> Observable&lt;String&gt; observableSubscribeOn = stringObservable.subscribeOn(Schedulers.io());</div><div class="line"><span class="comment">//调用 observeOn，对上一步的 Observable 做一层包装，得到一个 observableObserveOn</span></div><div class="line"><span class="keyword">final</span> Observable&lt;String&gt; observableObserveOn = observableSubscribeOn.observeOn(Schedulers.single());</div><div class="line"><span class="comment">//创建一个观察者</span></div><div class="line"><span class="keyword">final</span> Observer&lt;String&gt; observer = <span class="keyword">new</span> Observer&lt;String&gt;() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSubscribe</span><span class="params">(Disposable d)</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(String s)</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onComplete</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line">&#125;;</div><div class="line"><span class="comment">//订阅</span></div><div class="line">observableObserveOn</div><div class="line">        .subscribe(observer);</div></pre></td></tr></table></figure>
+<h2 id="四个关键概念"><a href="#四个关键概念" class="headerlink" title="四个关键概念"></a>四个关键概念</h2><p>RxJava 中有四个关键概念</p>
+<ul>
+<li>观察者：对事件进行响应的对象，在上面的代码中，我们创建一个 Observer 匿名内部类对象，即为例子中的观察者</li>
+<li>被观察者<ul>
+<li>产生事件的对象，也可以称为生产者，上面例子中的 Observable#just 返回的是一个 ObservableFromArray 对象，ObservableFromArray 继承自 Observable 抽象类，它就是例子中的被观察者</li>
+</ul>
+</li>
+<li>事件：RxJava 中存在四种事件流：onSubscribe（订阅事件），onNext（正常事件），onError（异常事件），onComplete（完成事件：）。</li>
+<li>订阅：创建观察者与被观察者之间观察关系，对应着上述代码中的subscribe()方法</li>
+</ul>
+<h2 id="订阅的流程"><a href="#订阅的流程" class="headerlink" title="订阅的流程"></a>订阅的流程</h2><ul>
+<li>首先我们订阅的是一个内部包装了 N 层的 Observable。调用了最外层的 Observable 的 subsribe 方法之后，会触发往内层的 Observable#subscribeActual 逐层调用</li>
+<li>开头的例子中，数据源是 stringObservable，第一次调用 subscribeOn 的结果赋值给了 observableSubscribeOn，然后，调用observableSubscribeOn.observeOn 得到 observableObserveOn，最终调用 observableObserveOn#subsribe 方法，并将我们的 observer 作为参数传递进去。</li>
+<li>举一个例子，假设我们对数据源 Observable 进行了 10 次 subscribeOn 链式调用，那么数据源外面被 ObservableSubsribeOn 类包装了 10 层。在调用 subscribe 的时候，逐层往里面调用。</li>
+</ul>
+<p>Observable#subscribe</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@SchedulerSupport</span>(SchedulerSupport.NONE)</div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">subscribe</span><span class="params">(Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    <span class="comment">//省略一些代码</span></div><div class="line">    subscribeActual(observer);</div><div class="line">	  <span class="comment">//省略一些代码</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ObservableObserveOn#subscribeActual</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">subscribeActual</span><span class="params">(Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (scheduler <span class="keyword">instanceof</span> TrampolineScheduler) &#123;</div><div class="line">        source.subscribe(observer);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        Scheduler.Worker w = scheduler.createWorker();</div><div class="line"></div><div class="line">        source.subscribe(<span class="keyword">new</span> ObserveOnObserver&lt;T&gt;(observer, w, delayError, bufferSize));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上游是一个 ObservableSubscribeOn</p>
+<p>ObservableSubscribeOn#subscribeActual</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribeActual</span><span class="params">(<span class="keyword">final</span> Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    <span class="keyword">final</span> SubscribeOnObserver&lt;T&gt; parent = <span class="keyword">new</span> SubscribeOnObserver&lt;T&gt;(observer);</div><div class="line"></div><div class="line">    observer.onSubscribe(parent);</div><div class="line"></div><div class="line">    parent.setDisposable(scheduler.scheduleDirect(<span class="keyword">new</span> SubscribeTask(parent)));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>数据源是 ObservableFromArray</p>
+<p>ObservableFromArray#subscribeActual</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribeActual</span><span class="params">(Observer&lt;? <span class="keyword">super</span> T&gt; observer)</span> </span>&#123;</div><div class="line">    FromArrayDisposable&lt;T&gt; d = <span class="keyword">new</span> FromArrayDisposable&lt;T&gt;(observer, array);</div><div class="line">		<span class="comment">//回调 Observer 的方法</span></div><div class="line">    observer.onSubscribe(d);</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (d.fusionMode) &#123;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    d.run();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ObservableFromArray. FromArrayDisposable#run</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">    T[] a = array;</div><div class="line">    <span class="keyword">int</span> n = a.length;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n &amp;&amp; !isDisposed(); i++) &#123;</div><div class="line">        T value = a[i];</div><div class="line">        <span class="keyword">if</span> (value == <span class="keyword">null</span>) &#123;</div><div class="line">            downstream.onError(<span class="keyword">new</span> NullPointerException(<span class="string">"The "</span> + i + <span class="string">"th element is null"</span>));</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">      	<span class="comment">//发送事件</span></div><div class="line">        downstream.onNext(value);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (!isDisposed()) &#123;</div><div class="line">        downstream.onComplete();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="事件传递的流程"><a href="#事件传递的流程" class="headerlink" title="事件传递的流程"></a>事件传递的流程</h2><ul>
+<li>我们在 subscribe 方法传入的 Observer 在订阅的过程中，会被一层一层地进行包装，每执行一个操作符，就会被包装一次，</li>
+<li>分发是，数据源的 onNext 传递给 包装的 Observer</li>
+</ul>
+<h2 id="订阅与事件传递小结"><a href="#订阅与事件传递小结" class="headerlink" title="订阅与事件传递小结"></a>订阅与事件传递小结</h2><p><img src="https://raw.githubusercontent.com/TimLin1024/Graph/master/markdown/RxJavaSubscribeAndEmit" alt="img"></p>
+<h2 id="线程切换原理"><a href="#线程切换原理" class="headerlink" title="线程切换原理"></a>线程切换原理</h2><h3 id="observeOn-原理"><a href="#observeOn-原理" class="headerlink" title="observeOn 原理"></a>observeOn 原理</h3><p>传递给 observeOn 的 调度器 ，RxJava 会将下游的 observer 包装一层，上游有事件派发下来的时候，会使用 scheduler#scheduleDirect 方法，在对应的线程调用下游的 observer#onNext 方法</p>
+<h3 id="subscribeOn-原理"><a href="#subscribeOn-原理" class="headerlink" title="subscribeOn 原理"></a>subscribeOn 原理</h3><p>传递给 subscribeOn 的 调度器 ，RxJava 会创建一个 ObservableSubscribeOn 将上游的 observable 包装一层，在 ObservableSubscribeOn#subscribeActual 方法中(外部调用subscribe 的时候，会触发这个方法），构造一个SubscribeOnObserver 包装下游的 Observer，同时会调用 Scheduler#scheduleDirect(Runnable) 方法 ，也就是真正订阅的时候，会通过 scheduler#scheduleDirect 方法，在对应的线程调用上游的 source.subscribe(parent);方法</p>
+<p>subscribeon 是不是只有第一次有效，会不会影响到下游的线程？</p>
+<ul>
+<li>最终表现的结果是只有第一次生效，但是呢，中间也有生效只是没有表现出来。</li>
+<li>每一轮订阅的 s.onSubscribe(parent); 还是会被影响的。</li>
+<li>也就是下游的onSubscribeon 方法的调用的线程取决于，</li>
+<li>线程变换后才会去调用 上游的订阅方法</li>
+<li>parent.setDisposable(scheduler.scheduleDirect(new SubscribeTask(parent))); } 这一句应用是 scheduler 的地方<ul>
+<li>在 run 方法中 会调用 ObservableSource#subscribe</li>
+</ul>
+</li>
+<li>上游传递事件给下游的时候，我们设置了 observeOn 的话，会通过 observeOn 中指定的 Scheduler 去运行 task</li>
+</ul>
+<p>线程切换 subscribeOn和ObserveOn是怎么实现线程调度的？ （RxJava 是如何使用我们传递的 Scheduler 参数的？）</p>
+<ul>
+<li><p>传递给 observeOn 的 调度器 ，RxJava 会将下游的 observer 包装一层，上游有事件派发下来的时候，会使用 scheduler#scheduleDirect 方法，在对应的线程调用下游的 observer#onNext 方法</p>
+</li>
+<li><p>传递给 subscribeOn 的 调度器 ，RxJava 会创建一个 ObservableSubscribeOn 将上游的 observable 包装一层，在 ObservableSubscribeOn#subscribeActual 方法中(外部调用subscribe 的时候，会触发这个方法），构造一个SubscribeOnObserver 包装下游的 Observer，同时会调用 Scheduler#scheduleDirect(Runnable) 方法 ，也就是真正订阅的时候，会通过 scheduler#scheduleDirect 方法，在对应的线程调用上游的 source.subscribe(parent);方法</p>
+<ul>
+<li>那这里的 observer 包装为 SubscribeOnObserver 似乎也不是必须要的呀？</li>
+</ul>
+</li>
+<li><p>subscribeon 是不是只有第一次有效，会不会影响到下游的线程？</p>
+<ul>
+<li>最终表现的结果是只有第一次生效，但是呢，中间也有生效只是没有表现出来。</li>
+<li>每一轮订阅的 s.onSubscribe(parent); 还是会被影响的。</li>
+<li>也就是下游的onSubscribeon 方法的调用的线程取决于，</li>
+<li>线程变换后才会去调用 上游的订阅方法</li>
+<li>parent.setDisposable(scheduler.scheduleDirect(new SubscribeTask(parent))); } 这一句应用是 scheduler 的地方<ul>
+<li>在 run 方法中 会调用 ObservableSource#subscribe</li>
+</ul>
+</li>
+<li>上游传递事件给下游的时候，我们设置了 observeOn 的话，会通过 observeOn 中指定的 Scheduler 去运行 task</li>
+</ul>
+</li>
+<li><p>其实把链式调用改为分开调用。可以发现，每一个操作符 函数返回值都是一个 Observable / Single/Flowable.</p>
+<ul>
+<li>以 Observable 为例，调用了 subscribeOn 之后，返回的是 ObservableSubscribeOn；调用observeOn ，返回的是 ObservableObserveOn。它们内部都重写了 subscribeActual 方法</li>
+</ul>
+</li>
+<li><p>小结：以 Observable 为例，调用了 subscribeOn 之后，返回的是 ObservableSubscribeOn，这个类继承了 Observable 抽象类。重写了 subsribeActual 方法，在该方法中会实现真正的订阅逻辑，通过 scheduler 将线程切换到目标线程，然后再调用 source#subsribe 方法</p>
+<ul>
+<li><p>真正的订阅是啥意思？还能有「假的订阅」？</p>
+</li>
+<li><p>订阅过程</p>
+<ul>
+<li>其实订阅的是一个包装过 N 层的 Observable，调用了 最外层的 Observable#subsribe 方法之后，会触发一层一层往内层的 Observable#subscribeActual 调用</li>
+<li>举一个例子，调用了 10 次 subscribeOn，那么数据源外面被ObservableSubsribeOn 类包装了 10 层</li>
+</ul>
+</li>
+<li><p>事件 传递</p>
+<ul>
+<li>我们在 subscribe 方法传入的 Observer 在订阅的过程中，会被一层一层地进行包装，每执行一个操作符，就会被包装一次，</li>
+<li>分发是，数据源的 onNext 传递给 包装的 Observer</li>
+</ul>
+</li>
+<li><p>我们订阅的 Observable 是一个包装了 N 层的 Observable，在调用 subscribe 方法的时候，它会一层一层往里面调用，直到最终的数据源</p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>- 代码如下：
+</code></pre>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/07/05/HTTPS-工作原理/" rel="next" title="HTTPS 工作原理">
+                <i class="fa fa-chevron-left"></i> HTTPS 工作原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/" rel="prev" title="View#post 和 Handler#post 方法有区别吗？">
+                View#post 和 Handler#post 方法有区别吗？ <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">46</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/TimLin1024" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#四个关键概念"><span class="nav-text">四个关键概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#订阅的流程"><span class="nav-text">订阅的流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#事件传递的流程"><span class="nav-text">事件传递的流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#订阅与事件传递小结"><span class="nav-text">订阅与事件传递小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程切换原理"><span class="nav-text">线程切换原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#observeOn-原理"><span class="nav-text">observeOn 原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#subscribeOn-原理"><span class="nav-text">subscribeOn 原理</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>

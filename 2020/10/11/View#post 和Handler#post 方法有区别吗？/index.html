@@ -1,0 +1,1173 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/blog/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="太长不看；先说结论： 当 view 已经 attach 到 window 时，这两个方法没有区别  当 view 还没 attach 到 window 时   View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 mea">
+<meta property="og:type" content="article">
+<meta property="og:title" content="View#post 和 Handler#post 方法有区别吗？">
+<meta property="og:url" content="https://timlin-pro.github.io/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/index.html">
+<meta property="og:site_name" content="Tim&#39;s Track">
+<meta property="og:description" content="太长不看；先说结论： 当 view 已经 attach 到 window 时，这两个方法没有区别  当 view 还没 attach 到 window 时   View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 mea">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-10-11T05:00:40.073Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="View#post 和 Handler#post 方法有区别吗？">
+<meta name="twitter:description" content="太长不看；先说结论： 当 view 已经 attach 到 window 时，这两个方法没有区别  当 view 还没 attach 到 window 时   View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 mea">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":true},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://timlin-pro.github.io/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/"/>
+
+
+
+
+
+  <title> View#post 和 Handler#post 方法有区别吗？ | Tim's Track </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tim's Track</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">书写是为了更好地思考</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/blog/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/blog/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocapitalize="off" autocomplete="off" autocorrect="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                View#post 和 Handler#post 方法有区别吗？
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-11T12:31:28+08:00">
+                2020-10-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/" class="leancloud_visitors" data-flag-title="View#post 和 Handler#post 方法有区别吗？">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  1,542
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  6
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="太长不看；先说结论："><a href="#太长不看；先说结论：" class="headerlink" title="太长不看；先说结论："></a>太长不看；先说结论：</h2><ul>
+<li><p>当 view 已经 attach 到 window 时，这两个方法没有区别</p>
+</li>
+<li><p>当 view 还没 attach 到 window 时</p>
+</li>
+<li><ul>
+<li>View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measure layout draw 流程。此时在 Runnable 中可以拿到正确的宽高。</li>
+<li>handler#post 方法，Runnable 会被直接添加到对应线程的 MessageQueue 中，然后被取出执行，跟 view 是否走完测量、布局、绘制 流程没有必然的联系，因此，可能会拿不到正确的宽高。</li>
+</ul>
+</li>
+</ul>
+<p>也就是说，如果我们要获取某个 view （称为 viewA）的宽高，最好是通过 viewA#post 方法，不然很有可能因为 view 的测量、布局流程还没走完。导致拿到错误的宽高。</p>
+<a id="more"></a>
+<p>注：「已经 attach 到 window」指的是已经执行完 View#dispatchAttachedToWindow 方法，也就是 View 的 <strong>mAttachInfo 成员变量值不为空。</strong></p>
+<h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>做需求开发的时候，需要对某个页面的 UI 进行改造，改造完之后发现，原本头部根据上下滑动的距离 透明度渐变的效果会偶现失效。</p>
+<p>渐变实现原理：使用纵向滑动的距离除以头部的高度得出透明度。</p>
+<p>因为是透明度失效，因此看下对应值是否正常。断点查看发现，当渐变效果失效的时候，头部的高度值为 0，该值作为除数，得到的结果是无限大，从而导致透明度渐变失效。</p>
+<p><strong>为什么拿到的高度会为 0 呢</strong>？ </p>
+<p>因为高度是通过 handler#post 方法，在 Runnable 中获取的。使用 handler#post 去获取 view 的宽度。此时 view 有可能还没有走完测量、布局流程，就会导致拿到的高度为 0，进而出现上下滑动，标题栏的透明度也不改变的 bug。</p>
+<p><strong>解决方案</strong></p>
+<p>将获取 view 高度的方式，从 hander#post 修改为 view#post 即可。</p>
+<h2 id="流程简析"><a href="#流程简析" class="headerlink" title="流程简析"></a>流程简析</h2><p>以下源码基于 API-29</p>
+<h3 id="1、View-post-方法"><a href="#1、View-post-方法" class="headerlink" title="1、View#post 方法"></a>1、View#post 方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">post</span><span class="params">(Runnable action)</span> </span>&#123;</div><div class="line">  <span class="keyword">final</span> AttachInfo attachInfo = mAttachInfo;</div><div class="line">  <span class="keyword">if</span> (attachInfo != <span class="keyword">null</span>) &#123;</div><div class="line">    <span class="keyword">return</span> attachInfo.mHandler.post(action);</div><div class="line">  &#125;</div><div class="line">  <span class="comment">// Postpone the runnable until we know on which thread it needs to run.</span></div><div class="line">  <span class="comment">// Assume that the runnable will be successfully placed after attach.</span></div><div class="line">  getRunQueue().post(action);</div><div class="line">  <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果 mAttachInfo 不为空，那么直接使用其中的 mHandler ，调用其 post 方法。</p>
+<p>否则，调用 HandlerActionQueue#post 方法，将它添加到 HandlerActionQueue 中。</p>
+<p>HandlerActionQueue#post 方法最终会调用 postDelayed 方法</p>
+<p>HandlerActionQueue#postDelayed</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">postDelayed</span><span class="params">(Runnable action, <span class="keyword">long</span> delayMillis)</span> </span>&#123;</div><div class="line">  <span class="keyword">final</span> HandlerAction handlerAction = <span class="keyword">new</span> HandlerAction(action, delayMillis);</div><div class="line">  <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</div><div class="line">    <span class="keyword">if</span> (mActions == <span class="keyword">null</span>) &#123;</div><div class="line">      mActions = <span class="keyword">new</span> HandlerAction[<span class="number">4</span>];</div><div class="line">    &#125;</div><div class="line">    mActions = GrowingArrayUtils.append(mActions, mCount, handlerAction);</div><div class="line">    mCount++;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>看上面的实现，其实也比较简单，先新建一个 HandlerAction，将传入的 Runnable 包装起来，然后添加到 mActions 数组中。</p>
+<p><strong>可以看到这里仅仅是存储，什么时候会执行呢？</strong></p>
+<p>HandlerActionQueue#executeActions 会取出数组中的 HandlerAction 然后，调用 handler#postDelayed 将这些操作放到队列中执行</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">executeActions</span><span class="params">(Handler handler)</span> </span>&#123;</div><div class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</div><div class="line">        <span class="keyword">final</span> HandlerAction[] actions = mActions;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, count = mCount; i &lt; count; i++) &#123;</div><div class="line">            <span class="keyword">final</span> HandlerAction handlerAction = actions[i];</div><div class="line">            handler.postDelayed(handlerAction.action, handlerAction.delay);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        mActions = <span class="keyword">null</span>;</div><div class="line">        mCount = <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>HandlerActionQueue#executeActions 又是在什么时候调用的？</strong></p>
+<p>View#dispatchAttachedToWindow 方法中，会从 attachInfo 中取出 handler，然后调用 executeActions 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">dispatchAttachedToWindow</span><span class="params">(AttachInfo info, <span class="keyword">int</span> visibility)</span> </span>&#123;</div><div class="line">  mAttachInfo = info;</div><div class="line">  <span class="comment">//省略一些代码</span></div><div class="line">  <span class="comment">// Transfer all pending runnables.</span></div><div class="line">  <span class="keyword">if</span> (mRunQueue != <span class="keyword">null</span>) &#123;</div><div class="line">    mRunQueue**.executeActions(info.mHandler);</div><div class="line">    mRunQueue = <span class="keyword">null</span>;</div><div class="line">  &#125;</div><div class="line">  <span class="comment">//省略一些代码</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>dispatchAttachedToWindow 又是在什么时候调用的？</strong></p>
+<p>在 ViewRootImpl#performTraversals 方法中，会调用 DecorView#dispatchAttachedToWindow 方法，</p>
+<p>DecorView 继承自 FrameLayout，而 FrameLayout 继承自ViewGroup，ViewGroup  重写了该方法，也就是调用 ViewGroup#dispatchAttachedToWindow。一层一层派发，遍历调用布局树中的每一个 view的 dispatchAttachedToWindow ，完成赋值。</p>
+<p>ViewRootImpl#performTraversals</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">performTraversals</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="comment">// cache mView since it is used so much below...</span></div><div class="line">  <span class="keyword">final</span> View host = mView;</div><div class="line">  <span class="keyword">if</span> (mFirst) &#123;</div><div class="line">    <span class="comment">//省略一些代码</span></div><div class="line">    host.dispatchAttachedToWindow(mAttachInfo, <span class="number">0</span>);</div><div class="line">    mAttachInfo.mTreeObserver.dispatchOnWindowAttachedChange(<span class="keyword">true</span>);</div><div class="line">    dispatchApplyInsets(host);</div><div class="line">  &#125;</div><div class="line">  <span class="comment">//省略一些代码</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>注：上面方法中的 mView 其实是 DecorView。（可以看看 Activity#makeVisible 方法，该方法会调用 ViewRootImpl#setView 方法，将 DecorView 设置进来）</p>
+<h4 id="为什么使用-View-post，能够拿到-view-的宽高呢？"><a href="#为什么使用-View-post，能够拿到-view-的宽高呢？" class="headerlink" title="为什么使用 View#post，能够拿到 view 的宽高呢？"></a>为什么使用 View#post，能够拿到 view 的宽高呢？</h4><p>从 HandlerActionQueue#executeActions 的实现可以看到，这些 Runnable，最终也是通过 handler#postDelay 方法执行的。也就是说，它们也会被加入到对应线程的 MessageQueue 中，排队执行。</p>
+<p>此时，主线程执行到的是 performTraversals 方法，内部还会再去调用 performMeasure、performLayout、performDraw 三个方法。</p>
+<p>而 measure 和 layout 完成之后，view 的宽高也就确定了。</p>
+<p>由于我们的 Runnable 是在这个步骤之后才会被执行，所以，可以拿到正确的宽高。</p>
+<h4 id="ViewRootImpl-performTraversal-又是什么时候调用的？"><a href="#ViewRootImpl-performTraversal-又是什么时候调用的？" class="headerlink" title="ViewRootImpl#performTraversal 又是什么时候调用的？"></a>ViewRootImpl#performTraversal 又是什么时候调用的？</h4><p>我们看回 ViewRootImpl 中，其中有一个内部类 TraversalRunnable，在其 run 方法中会调用 doTraversal，doTraversal 内部会调用 performTraversals();  同时 ViewRootImpl 中 <strong>mTraversalRunnable 成员变量。</strong>在 scheduleTraversals 和 unscheduleTraversals 方法中会用到该成员变量</p>
+<p>大体流程如下：</p>
+<ul>
+<li>当我们修改了 view 的属性，然后调用 invalidate 或者是 requestLayout 方法，都会触发 ViewRootImpl#scheduleTraversals，该方法内部有两个比较关键的调用<ol>
+<li><code>mHandler.getLooper().getQueue().postSyncBarrier();</code>  //插入消息屏障<ol>
+<li><code>mChoreographer.postCallback(Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);</code><ul>
+<li>mChoreographer#postCallback 最终调用到  postCallbackDelayedInterna ，该方法内部会将 mTraversalRunnable 添加到 Choreographer 的 CallbackQueue 中<ul>
+<li>最终调用到 DisplayEventReceiver#scheduleVsync 。相当于注册监听了一个 vsync 回调<ul>
+<li>当垂直同步信号回来调用到 Choreographer.FrameDisplayEventReceiver#onVsync，发送一条异步定时消息，最终会调用该类的 run 方法。<ul>
+<li>执行 FrameDisplayEventReceiver#run<ul>
+<li>触发 Choreographer#doFrame<ul>
+<li>doFrame 内部会取出 CallbackQueue 中的任务执行，比如我们之前的 mTraversalRunnable<ul>
+<li>然后触发 doTraversal<ul>
+<li>最后触发 performTraversal </li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+<p>注：插入消息屏障主要是为了让某些消息（比如 view Traversal 的消息）优先执行。</p>
+<h3 id="2、Handler-post-方法"><a href="#2、Handler-post-方法" class="headerlink" title="2、Handler#post 方法"></a>2、Handler#post 方法</h3><p>如果 View 已经 attach 到布局树里面了，那么效果跟 Handler#post  方法是一样的。</p>
+<p>Handler#post 原理比较简单，也就是设置对应的超时时间，加入到对应线程的 MessageQueue 中</p>
+<p>由于本人水平有限，可能出于误解或者笔误难免出错，如果发现有问题或者对文中内容存在疑问请在下面评论区告诉我，谢谢！</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2020/07/06/RxJava-订阅与线程切换原理-1/" rel="next" title="RxJava-订阅与线程切换原理">
+                <i class="fa fa-chevron-left"></i> RxJava-订阅与线程切换原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        
+  <div class="bdsharebuttonbox">
+    <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+    <a href="#" class="bds_sqq" data-cmd="sqq" title="分享到QQ好友"></a>
+    <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+    <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a href="#" class="bds_tieba" data-cmd="tieba" title="分享到百度贴吧"></a>
+    <a href="#" class="bds_twi" data-cmd="twi" title="分享到Twitter"></a>
+    <a href="#" class="bds_fbook" data-cmd="fbook" title="分享到Facebook"></a>
+    <a href="#" class="bds_more" data-cmd="more"></a>
+    <a class="bds_count" data-cmd="count"></a>
+  </div>
+  <script>
+    window._bd_share_config = {
+      "common": {
+        "bdText": "",
+        "bdMini": "2",
+        "bdMiniList": false,
+        "bdPic": ""
+      },
+      "share": {
+        "bdSize": "16",
+        "bdStyle": "0"
+      },
+      "image": {
+        "viewList": ["tsina", "douban", "sqq", "qzone", "weixin", "twi", "fbook"],
+        "viewText": "分享到：",
+        "viewSize": "16"
+      }
+    }
+  </script>
+
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+</script>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  <div onclick="showGitment()" id="gitment_title" class="gitment_title">Show Comments</div>
+  <div id="container" style="display:none"></div>
+  <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+  <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+  <script>
+  const myTheme = {
+    render(state, instance) {
+      const container = document.createElement('div');
+      container.lang = "en-US";
+      container.className = 'gitment-container gitment-root-container';
+      container.appendChild(instance.renderHeader(state, instance));
+      container.appendChild(instance.renderEditor(state, instance));
+      container.appendChild(instance.renderComments(state, instance));
+      container.appendChild(instance.renderFooter(state, instance));
+      return container;
+    }
+  }
+
+  function showGitment() {
+    $("#gitment_title").attr("style", "display:none");
+    $("#container").attr("style", "").addClass("gitment_container");
+    var gitment = new Gitment({
+      id: window.location.pathname,
+      theme: myTheme,
+      owner: 'ivanljt',
+      repo: 'blog',
+      oauth: {
+        client_id: 'fb1495614cf23be5b908',
+        client_secret: 'a075e877b17583d2f53260dce25b2898162da1ff'
+      }
+    });
+    gitment.render('container');
+  }
+  </script>
+
+
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400"
+               alt="Tim Lin" />
+          <p class="site-author-name" itemprop="name">Tim Lin</p>
+           
+              <p class="site-description motion-element" itemprop="description">Live a life you will remember.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/blog/archives">
+                <span class="site-state-item-count">46</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/blog/categories/index.html">
+                <span class="site-state-item-count">31</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/blog/tags/index.html">
+                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/TimLin1024" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#太长不看；先说结论："><span class="nav-text">太长不看；先说结论：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题背景"><span class="nav-text">问题背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#流程简析"><span class="nav-text">流程简析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、View-post-方法"><span class="nav-text">1、View#post 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么使用-View-post，能够拿到-view-的宽高呢？"><span class="nav-text">为什么使用 View#post，能够拿到 view 的宽高呢？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ViewRootImpl-performTraversal-又是什么时候调用的？"><span class="nav-text">ViewRootImpl#performTraversal 又是什么时候调用的？</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、Handler-post-方法"><span class="nav-text">2、Handler#post 方法</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tim Lin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+	
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("NK9c6u88WIsu2pvgMP2PFxQ7-gzGzoHsz", "Qq6wW4PmR3GdmU4UIIaHHaEM");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+	<script type="text/javascript" color="0,0,0" opacity='0.5' zIndex="-1" count="60" src="//cdn.bootcss.com/canvas-nest.js/1.0.1/canvas-nest.min.js"></script>
+
+
+</body>
+</html>

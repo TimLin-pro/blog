@@ -295,6 +295,349 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/" itemprop="url">
+                  View#post 和 Handler#post 方法有区别吗？
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-11T12:31:28+08:00">
+                2020-10-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/" class="leancloud_visitors" data-flag-title="View#post 和 Handler#post 方法有区别吗？">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  1,542
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  6
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="太长不看；先说结论："><a href="#太长不看；先说结论：" class="headerlink" title="太长不看；先说结论："></a>太长不看；先说结论：</h2><ul>
+<li><p>当 view 已经 attach 到 window 时，这两个方法没有区别</p>
+</li>
+<li><p>当 view 还没 attach 到 window 时</p>
+</li>
+<li><ul>
+<li>View#post 方法接收的 Runnable 参数会被包装一层，然后加到队列。等到 view 被 attach 到 window 之后才会被加入到对应线程的 MessageQueue 中。这样可以保证调用时，view 已经执行过 measure layout draw 流程。此时在 Runnable 中可以拿到正确的宽高。</li>
+<li>handler#post 方法，Runnable 会被直接添加到对应线程的 MessageQueue 中，然后被取出执行，跟 view 是否走完测量、布局、绘制 流程没有必然的联系，因此，可能会拿不到正确的宽高。</li>
+</ul>
+</li>
+</ul>
+<p>也就是说，如果我们要获取某个 view （称为 viewA）的宽高，最好是通过 viewA#post 方法，不然很有可能因为 view 的测量、布局流程还没走完。导致拿到错误的宽高。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2020/10/11/View#post 和Handler#post 方法有区别吗？/" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/07/06/RxJava-订阅与线程切换原理-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Tim Lin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tim's Track">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/blog/2020/07/06/RxJava-订阅与线程切换原理-1/" itemprop="url">
+                  RxJava-订阅与线程切换原理
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-06T18:28:35+08:00">
+                2020-07-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/blog/2020/07/06/RxJava-订阅与线程切换原理-1/" class="leancloud_visitors" data-flag-title="RxJava-订阅与线程切换原理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计</span>
+                
+                <span title="字数统计">
+                  1,840
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长</span>
+                
+                <span title="阅读时长">
+                  7
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>本文主要分析 RxJava 订阅 与线程切换的内部实现原理。<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/blog/2020/07/06/RxJava-订阅与线程切换原理-1/" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/07/05/HTTPS-工作原理/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -398,7 +741,7 @@
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  4,456
+                  4,599
                 </span>
               
 
@@ -414,7 +757,7 @@
                   <span class="post-meta-item-text">阅读时长</span>
                 
                 <span title="阅读时长">
-                  16
+                  17
                 </span>
               
             </div>
@@ -984,7 +1327,7 @@ LruCache 保持对有限数量的值的强引用。每当
                   <span class="post-meta-item-text">字数统计</span>
                 
                 <span title="字数统计">
-                  3,728
+                  3,734
                 </span>
               
 
@@ -1026,7 +1369,7 @@ LruCache 保持对有限数量的值的强引用。每当
 <p>长话短说：</p>
 <ol>
 <li>某一个 HandlerThread 的 Looper#loop 方法，一直等待 queue#next 方法返回，但是它的 msg 局部变量还引用着上一个循环中已经被放到 Message Pool 中 Message，我们称之为 MessageA。</li>
-<li>DialogFragment#onActivityCreated 方法中，会调用 Dialog#setOnCancelListener 方法，将自身的引用作为 listener  参数传递给该方法</li>
+<li>androidx 包下的 DialogFragment#onActivityCreated 方法中，会调用 Dialog#setOnCancelListener、Dialog#setOnDismissListener 方法，将自身的引用作为 listener  参数传递给该方法</li>
 <li>Dialog#setOnCancelListener 方法内部，会尝试从 Message Pool 中获取一个 Message，取出的 Message 刚好是 MessageA，然后将传入的 Listener 实例赋值给 MessageA#obj。</li>
 <li>外部调用 cancel 的时候，Dialog 内部会将 MessageA <strong>拷贝</strong>一份，我们称它为 MessageB，然后将 MessageB 发送到消息队列中。</li>
 <li>DialogFragment 收到 onDestory 回调之后，LeakCanary 开始监听这个 DialogFragment 是否正常被回收，发现这个实例一直存在，dump 内存，分析引用链，报告内存泄漏问题。</li>
@@ -1439,407 +1782,6 @@ LruCache 保持对有限数量的值的强引用。每当
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/04/18/Android 中更新 UI 的线程限制问题探究/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Tim Lin">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Tim's Track">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/blog/2020/04/18/Android 中更新 UI 的线程限制问题探究/" itemprop="url">
-                  Android 中更新 UI 的线程限制问题探究
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-18T17:06:31+08:00">
-                2020-04-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/原理分析/" itemprop="url" rel="index">
-                    <span itemprop="name">原理分析</span>
-                  </a>
-                </span>
-
-                
-                
-                  ， 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/原理分析/探究/" itemprop="url" rel="index">
-                    <span itemprop="name">探究</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/blog/2020/04/18/Android 中更新 UI 的线程限制问题探究/" class="leancloud_visitors" data-flag-title="Android 中更新 UI 的线程限制问题探究">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数 </span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计</span>
-                
-                <span title="字数统计">
-                  2,389
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长</span>
-                
-                <span title="阅读时长">
-                  9
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="Android-中子线程真的不能更新-UI-吗？"><a href="#Android-中子线程真的不能更新-UI-吗？" class="headerlink" title="Android 中子线程真的不能更新 UI 吗？"></a>Android 中子线程真的不能更新 UI 吗？</h2><p>先说结论：Android 中子线程在满足一定的条件下可以更新 UI。</p>
-<ul>
-<li>在 ViewRootImpl 还没创建出来之前<ul>
-<li>UI 修改的操作没有线程限制。</li>
-</ul>
-</li>
-<li>在 ViewRootImpl 创建完成之后<ol>
-<li>保证「创建 ViewRootImpl 的操作」和「执行修改 UI 的操作」在同一个线程即可。也就是说，要在同一个线程调用 ViewManager#addView 和 ViewManager#updateViewLayout 的方法。<ul>
-<li>注：ViewManager 是一个接口，WindowManger 接口继承了这个接口，我们通常都是通过 WindowManger（具体实现为 WindowMangerImpl） 进行 view 的 add remove update 操作的。</li>
-</ul>
-</li>
-<li>对应的线程需要创建 Looper 并且调用 Looper#loop 方法，开启消息循环。</li>
-</ol>
-</li>
-</ul>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2020/04/18/Android 中更新 UI 的线程限制问题探究/" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="https://timlin-pro.github.io/blog/blog/2020/03/20/RxJava中switchMap和flapMap-有何区别？/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Tim Lin">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="https://avatars0.githubusercontent.com/u/16668676?v=3&u=79bb734cf11e0568b5c39f246789dae4a22ac712&s=400">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Tim's Track">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/blog/2020/03/20/RxJava中switchMap和flapMap-有何区别？/" itemprop="url">
-                  RxJava中switchMap和flapMap 有何区别？
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-20T00:40:23+08:00">
-                2020-03-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/blog/categories/RxJava/" itemprop="url" rel="index">
-                    <span itemprop="name">RxJava</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/blog/2020/03/20/RxJava中switchMap和flapMap-有何区别？/" class="leancloud_visitors" data-flag-title="RxJava中switchMap和flapMap 有何区别？">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数 </span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计</span>
-                
-                <span title="字数统计">
-                  727
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长</span>
-                
-                <span title="阅读时长">
-                  3
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>flapMap 和 switchMap 都是 RxJava 中的转换操作符，都可以将上游的输入转换为一个数据源（比如 Observable）输出给下游。</p>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/blog/2020/03/20/RxJava中switchMap和flapMap-有何区别？/" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1889,7 +1831,7 @@ LruCache 保持对有限数量的值的强引用。每当
           
             <div class="site-state-item site-state-posts">
               <a href="/blog/archives">
-                <span class="site-state-item-count">44</span>
+                <span class="site-state-item-count">46</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
